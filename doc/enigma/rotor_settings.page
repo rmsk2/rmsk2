@@ -1,0 +1,24 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="rotor_settings">     
+<title>Rotor settings</title>
+<section id="rotor_settings_general">
+<title>General information</title>
+<p>
+When opened via the "Rotor settings ..." menu entry this dialog shows all the rotor settings for the simulated Enigma variant.
+In the case od the M4 it looks like this: 
+</p>
+<media type="image" src="rotor_settings.png"/>
+<p>
+The number of rotors is different depending on the simulated Enigma variant. Apart from the M4 (which had five rotors including the reflector) 
+all machines allowed four rotors (including the reflector) to be placed in the machine. In some variants the reflector or UKW (Umkehrwalze) also
+had a ring that could be set. Where this is the case, the corresponding slider is not grayed out. The reflectors of the military variants
+(M3, M4, Services) did not have a settable ring but one could choose from several reflectors (UKW B, UKW C, UKW D). All non military variants 
+offered only one reflector. For each rotor position there is a drop down box that shows the rotors that can be used in this position. 
+</p>
+<note><p>
+Keep in mind that each rotor can be placed at most once in the machine.
+</p></note>
+</section>
+ 
+</page>

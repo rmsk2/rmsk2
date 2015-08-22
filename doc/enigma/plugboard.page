@@ -1,0 +1,39 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="plugboard">     
+<title>Plugboard dialog</title>
+
+<section id="plugboard_general">
+<title>General information</title>
+<p>
+When opened via the "Plugboard ..." menu entry this dialog shows the current plugboard settings.
+It looks like this: 
+</p>
+<media type="image" src="plugboard.png"/>
+<p>
+The plugboard dialog can also be used to change the current plugboard settings. To add a plug, check the two
+letters that are used to describe it in the array of check boxes in the top of this dialog. After the second 
+letter has been checked, both letters are "grayed" and the plug is shown in the "Current plugs" list. To delete
+a plug select it in the "Current plugs" list and press the "Remove selected plug" button. Use the "Remove
+all plugs" button to clear the list. Each time a plug is deleted the corresponding check boxes are reactivated
+(i.e. are not grayed anymore).
+</p>
+</section>
+
+<section id="plugboard_general">
+<title>Using the Enigma Uhr</title>
+<p>
+The Uhr was a device that could be used to change the plugboard permutation by turning a dial. The dial had
+40 positions. If the Uhr is to be used with a compatible Enigma variant (i.e. M3 and Services) the corresponding
+checkbox has to be checked. It is important to keep in mind that the Uhr requires exactly ten plugs. The dial 
+position can be set by moving the corresponding slider. Its current position is shown above the slider.
+</p>
+<note><p>
+When using the Uhr the sequence of the plugs is important. In other words, if for instance the "Current plugs" list
+in the above picture started with <code>EZ AN</code> instead of <code>AN EZ</code> the machine would produce 
+different output.
+</p></note>
+
+</section>
+
+</page>

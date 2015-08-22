@@ -1,0 +1,81 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="typex">
+<info>
+  <link type="guide" xref="index"/>
+</info>      
+<title>Typex</title>
+
+<section id="typex_about">
+<title>About the machine</title>
+<p>
+The Typex was a cipher machine that was used by the UK during WWII and into first decades of the cold war. Cryptographically the Typex variant simulated by Rotorvis and the <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">CSG</link> is a
+modified commercial Enigma machine without a plugboard. Like the Enigma the Typex has three moving rotors (the first three) and a reflector. Instead of a plugboard
+the Typex has two additional rotors which can be set by hand but do not step during En-/Decipherment (the last two). Cryptographically these two rotors have the
+same purpose as a plugboard: They prevent attacks which can be mounted when only the rightmost rotor of a machine steps most of the time. On top of 
+that the rotors of the Typex step much more irregularly than those of the Enigma, because they have five (or even more) turnover notches instead of one or two
+in the case of the Enigma. Another cryptographic advantage the Typex had over the Enigma is, that each rotor can be placed in two orientations
+(normal, reverse) in the machine. There were several rotor sets for the Typex and these rotor sets could contain up to 240 rotors, which increased
+the number of possible machine settings enormously. The Typex as simulated by Rotorvis looks like this:
+</p>
+<p>
+<media type="image" src="typex.png"/>
+</p>
+<p>
+Operationally the Typex has been improved heavily with respect to its Enigma cousin. The output of the machine is printed on a paper strip and one can not only encipher
+letters but also numbers, punctuation characters and a blank character. This has been achieved by implementing a letters and a figures mode. The machine 
+can be switched between these two modes by the buttons on the left below the paper strip (see also  <link type="topic" xref="elements#elem_buttons">here</link>).
+</p>
+</section>
+
+<section id="typex_config">
+<title>Configuration</title>
+<p>
+The configuration dialog for the Typex looks like this:
+</p>
+<p>
+<media type="image" src="typex_config.png"/>
+</p>
+<p>There are the following configuration settings:</p>
+<terms>
+    <item>
+        <title><code>Typex rotors</code></title>
+        <p>Determines which rotors are placed in the machine and in what sequence. There are seven rotors (<code>a-g</code>). Each one of them
+        can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation (<code>N</code> or <code>R</code>)
+        have to be specified. Exactly five of the possible seven rotors have to be placed in the machine.</p>
+    </item>
+    <item>
+        <title><code>Typex rings</code></title>
+        <p>Like Enigma rotors Typex rotors have a letter ring that can be set to 26 different positions with respect to the wiring core.
+        The positions are designated by the letters <code>a-z</code>. Therefore this setting consists of five letters.</p>
+    </item>    
+    <item>
+        <title><code>Typex reflector</code></title>
+        <p>As with some Enigma variants the reflector of the Typex can be set in the field. The reflector is specified by 13 pairs of letters. In the
+        example given above the pairs are: <code>ar by cu dh eq fs gl ix jp kn mo tw vz</code>. Each letter can and must occur once in this seting.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="typex_differences">
+<title>Differences to the real machine and to other simulators</title>
+<list>
+    <item><p>In the real machine and in the simulator of the CSG the keys are labelled in such a way that the unshifted and shifted characters
+    appear on top of each other instead of next to each other.</p></item>
+    <item><p>The real machine and the CSG simulator do not contain a figure lamp (<link type="topic" xref="elements#elem_figure_lamp">see also here</link>). But
+    operating the simulator is easier if one knows in which mode it currently is.</p></item>
+    <item><p>The real machine and the CSG simulator do feature an additional FIG and a LET key on the keyboard to switch between the corresponding modes.</p></item>
+    <item><p>When in figures mode the CSG simulator prints an apostrophe when the B or the N key is pressed. In my opinion it makes no sense to
+    place the apostrophe twice on the keyboard and leave out the comma. I therefore assume that one of the apostrophes really is a comma. And
+    so in Rotorvis the N key produces a comma when encrypting in figures mode.</p></item>
+</list>
+</section>
+
+<section id="typex_interoperability">
+<title>Interoperability with the CSG simulator</title>
+<p>
+Currently Rotorvis only implements the rotor set designated <code>SP02390</code> in the CSG simulator.
+</p>
+</section>
+
+</page>

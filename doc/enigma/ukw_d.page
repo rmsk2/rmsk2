@@ -1,0 +1,29 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="ukw_d">     
+<title>UKW Dora dialog</title>
+
+<section id="ukw_d_general">
+<title>General information</title>
+<p>
+Towards the end of WWII the German forces fielded a rewirable reflector that could be used with the Services, M3 and KD variants.
+When opened via the "UKW Dora wiring ..." menu entry this dialog shows the current UKW Dora wiring.
+</p>
+<media type="image" src="ukw_d.png"/>
+<p>
+This dialog alsow allows to modify the current UKW Dora wiring. To add a connection, check the two letters that are used
+to describe it in the array of check boxes in the top of this dialog. After the second letter has been checked, both letters 
+are "grayed" and the connection is shown in the "Current connections" list. To delete a connection select it in the "Current connections"
+list and  press the "Remove selected connection" button. Use the "Remove all connections" button to clear the list. Each time a connection
+is deleted the corresponding check boxes are reactivated (i.e. are not grayed anymore).
+</p>
+<note><p>
+Due to the construction of the Umkehrwalze Dora the sockets <code>J</code> and <code>Y</code> are connected permanently.
+</p></note>
+<note><p>
+Exactly 13 connections have to be specified when setting the UKW Dora wiring.
+</p></note>
+
+</section>
+ 
+</page>

@@ -1,0 +1,12 @@
+Zuordnung der Kontakte der UKW-D zu den Kontakten
+der normalen Walzen bei Ringstellung A. Die untere
+Zeile des folgenden Diagramms gibt wieder wie die
+entsprechenden Kontakte auf den Original-
+Schlüsselunterlagen bezeichnet wurden. Die - Zeichen
+bezeichnen die 2 Kontkate der UKW-D, welche nicht
+änderbar waren. D.h. das Paar B-O ist stets in der
+durch eine vollständig eingerichtete UKW-D gegebenen
+Involution enthalten.
+
+abcdefghijklmnopqrstuvwxyz
+a-zxwvutsrqpon-mlkihgfedcb

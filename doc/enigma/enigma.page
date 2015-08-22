@@ -1,0 +1,183 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="index">
+<title>Enigma Help</title>
+<section id="enigma_general">
+<title>General information</title>
+
+<p>Enigma is a cryptographically accurate simulator for several variants of the famous Enigma cipher machine. Implementations for the
+following variants are provided:
+</p>
+<list>
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/i/index.htm">Services Enigma (Cryptomuseum.com)</link></p></item>
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/m3/index.htm">Naval M3 Enigma (Cryptomuseum.com)</link></p></item>
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/m4/index.htm">Naval M4 Enigma (Cryptomuseum.com)</link></p></item>    
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/schreibmax/index.htm">Naval M4 Enigma with Schreibmax (Cryptomuseum.com)</link></p></item>        
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/g/index.htm#abwehr">Abwehr Enigma (Cryptomuseum.com)</link></p></item>        
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/t/index.htm">Tirpitz Enigma (Cryptomuseum.com)</link></p></item>            
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/k/railway.htm">Railway Enigma (Cryptomuseum.com)</link></p></item>
+    <item><p><link href="http://www.cryptomuseum.com/crypto/enigma/k/kd.htm">KD Enigma (Cryptomuseum.com)</link></p></item>
+</list>
+
+<p>The links above lead to the very interesting site <link href="http://www.cryptomuseum.com">Cryptomuseum.com</link> which is a great
+resource for all things dealing with Enigma machines and other historic crypto equipment. While the author of Enigma recommends this and the
+other great web sites mentioned in this document (<link href="http://users.telenet.be/d.rijmenants/">Homepage of Dirk Rijmenants</link>
+and <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">Homepage of the Crypto Simulation Group</link>), it has to be stressed
+that the author of this software is not affialiated in any way with either of these sites.
+</p>
+<p>Enigma comes with full source code which allows everbody
+to study in detail how the simulated machines work. This also opens up the possibility to maintain
+the software even after the original author has lost interest in the project. Enigma has been written
+using the <link href="http://www.gtkmm.org">gtkmm3</link> C++ toolkit for the Linux operating system and has been tested 
+to run under Debian (Wheezy and Jessie)  and Ubuntu (12.04 LTS and 14.04 LTS). It is expected to work with any other modern Linux distrbution. 
+</p>
+<p>The simulated machines are drawn in the main window. There are several graphical elements which are used by Enigma.
+<link type="topic" xref="enigma_elements">This page</link> describes them in more detail.
+</p>
+<p>You can use either the "real" keyboard of your computer, the simulated keyboard or the clipboard to provide input
+to the simulator.</p>
+
+<note><p>
+It is possible to reach a state where a key on the simulator's keyboard is "stuck". This can for instance happen if you press a key on the
+computer's real keyboard, keep it pressed while giving the focus to another application and after that release the key. In order to "unstuck"
+the key press either the left or right shift key on your computer's real keyboard or press the stuck key again on your "real" keyboard after
+the simulator has regained the focus.
+</p></note>
+
+</section>
+
+<section id="enigma_start">
+<title>How to start the simulators from the command line</title>
+<p>
+From the command line the simulators can be started as follows:
+</p>
+<p>
+<code>./enigma &lt;machine_name&gt;</code>
+</p>
+<p>
+where <code>&lt;machine_name&gt;</code> can be <code>Services, M4, M4 SMax, M3, Abwehr, Railway, Tirpitz, KD</code>. If you start Enigma without
+any parameters a a dialog will appear, that allows you to select the variant to simulate. As an example the simulator for the M4 variant
+looks like this:
+</p>
+<p>
+<media type="image" src="m4_sim.png"/>
+</p>
+<p>
+And as a further example here a screenshot of the M4 simulator using a Schreibmax printer:
+</p>
+<p>
+<media type="image" src="m4_schreibmax.png"/>
+</p>
+
+</section>
+
+<section id="enigma_compatibility">
+<title>Compatibility with the real machines and other simulators</title>
+<p>
+Wherever possible the Enigma variants implemented by this simulator have been verified against real messages or simulators which are known to provide 
+cryptographically accurate results. The reference implementations used for verification are:
+</p>
+<list>
+    <item><p><link href="http://users.telenet.be/d.rijmenants/en/enigmasim.htm">Enigma simulator of Dirk Rijmenants</link></p></item>
+    <item><p><link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">Enigma simulators of the Crypto Simulation Group</link></p></item>
+</list>
+<p>These simulators have been used to verify the implementation of the following Enigma variants in this simulator: M3, Abwehr, Tirpitz Services with Uhr
+and Railway. In some instances (Services, M4) plain- and ciphertext of messages that have been prepared with the real machines are available and have been 
+used to verify the correctness of this simulator.
+</p>
+<p>
+The author of this software is not aware of simulators or real messages that make use of Umkehrwalze D (or Dora) and therefore any machine 
+setting using Umkehrwalze D has to be considered unverified. The same is true for the same reasons for any setting of the simulator of the KD
+variant.
+</p>
+</section>
+
+
+<section id="enigma_menu_machine">
+<title>The Machine menu</title>
+<p>The Machine menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>Load settings ...</code></title>
+        <p>Allows to restore the state of the simulator from a previously stored settings file. It is
+        not possible to load a settings file when the Enigma variant given in the settings file does
+        not match the machine type of the current Enigma instance.</p>
+    </item>
+    <item>
+        <title><code>Save settings .../Save settings as ...</code></title>
+        <p>Allows to save the current state of the simulator in a so called settings file.</p>
+    </item>    
+    <item>
+        <title><code>Show logs ...</code></title>
+        <p>Opens a <link type="topic" xref="enigma_log_dialog">dialog</link> which allows to log input an output of the simulated machine. While the log dialog
+        is not visible neither input nor output of the simulator is recorded.</p>
+    </item>    
+    <item>
+        <title><code>Log style: Encryption</code></title>
+        <p>Sets the log style which is employed i.e. Encrypt or Decrypt. This menu entry only influences
+        how input and output text is formatted (grouped) in the log dialog because in all Enigma variants there is no
+        difference between operating the machine for Encryption or Decryption.</p> 
+    </item>    
+    <item>
+        <title><code>Rip paper strip</code></title>
+        <p>Allows to rip the paper strip of the simulated Schreibmax printer, i.e. clear the simulated paper strip. This entry is only shown        
+        when the Schreibmax printer is in use.</p>
+    </item>    
+    <item>
+        <title><code>Process clipboard</code></title>
+        <p>Processes the contents of the clipboard as if it had been typed on the "real" keyboard of your computer and
+        replaces the clipboard contents with the produced output.</p>         
+    </item>    
+    <item>
+        <title><code>Quit</code></title>
+        <p>Unsurprisingly selecting this menu entry causes Enigma to be closed.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="enigma_menu_config">
+<title>The Machine settings menu</title>
+<p>The Machine settings menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>Rotor settings ...</code></title>
+        <p>Opens a <link type="topic" xref="rotor_settings">dialog</link> which allows the user to choose which rotors to place in the simualated machine and their ring settings.</p>
+    </item>
+    <item>
+        <title><code>Plugboard ...</code></title>
+        <p>Opens a <link type="topic" xref="plugboard">dialog</link> which allows the user to choose the plugs on the Enigma plugboard. Only the military Enigma variants (Services, M3, M4)
+        had a plugboard. A corresponding message dialog is shown when selecting this menu entry for a variant without a plugboard. Variants which were compatible with the
+        <link href="http://www.cryptomuseum.com/crypto/enigma/uhr/index.htm">Enigma Uhr</link> can be configured to use the Uhr through this dialog.
+        </p>
+    </item>
+    <item>
+        <title><code>Reset</code></title>
+        <p>Resets all the settings available for the simulated Enigma variant to default values.</p>
+    </item>
+    <item>
+        <title><code>Randomize</code></title>
+        <p>Resets all the settings available for the simulated Enigma variant to random values.</p>
+    </item>
+    <item>
+        <title><code>UKW Dora wiring ...</code></title>
+        <p>Opens a <link type="topic" xref="ukw_d">dialog</link> that can be used to change the rotor wiring for the UKW Dora, which can be placed in the Services, M3 and KD variant.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="enigma_menu_help">
+<title>The Help menu</title>
+<p>The Help menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>How to use this simulator ...</code></title>
+        <p>Opens this help file.</p>
+    </item>
+    <item>
+        <title><code>About ...</code></title>
+        <p>Gives some information about the author of this software.</p>
+    </item>    
+</terms>
+</section>
+
+</page>

@@ -1,0 +1,160 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="index">
+<title>Rotorvis</title>
+
+<section id="rotorvis_general">
+<title>General information</title>
+
+<p>Rotorvis is a cryptographically accurate simulator for several rotor machines. It aims to be complete 
+in that sense that it implements all cryptographic and most operational features of the real machines. 
+The graphics abstracts from the real appearances of the machines and is therefore not as detailed and
+realistic as that of other simulators. The cryptographic correctness of the simulators can
+be checked against other simulators which are known (or believed as not all machines have been fully declassified) 
+to provide correct results. See for instance:</p>
+
+<list>
+    <item><p><link href="http://users.telenet.be/d.rijmenants/">The homepage of Dirk Rijmenants</link></p></item>
+    <item><p><link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">The homepage of the Crypto Simulation Group</link></p></item>
+    <item><p><link href="http://www.cryptomuseum.com/index.htm">The homepage of the Crypto Museum</link></p></item>
+</list>
+
+<p>The links above lead to very interesting websites which are great resources for all things dealing with historic crypto 
+equipment. While the author of Rotorvis recommends them, it has to be stressed that the author of this software is not affialiated
+in any way with either of these sites.
+</p>
+<p>Rotorvis comes with full source code which allows everbody
+to study in detail how the simulated machines work. This also opens up the possibility to maintain
+the software even after the original author has lost interest in the project. Rotorvis has been written
+using the <link href="http://www.gtkmm.org">gtkmm3</link> C++ toolkit for the Linux operating system and has been tested 
+to run under Debian (Wheezy and Jessie) and Ubuntu (12.04 LTS and 14.04 LTS). It is expected to work with any other modern Linux distrbution. 
+Rotorvis provides simulators for the following machines:</p>
+
+<list>
+    <item><p><link href="http://en.wikipedia.org/wiki/KL-7">KL7 (Wikipedia)</link></p></item>
+    <item><p><link href="http://en.wikipedia.org/wiki/SIGABA">SIGABA (Wikipedia)</link></p></item>
+    <item><p><link href="http://en.wikipedia.org/wiki/NEMA_%28machine%29">Nema (Wikipedia)</link></p></item>
+    <item><p><link href="http://en.wikipedia.org/wiki/Typex">Typex (Wikipedia)</link></p></item>
+    <item><p><link href="http://de.wikipedia.org/wiki/Schl%C3%BCsselger%C3%A4t_39">Schlüsselgerät 39 (Wikipedia, in german)</link></p></item>
+</list>
+</section>
+
+<section id="rotorvis_start">
+<title>How to start the simulators from the command line</title>
+<p>
+From the command line the simulators can be started as follows:
+</p>
+<p>
+<code>./rotorvis &lt;machine_name&gt;</code>
+</p>
+<p>
+where <code>&lt;machine_name&gt;</code> can be <code>CSP889, CSP2900, Nema, KL7, Typex, SG39</code>. If you start Rotorvis without
+any parameters a dialog is displayed that allows you to select the machine that you wish to simulate. 
+</p>
+
+</section>
+
+
+<section id="rotorvis_input">
+<title>How to provide input to the simulator</title>
+
+<p>You can use either the "real" keyboard of your computer, the simulated keyboard or the clipboard to provide input
+to the simulator.</p>
+
+<note><p>Some machines (KL7, Typex) have a letters and a figures mode when processing encryption input. The Typex 
+for instance switches into figures mode when the <code>Z</code> key is pressed and switches back into letters mode when
+<code>V</code> is pressed. When you type these special characters on the "real" keyboard of your computer while the machine
+is in Encrypt mode they are ignored. You have to type <code>&gt;</code> on your computer keyboard to switch into figures 
+mode and <code>&lt;</code> to switch back into letters mode. These special characters can be used independent of the type
+of the simulated machine.</p>
+
+<p>When a machine is in Decrypt mode then typing all characters on the "real" keyboard works as expected.</p>
+
+</note>
+
+<note><p>
+It is possible to reach a state where a key on the simulator's keyboard is "stuck". This can for instance happen if you press a key on the
+computer's real keyboard, keep it pressed while giving the focus to another application and after that release the key. In order to "unstuck"
+the key press either the left or right shift key on your computer's real keyboard or press the stuck key again on your "real" keyboard after
+the simulator has regained the focus.
+</p></note>
+
+</section>
+
+<section id="rotorvis_menu_machine">
+<title>The Machine menu</title>
+<p>The Machine menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>Load settings ...</code></title>
+        <p>Allows to restore the state of the simulator from a previously stored settings file. It is
+        not possible to load a settings file when the machine type given in the seetings file does
+        not match the machine type of the current Rotorvis instance.</p>
+    </item>
+    <item>
+        <title><code>Save settings as ...</code></title>
+        <p>Allows to save the current state of the simulator in a so called settings file under a new file name.</p>
+    </item>    
+    <item>
+        <title><code>Save settings ...</code></title>
+        <p>Allows to save the current state of the simulator in a so called settings file using the current file name. If there is no
+        current file name then a new one has to be specified.</p>
+    </item>    
+    <item>
+        <title><code>Configure machine ...</code></title>
+        <p>Opens a configuration dialog which allows to set all the machine parameters for which there is
+        no graphical representation in the simulator's GUI.</p>
+    </item>    
+    <item>
+        <title><code>Show logs ...</code></title>
+        <p>Opens a <link type="topic" xref="log_dialog">dialog</link> which allows to log input an output of the simulated machine. While the log dialog
+        is not visible neither input nor output of the simulator is recorded.</p>
+    </item>    
+    <item>
+        <title><code>Mode encryption</code></title>
+        <p>Sets the mode in which the machine is operated, i.e. Encrypt or Decrypt. This setting also influences
+        how input and output text is formatted (grouped) in the log dialog. For machines which use a lampboard as 
+        an output device this setting only influences log output.</p> 
+        <note><p>For machines which print output on a (simulated)
+        paper strip changing the en/decryption mode also clears the paper strip.</p></note>
+    </item>    
+    <item>
+        <title><code>Rip paper strip</code></title>
+        <p>For machines which print output characters on a (simulated) paper strip, this menu entry allows to
+        "rip the paper tape". Or in other words: Remove all content from the simulated paper strip.</p>
+    </item>    
+    <item>
+        <title><code>Process clipboard</code></title>
+        <p>Processes the contents of the clipboard as if it had been typed on the "real" keyboard of your computer and
+        replaces the clipboard contents with the produced output.</p>         
+    </item>    
+    <item>
+        <title><code>Quit</code></title>
+        <p>Unsurprisingly selecting this menu entry causes Rotorvis to be closed.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="rotorvis_menu_help">
+<title>The Help menu</title>
+<p>The Help menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>How to use this simulator ...</code></title>
+        <p>Opens this help file.</p>
+    </item>
+    <item>
+        <title><code>About ...</code></title>
+        <p>Gives some information about the author of this software.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="rotorvis_gui_elements">
+<title>GUI elements</title>
+<p>The simulated machines are drawn in the main window. There are several graphical elements which are used by Rotorvis.
+<link type="topic" xref="elements">This page</link> describes them in more detail.
+</p>
+</section>
+
+</page>

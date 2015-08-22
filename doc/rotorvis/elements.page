@@ -1,0 +1,124 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="elements">       
+<title>GUI Elements</title>
+
+<section>
+<title>Counter</title>
+<p>
+A counter is an element that counts the number of output characters produced by the simulated machine. A counter looks like this:
+</p>
+<p>
+<media type="image" src="counter.png"/>
+</p>
+<p>
+A counter can be reset to the value 0000 by clicking on it.
+</p>
+</section>
+
+<section id="elem_buttons">
+<title>Buttons</title>
+<p>
+A button is an elment that contains a descriptive text and executes an action, when clicked on it. A button looks like this:
+</p>
+<p>
+<media type="image" src="button.png"/>
+</p>
+<p>
+There are buttons which switch a machine between letters (descriptive text LTR) and figures mode (descriptive text FIG) and there
+is a button that causes the stepping mechanism of the simulated machine to advance the rotors one step (descriptive text STEP).
+</p>
+</section>
+
+<section id="elem_figure_lamp">
+<title>Figure lamp</title>
+<p>
+The figure lamp "glows" whenever the simulated machine is in Encipher mode and in figures mode at the same time. The "glowing" 
+figures lamp looks like this:
+</p>
+<p>
+<media type="image" src="figure_lamp.png"/>
+</p>
+<p>
+The figure lamp is a passive element, i.e. no action is executed when one clicks on it.
+</p>
+</section>
+
+<section>
+<title>Enigma style rotor windows</title>
+<p>
+A rotor window for enigma style machines shows on the left side the current position of the simulated rotor and on the right side
+the handle which is used to move the rotor:
+</p>
+<p>
+<media type="image" src="enig_rotor_window.png"/>
+</p>
+<p>
+When clicking on the handle above the middle the rotor is moved one step back. Conversely the rotor is moved one step ahead when
+the handle is clicked below the middle.
+</p>
+</section>
+
+<section>
+<title>Thin rotor windows</title>
+<p>
+A rotor window for a "thin rotor" shows the current rotor position in the middle of the element representing the rotor. These are
+examples for thin rotors:
+</p>
+<p>
+<media type="image" src="thin_rotor.png"/>
+<media type="image" src="nema_thin_rotor.png"/>
+<media type="image" src="kl7_thin_rotor.png"/>
+<media type="image" src="sg39_drive_wheel.png"/>
+</p>
+<p>
+When clicking on the "thin rotor" above the middle the rotor is moved one step back. Conversely the rotor is moved one step ahead when
+it is clicked below the middle.
+</p>
+</section>
+
+<section>
+<title>Keys</title>
+<p>
+Keys are represented by graphical elements like this:
+</p>
+<p>
+<media type="image" src="key.png"/>
+<media type="image" src="space_bar.png"/>
+</p>
+<p>
+When clicking on a key the character shown on the key is sent as an input to the simulated machine. When the simulated machine
+features a letters and a figurres mode the label on the key shows the character produced in letters mode on the left an the one
+produced in figures mode on the right. A special type of key is the space bar (shown in the second picture). It sends a space character
+to the simulated machine.
+</p>
+</section>
+
+<section>
+<title>Lamps</title>
+<p>
+Some machines use a lamp board as an output device. The lamp board consists of lamps like this:
+</p>
+<p>
+<media type="image" src="lamp_off.png"/>
+</p>
+<p>
+The lamp that lights up (i.e. its letter is shown in yellow instead of grey) shows the output character the machine has produced.
+</p>
+</section>
+
+<section>
+<title>Paper strip</title>
+<p>
+Most machines simulated by Rotorvis use a printer as an output device. The printer prints on a paper strip which looks like this:
+</p>
+<p>
+<media type="image" src="paper_strip.png"/>
+</p>
+<p>
+When the simulated machine is in Encipher mode the printed output is grouped by five characters. When in Decipher mode the output
+on the paper strip is not subjected to grouping.
+</p>
+</section>
+</page>
+

@@ -1,0 +1,98 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="kl7">
+<info>
+  <link type="guide" xref="index"/>
+</info>      
+<title>KL7</title>
+
+<section id="kl7_about">
+<title>About the machine</title>
+<p>
+The KL7 was developed in the USA and entered service in the 1950's. It is therefore a "cold war machine". Even though it is much younger than the 
+<link type="topic" xref="sigaba">SIGABA</link>, the cryptographic principles it uses seem to be less refined. One reason for this might be that the
+USA shared this machine with its (NATO-)allies. The KL7 has eight rotors, seven of which step in a pseudorandom fashion. Stepping is controlled by
+notch rings which are placed on the circumfence of the seven moving rotors. A feature the KL7 seems to have inherited from the 
+<link href="http://www.maritime.org/doc/crypto/ecm/sec06.htm">Combined Cipher Machine (CCM)</link>. In the picture below the non-moving rotor is shown
+with a dark grey background. An interesting feature of the KL7 is, that its rotors do have 36 instead of the usual 26 contacts. The additional ten contacts
+are looped back inside the machine to the entry of the rotor stack. The electric signal therefore sometimes passes several times through the rotor 
+stack.
+</p>
+<p>
+<media type="image" src="kl7.png"/>
+</p>
+<p>
+Each KL7 rotor has a so called alhapet ring, which can be rotated relative to the wiring core. Even though alphabet rings have 36 positions only
+26 of them are marked with a letter. The remaining ten positions are unmarked (empty). In the above picture the leftmost rotor is currently at one of these positions.
+Each empty position is preceeded (and followed) by a position that is marked with a letter. This allows to reference all empty positions by adding a + sign to
+the "lettered" position that preceeds ist. The empty postion which follows for instance the letter g is therefore designated g+. 
+</p>
+
+</section>
+<section id="kl7_config">
+<title>Configuration</title>
+<p>
+Here a pciture that shows the configuration dialog of Rotorvis' KL7 simulator:
+</p>
+<p>
+<media type="image" src="kl7_config.png"/>
+</p>
+<p>There are the following configuration settings:</p>
+<terms>
+    <item>
+        <title><code>KL7 Rotors</code></title>
+        <p>Determines which rotors are placed in the machine and in what sequence. There are thirteen rotors to choose from (<code>a-m</code>).
+        Exactly eight of them have to be placed in the machine and therefore a string consisting of eight letters has to be specified in this field. Each
+        rotor can appear at most once in this string.</p>
+    </item>
+    <item>
+        <title><code>KL7 Alpha ring positions</code></title>
+        <p>As mentioned above the alphabet rings can be rotated relative the wiring core. The position to which the alphabet ring is to be moved is a number
+        between 1 and 36. Therefore this field has to contain 8 such numbers, each seperated from the preceeeding one by a space.</p>
+    </item>    
+    <item>
+        <title><code>KL7 Notch rings</code></title>
+        <p>Determines which notch rings are attached to the rotors. There are eleven notch rings to choose from (<code>1-11</code>).
+        Exactly eight of them have to be attached to the rotors in the machine. There is a 12th special ring, called the wide ring, which is always attached to the 
+        non-moving fourth rotor. The remaining seven rings can be be chosen from the set of eleven mentioned above. This field therefore has to contain seven
+        numbers between 1 and 11, each seperated from the preceeeding one by a space. Each notch ring can appear at most once in this field.</p>
+    </item>    
+    <item>
+        <title><code>KL7 Notch ring positions</code></title>
+        <p>Determines to what positions the notch rings are moved after they have been attached to the correponding rotors. As the wide ring, which is always attached
+        to the non-moving fourth rotor, can not be moved this field has to specifiy the positions of seven notch rings. Each position is either a letter between a and z or
+        a letter between a and z followed by a + sign.</p>
+    </item>        
+</terms>
+</section>
+
+<section id="kl7_differences">
+<title>Differences to the real machine and to other simulators</title>
+<list>
+    <item><p>The real machine and the simulator of Dirk Rijmenants have some additional keys on the keyboard, including but not limited to a LTR and a FIG key, that have been 
+    omitted in Rotorvis. Switching between letters and figures mode can be achieved in Rotorvis by pressing the corresponding buttons on the left side of the simulated machine.
+    </p></item>
+    <item><p>In the real machine and in the simulator of Dirk Rijmenants the keys are labelled in such a way that the unshifted and shifted characters
+    appear on top of each other instead of next to each other.</p></item>
+    <item><p>The real machine and the simulator of Dirk Rijmenants feature a mode switch which can be moved to the postions O = Off, P = Plaintext, E = Encryption and D = Decryption.
+    The switch itself and the Plaintext mode, in which the KL7 can be used as a sort of typewriter printing on a paper strip, have been omitted from Rotorvis.</p> 
+    <note><p>Operationally important is the fact that the machine's rotors step when the mode switch is moved from P to E or from E to P. Normally the rotors are set up
+    while in P mode mode. When the setup is finished the mode switch is always moved to E (and maybe also from E to D) and the rotors therefore step once before the first
+     character is typed. Rotorvis has the STEP button on the left side of the machine to achieve the same effect.</p></note>
+    </item>
+    <item><p>When the mode switch is moved from P to E or from E to P the real machine and Mr. Rijmenants simulator print a space character and the counter is incremented. Clicking 
+    on the Rotorvis' STEP button only moves the rotors but neither generates an output character nor increments the counter.
+    </p></item>
+    
+</list>
+</section>
+
+<section id="kl7_interoperability">
+<title>Interoperability with Dirk Rijmenants simulator</title>
+<p>
+Rotorvis configuration information is very similar to the format used by Mr. Rijmenants simulator and can be translated back and forth in the obvious way.</p>
+<note><p>It is important to remember to click the STEP button in Rotorvis before beginning to process a message in order to trigger the additional rotor stepping
+which appears in the real machine whenever the mode switch is moved from P to E or from E to P.</p></note> 
+</section>
+
+</page>

@@ -1,0 +1,61 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="enigma_elements">       
+<title>GUI Elements</title>
+
+<section>
+<title>Counter</title>
+<p>
+A counter is an element that counts the number of output characters produced by the simulated machine. A counter looks like this:
+</p>
+<p>
+<media type="image" src="counter.png"/>
+</p>
+<p>
+A counter can be reset to the value 0000 by clicking on it.
+</p>
+</section>
+
+<section>
+<title>Enigma style rotor windows</title>
+<p>
+A rotor window for enigma style machines shows on the left side the current position of the simulated rotor and on the right side
+the handle which is used to move the rotor:
+</p>
+<p>
+<media type="image" src="enig_rotor_window.png"/>
+</p>
+<p>
+When clicking on the handle above the middle the rotor is moved one step back. Conversely the rotor is moved one step ahead when
+the handle is clicked below the middle.
+</p>
+</section>
+
+<section>
+<title>Keys</title>
+<p>
+Keys are represented by graphical elements like this:
+</p>
+<p>
+<media type="image" src="key.png"/>
+</p>
+<p>
+When clicking on a key the character shown on the key is sent as an input to the simulated machine.
+</p>
+</section>
+
+<section>
+<title>Lamps</title>
+<p>
+All Enigma variants use a lamp board as an output device. The lamp board consists of lamps like this:
+</p>
+<p>
+<media type="image" src="lamp_off.png"/>
+</p>
+<p>
+The lamp that lights up (i.e. its letter is shown in yellow instead of grey) shows the output character the machine has produced.
+</p>
+</section>
+
+</page>
+

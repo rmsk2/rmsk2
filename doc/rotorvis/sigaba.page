@@ -1,0 +1,101 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="sigaba">
+<info>
+  <link type="guide" xref="index"/>
+</info>
+<title>SIGABA</title>
+
+<section id="sigaba_about">
+<title>About the machine</title>
+<p>
+The SIGABA is a cipher machine that was developed in the 1930's in US and was used in WWII as well as in the first stages of the cold war.
+The machine has five cipher rotors, which can be seen on the right of the simulator's user interface (see below picture). The five rotors in
+the middle and the five smaller rotors on the left have the purpose to generate the control output, that causes the five cipher rotors to step. 
+The five rotors in the middle are called the control rotors and the small ones on the left are the so called index rotors. Three of the control
+rotors (the ones in the middle) step in a simple cyclometric fashion and the remaining control rotors and the index rotors can be set by hand
+but do not step during operation of the machine. The ingenious design idea of the SIGABA is to use a rotor machine that steps very regularly
+to create the stepping information for another rotor machine that consequently has a very irregular rotor stepping. One could say that the SIGABA
+is a "nested" rotor machine.
+</p>
+<p>
+<media type="image" src="sigaba.png"/>
+</p>
+<p>
+There were two versions of the SIGABA: The CSP889 and the CSP2900. They differed mainly in the way how the stepping information for the
+cipher rotors was generated. On top of that the second and the fourth cipher rotors of a CSP2900 step backwards with respect to the other
+three cipher rotors. In a CSP889 all cipher rotors step in the same direction. Another interesting feature of the SIGABA is that it has
+built in functionality which helps in setting up the machine in a secure way.
+</p>
+<p>
+When setting up a SIGABA machine all cipher, control and index rotors have to be moved to a defined initial position. The dark grey "keys" below the
+control rotors advance their corresponding control rotor by one position when one clicks on them. Additionally the cipher rotors are stepped
+upon each click on one of these keys. In the real machine this has been used to generate the starting position of the cipher rotors from
+a given starting position of the control rotors. On the one hand this reduces the number of possible machine settings but on the other hand
+it guarantees that the starting position of the cipher rotors is chosen in a clean pseudorandom way.
+</p>
+
+</section>
+
+<section id="sigaba_config">
+<title>Configuration</title>
+<p>
+The following picture shows the configuration dialog of the SIGABA:
+</p>
+<p>
+<media type="image" src="sigaba_config.png"/>
+</p>
+<p>There are the following configuration settings:</p>
+<terms>
+    <item>
+        <title><code>Cipher Rotors and Control Rotors</code></title>
+        <p>Determines which cipher and control rotors are placed in the machine and in what sequence. There are ten rotors (<code>0-9</code>). Each one of them
+        can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation (<code>N</code> or <code>R</code>)
+        have to be specified. All of the ten available rotors have to be placed in the machine.</p>
+    </item>
+    <item>
+        <title><code>Index rotors</code></title>
+        <p>Determines which index rotors are placed in the machine and in what sequence. There are five rotors (<code>0-4</code>). Each one of them
+        can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation (<code>N</code> or <code>R</code>)
+        have to be specified. All of the five available rotors have to be placed in the machine.</p>
+    </item>    
+    <item>
+        <title><code>CSP 2900 Flag</code></title>
+        <p>If this option is selected by checking the box, the simulated machine will be of type CSP2900. If it is left unchecked the simulator will
+        behave like a CSP889.</p>
+    </item>    
+</terms>
+</section>
+
+<section id="sigaba_differences">
+<title>Differences to the real machine and to other simulators</title>
+<list>
+    <item><p>The real machine and the CSG simulator have additional keys on the keyboard. As the main purpose of Rotorvis is to capture
+    the cryptographic aspects of the simulated machines these additional keys have been omitted in Rotorvis.</p></item>
+    
+    <item><p>The real machine and the CSG simulator can be operated in different modes: Plaintext mode, R mode, Encryption mode and
+    Decryption mode. The plaintext mode allowed the real machine to be used as a sort of typewriter and in the R mode the keys 1-5 can be used
+    to set the positions of the control and cipher rotors. Rotorvis only implements the Encryption and Deryption mode of the
+    SIGABA. The R mode stepping functionality is provided by the little dark grey keys under the control rotors, as described above. Rotorvis
+    has no Plaintext mode.</p></item>
+
+    <item><p>The real machine and the CSG simulator have a mode switch to switch between modes. It has been omitted in
+    Rotorvis.</p></item>
+
+    <item><p>When a rotor has been placed in the machine in reverse orientation the CSG simulator shows the characters on the circumfence of
+    the simulated rotor in an upside down fashion. Rotorvis omits this graphical detail but implements the cryptographic aspects accurately.</p>
+    <note><p>When a rotor is placed in reverse orientation in the machine it seems to step in the wrong direction.</p></note></item>
+
+
+</list>
+</section>
+
+<section id="sigaba_interoperability">
+<title>Interoperability with the CSG simulator</title>
+<p>
+Rotorvis is cryptographically fully interoperable with the CSG simulator and the settings of the CSG simulator can be translated to Rotorvis
+settings in a straightforward fashion.
+</p>
+</section>
+
+</page>

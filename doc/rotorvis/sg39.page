@@ -1,0 +1,104 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="sg39">
+<info>
+  <link type="guide" xref="index"/>
+</info>      
+<title>Schlüsselgerät 39</title>
+
+<section id="sg39_about">
+<title>About the machine</title>
+<p>
+The Schlüsselgerät 39 or SG39 was a german cipher machine which was developed during the war but was never put into service. The information which was used to
+implement this simulator has been taken from a document publshed by the NSA titled <link href="http://www.nsa.gov/about/_files/cryptologic_heritage/publications/wwii/german_cipher.pdf">German Cipher Machines of World War II, page 18 ff</link>. The following picture shows the Rotorvis simulation of the SG39:
+</p>
+<p>
+<media type="image" src="sg39.png"/>
+</p>
+<p>
+The SG39 used four rotors, a rewirable reflector, a plugboard and three pinwheels. In Rotorvis the four rotors are shown on the left and the pinwheels on the right. Three of the rotors did step during en/decryption, the fourth rotor (the leftmost) could be set by hand but did not move. The three pinwheels in combination with additional pins on the rotors themselves, controlled the stepping of the rotors. The pinwheels stepped one position ahead with each character that was processed. In order to achieve a period of maximal
+length the pinwheels had different sizes (21, 23 and 25 pins) which had no common factors.
+</p>
+</section>
+
+<section id="sg39_config">
+<title>Configuration</title>
+<p>
+This picture shows the dialog which can be used to configure the SG39:
+</p>
+<p>
+<media type="image" src="sg39_config.png"/>
+</p>
+<p>The following settings can be configured:</p>
+<terms>
+    <item>
+        <title><code>SG39 Rotors</code></title>
+        <p>Determines which rotors are placed in the machine and in what sequence. There are 10 rotors (<code>0-9</code>). For each rotor that is to be placed in the machine
+        a designation has to be specified. Each designation may only appear once.</p>
+    </item>   
+    <item>
+        <title><code>SG39 Reflector</code></title>
+        <p>As with some Enigma variants the reflector of the SG39 can be set in the field. The reflector is specified by 13 pairs of letters. In the
+        example given above the pairs are: <code>aw bi cv dk et fm gn hz ju lo pq ry sx</code>. Each letter can and must occur once in this seting.</p>
+    </item>    
+    <item>
+        <title><code>SG39 Plugboard</code></title>
+        <p>As with some Enigma variants the SG39 had a plugboard that permuted the input before entering and again after leaving the rotor stack. In this setting
+        a permutation of <code>a-z</code> has to be specified. In the example shown above the permutation is <code>ldtrmihoncpwjkbyevsaxgfzuq</code>.</p>
+    </item>    
+    <item>
+        <title><code>SG39 Pins wheel 1</code></title>
+        <p>This configuration element has to contain 21 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
+        position is active. A zero that the pin is inactive.</p>
+    </item>    
+    <item>
+        <title><code>SG39 Pins wheel 2</code></title>
+        <p>This configuration element has to contain 23 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
+        position is active. A zero that the pin is inactive.</p>
+    </item>    
+    <item>
+        <title><code>SG39 Pins wheel 3</code></title>
+        <p>This configuration element has to contain 25 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
+        position is active. A zero that the pin is inactive.</p>
+    </item>    
+    <item>
+        <title><code>SG39 Pins rotor 1-3</code></title>
+        <p>Each of these configuration elements has to contain 26 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
+        position is active. A zero that the pin is inactive.</p>
+    </item>    
+</terms>
+
+<p>The pin settings on the wheels and rotors do influence the rotor movements as follows:</p>
+
+<p>1. With each letter, the three mechanical wheels, which had
+lengths of 21, 23, and 25, moved forward one position each. If
+the pin setting of any mechanical wheel happened to be in an
+active position, the corresponding rotor would move one step
+forward. If, for example, the pins on wheels 1 and 3 were in
+active positions and the pin on wheel 2 was not, then Rotor 2
+would remain stationary and rotors 1 and 3 would step. Rotor
+4 was used as a stator, that is, its position was set at the
+beginning of the message and it remained stationary
+throughout the message.</p>
+
+<p>2. In addition to the stepping caused by the mechanical wheels,
+there was an additional independent stepping motion caused by
+the Hagelin-type pins on the periphery of each rotor. If the
+Hagelin-type pin on Rotor 1 was in an active position, it caused
+Rotor 2 to automatically move one step forward. If the pin on
+Rotor 2 was in an active position, it caused both rotors 2 and 3
+to move one step forward. If the pin on Rotor 3 was in an active
+position, it caused Rotor 1 to move one step forward. Rotor 4
+had no stepping motion. If a specific rotor had been given one
+step forward by the mechanical wheels and in addition was
+independently "kicked" one step by the pins on the electrical
+rotors, only one of these kicks would take effect.</p>
+</section>
+
+<section id="typex_interoperability">
+<title>Interoperability with other simulators</title>
+<p>
+As I am not aware of another simulator for this machine, there are no interoperability considerations.
+</p>
+</section>
+</page>

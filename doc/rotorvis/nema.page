@@ -1,0 +1,80 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="nema">
+<info>
+  <link type="guide" xref="index"/>
+</info>      
+<title>Nema</title>
+
+<section id="nema_about">
+<title>About the machine</title>
+<p>
+The Nema is a machine that was developed during WWII in Switzerland to replace the commercial Enigma K, which was in use in Switzerland at the time. 
+The machine entered service in 1947 and was used up until at least the 1970's. It has four rotors and a reflector which all move during en-/decryption.
+It also has six notch rings which conrol the stepping of the rotors, the reflector and some of the notch rings. In this simulator and in the real machine
+the notch rings look like additional rotors, but there are in fact only five wired rotors. The following picture shows the Nema as implemented in Rotorvis:
+</p>
+<p>
+<media type="image" src="nema.png"/>
+</p>
+<p>
+The leftmost rotor (shown at position M) is the refelctor and the rightmost element (shown at position V and coloured red) is the final notch ring. Between
+these two elements rotors and notch rings alternate, i.e. when counted from the left the first, third, 5th, 7th and 9th elements are rotors, the rest are notch
+rings. It is possible that no rotor steps for up to three consecutive letters.
+</p>
+<p>
+There were three different variants of the Nema. One which was used for training, one which was intended to be used during a war and one that was used by
+the foreign office. This simulator as the simulator of the CSG only implements the first two variants, because the details of the foreign office machine never
+have been declassified. 
+</p>
+</section>
+
+<section id="nema_config">
+<title>Configuration</title>
+<p>
+There are the following configration settings:
+</p>
+<p>
+<media type="image" src="nema_config.png"/>
+</p>
+<terms>
+    <item>
+        <title><code>Nema rotors</code></title>
+        <p>Determines which rotors are placed in the machine and in what sequence. Depending on the machine type (war or training) there are four (<code>a-d</code>)
+        or six rotors (<code>a-f</code>) to choose from. Exactly four of them have to be placed in the machine and therefore a string consisting of four letters
+        has to be specified in this field.</p>
+    </item>
+    <item>
+        <title><code>Nema rings</code></title>
+        <p>Determines which notch rings are placed in what sequence in the simulator. The notch rings are designated by numbers and the rings that are available
+        are different for the war and the training machine. The notch rings used by the training machine were 16, 19, 20, 21 and the notch rings intended for
+        the war machine were 12, 13, 14, 15, 17, 18. The field has to specify exactly four notch rings, where the four numbers are seperated by a space character.</p>
+    </item>    
+    <item>
+        <title><code>War machine</code></title>
+        <p>Check this box, if Rotorvis is to simulate the war machine. If the box is not checked, the training model is simulated.</p>
+    </item>    
+</terms>
+</section>
+<section id="nema_differences">
+<title>Differences to the real machine and to other simulators</title>
+<list>
+    <item><p>In the real machine and in the simulator of the CSG the keyboard has quite a few additional keys. In the real machine these were used when
+    it was connected to a teleprinter. As they have no apparent function in the CSG simulator they have been left out in Rotorvis.</p></item>
+    <item><p>In the real machine and in the simulator of the CSG it is necessary to press one key to prime the stepping mechanism after the rotor and notch ring
+    settings have been changed. This feature has been omitted from Rotorvis.</p></item>    
+    <item><p>In the real machine and in the simulator of the CSG it is necessary to specify a setting for the notch rings of the rightmost red wheel. This
+    has been omitted in Rotorvis, as the machine type fully determines the notch rings to use.</p></item>        
+</list>
+</section>
+
+<section id="nema_interoperability">
+<title>Interoperability with the CSG simulator</title>
+<p>
+The sequence of the rotors and notch rings specified in Rotorvis' configuration dialog correspond in a straight forward fashion with the format used in the
+rotor selection dialog of the CSG simulator. The settings shown above would translate to 12A-13B-14C-15D-22-1 in the notation used by the CSG simulator. 
+</p>
+</section>
+
+
+</page>
