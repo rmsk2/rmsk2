@@ -158,7 +158,7 @@ class schluesselgeraet39 : public rotor_machine {
 public:
     /*! \brief Constructor. The parameters specify the rotor ids of the rotors that are to be inserted in the machine.
      *
-     *  rotor_1_id specifies the leftmost rotor and rotor_4_id the rightmost rotor which does not step
+     *  rotor_1_id specifies the rightmost rotor and rotor_4_id the leftmost rotor which does not step
      *  during operation of the machine.             
      */
     schluesselgeraet39(unsigned int rotor_1_id, unsigned int rotor_2_id, unsigned int rotor_3_id, unsigned int rotor_4_id);
