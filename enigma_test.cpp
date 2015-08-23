@@ -262,7 +262,7 @@ void register_tests(composite_test_case *container)
     enigma_kd->get_enigma_stepper()->set_rotor_pos("fast", 'm');      
       
     expected_plain = "obwohldierotorverdrahtungenderkdenigmanichtbekanntsindsimulierenwirdiesemaschine";
-    spruch = "xfmeeszqittiteuhepkotspznuvkcbojdtnlsiefkkiykxdxwcxdwxxbdsnuoejtfhubrpwyubhogpsq";
+    spruch = "xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr";
     
     kd_enigma *enigma_kd_load = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
     

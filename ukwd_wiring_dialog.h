@@ -34,7 +34,8 @@
  *
  *  Character pairs are called connections in the context of this dialog. An Involution that specifies a valid UKW D wiring is
  *  special in that it is made up of exactly 13 connections and that the connection ('J', 'Y') always has to be part
- *  of the wiring because that connection was built into the UKW D and could not be changed.
+ *  of the wiring because that connection was built into the UKW D and could not be changed. This dialog uses the official german
+ *  notation and not the Bletchley Park notation to designate wirings.
  */
 class ukwd_wiring_dialog : public select_involution_dialog {
 public:

@@ -111,7 +111,6 @@ void rotor_draw::build_sg39(vector<string>& r_names)
     keys = boost::shared_ptr<keyboard_base>(new enigma_keyboard(sigc::mem_fun(this, &rotor_draw::get_enc_flag), 
                                                                 sigc::mem_fun(this, &rotor_draw::get_machine), sigc::mem_fun(this, &rotor_draw::update_rotors)));  
     set_triangular_keyboard_layout(keys.get(), "qwertzuiopasdfghjklyxcvbnm", SIZE_Y_DEFAULT);
-    //add_printer();
     add_dual_printer();
     visualizer = boost::shared_ptr<rotor_visualizer>(new sg39_rotor_visualizer(r_names, 420));
     add_counter(530, COUNTER_ROW_Y);

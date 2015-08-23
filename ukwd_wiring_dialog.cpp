@@ -25,7 +25,7 @@
 #include<rmsk_globals.h>
 #include<locale>
 
-alphabet<char> ukwd_alpha("ayzxwvutsrqponjmlkihgfedcb", 26);
+alphabet<char> ukwd_alpha("yzxwvutsrqponjmlkihgfedcba", 26);
 
 ukwd_wiring_dialog::ukwd_wiring_dialog(Gtk::Dialog *d, Glib::RefPtr<Gtk::Builder> r, vector<pair<char, char> >& steckers, Glib::ustring& name_postfix)
     : select_involution_dialog(d, r, steckers, name_postfix)
@@ -47,14 +47,13 @@ vector<pair<char, char> > ukwd_wiring_dialog::perm_to_plugs(permutation& perm)
     vector<pair<char, char> > result;
     set<pair<unsigned int, unsigned int> > involution;
     set<pair<unsigned int, unsigned int> >::iterator iter;
-    pair<unsigned int, unsigned int> fixed_connection(1, 14);
+    pair<unsigned int, unsigned int> fixed_connection(0, 13);
     char f, s;
     vector<pair<char, char> > data_sorted;
 
     // If any of the tests below fails, return an involution that contains only the fixed connection    
     result.push_back(pair<char, char>('J', 'Y'));
     perm.test_for_involution(involution); // The set involution is cleared if perm is no involution
-    
     
     if (involution.find(fixed_connection) != involution.end())
     {

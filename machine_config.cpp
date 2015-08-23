@@ -113,7 +113,7 @@ void machine_config::make_m4_config()
     // The plugs of the Uhr did not fit in M4s plugboard sockets
     uhr_capable = false;
     uhr_dial_pos = 0;
-    string ukwd_help("mosgfedpxwruavbhzkcylnjitq");
+    string ukwd_help("nzxfsdvtrwyuqapomiehlgjckb");
     vector<unsigned int> ukwd_data = rmsk::std_alpha()->to_vector(ukwd_help);
     permutation ukwd_perm_help(ukwd_data);
     ukwd_perm = ukwd_perm_help;
