@@ -19,6 +19,9 @@ implement this simulator has been taken from a document publshed by the NSA titl
 The SG39 used four rotors, a rewirable reflector, a plugboard and three pinwheels. In Rotorvis the four rotors are shown on the left and the pinwheels on the right. Three of the rotors did step during en/decryption, the fourth rotor (the leftmost) could be set by hand but did not move. The three pinwheels in combination with additional pins on the rotors themselves, controlled the stepping of the rotors. The pinwheels stepped one position ahead with each character that was processed. In order to achieve a period of maximal
 length the pinwheels had different sizes (21, 23 and 25 pins) which had no common factors.
 </p>
+<p> 
+According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters.
+</p>
 </section>
 
 <section id="sg39_config">

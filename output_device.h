@@ -57,14 +57,23 @@ public:
      */    
     virtual void draw(Cairo::RefPtr<Cairo::Context> cr);
 
+    /*! \brief This method implements the first phase of the visualization of the character pressed on the keyboard
+     *         given in parameter symbol. The result of this visualization is drawn into the drawing context specified
+     *         in parameter cr.
+     *
+     *  This method is intended to care for the situation where the output device of a rotor machine prints both input
+     *  and output characters.
+     */
+    virtual void keyboard_symbol_start(Cairo::RefPtr<Cairo::Context> cr, gunichar symbol) { ; }
+
     /*! \brief This method implements the first phase of the visualization of the output character given in parameter 
      *         symbol. The result of this visualization is drawn into the drawing context specified in parameter cr.
      */
     virtual void output_symbol_start(Cairo::RefPtr<Cairo::Context> cr, gunichar symbol) = 0;
 
-    /*! \brief This method implements the second phase of the visualization of the output character that has been determined
-     *         by a previous call to output_device::output_symbol_start(). The result of this visualization is drawn into the
-     *         drawing context specified in parameter cr.
+    /*! \brief This method implements the second phase of the visualization of the output and keyboard character that has been
+     *         determined by a previous call to output_device::output_symbol_start() or output_device::keyboard_symbol_start().
+     *         The result of this visualization is drawn into the drawing context specified in parameter cr.
      */
     virtual void output_symbol_stop(Cairo::RefPtr<Cairo::Context> cr) = 0;         
 
@@ -260,6 +269,70 @@ struct printer_params {
     unsigned int height;
 };
 
+/*! \brief A GUI class that is intened to be used as a base class for all output devices that know how to draw a simulated
+ *         printer into a Cairo drawing context.
+ */
+class printer_base : public output_device {
+public:
+    /*! \brief Constructor. The parameters pos_x and pos_y have to specify the upper left corner of the white paper strip. The
+     *         callback enc_state_func has to return a boolean which is used to determine if the underlying rotor machine is
+     *         doing encryptios (True) or not (False). The callback redraw_func is intended to initiate a redraw of the simulator's
+     *         GUI.
+     */
+    printer_base(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, int pos_x, int pos_y);
+
+    /*! \brief Draws the output device into the Cairo context specified by the parameter cr. 
+     *
+     *  In this base class implementation only the upper border is drawn.
+     */    
+    virtual void draw(Cairo::RefPtr<Cairo::Context> cr) { output_device::draw(cr); }
+
+    /*! \brief This method can be use to set the number of characters in a group. The new group size gas to be specified
+     *         through the parameter new_width.
+     */                
+    virtual void set_grouping_width(unsigned int new_width) = 0;
+
+    /*! \brief This method returns the number of characters that make up a group in this instance of printer_visualizer.
+     */                
+    virtual unsigned int get_grouping_width() = 0;
+
+    /*! \brief Calling this method with parameter new_value set to True forces this printer_base object to convert all characters
+     *         to lower case before they are printed. Calling this method with new_value = False instructs this printer_base
+     *         object to perform no forced conversion to lower case.
+     *
+     *  Calling this method with new_value = True does not change the case of letters that have already been printed.
+     */                
+    virtual void set_use_lower_case(bool new_value) = 0;
+
+    /*! \brief This method returns the value of the flag that determines if characters a converted to lower case before
+     *         being printed.
+     */                
+    virtual bool get_use_lower_case() = 0;
+        
+    /*! \brief This method allows to set the printer_params that are in use in this instance of printer_base to the new value
+     *         given in parameter parms.
+     */                
+    virtual void set_printer_params(printer_params parms) = 0;
+
+    /*! \brief This method returns the printer_params that are currently in use in this printer_base object.
+     */                
+    virtual printer_params get_printer_params() = 0;
+
+    /*! \brief Clears the paper strip and redraws the simulator's GUI.
+     */                    
+    virtual void reset() = 0;
+    
+    virtual ~printer_base() { ; }
+
+protected:
+
+    /*! \brief Holds the callback that can be used to determine the current state (en/decryption) of the underlying rotor machine. */    
+    sigc::slot<bool> enc_state;
+
+    /*! \brief Holds the callback that can be used to redraw the simulator's GUI. */    
+    sigc::slot<void> redraw;           
+};
+
 /*! \brief A GUI class that knows how to draw a simulated printer into a Cairo drawing context.
  *
  *  A printer_visualizer draws a white strip on which the symbols to be printed appear character by character. Depending on
@@ -269,7 +342,7 @@ struct printer_params {
  *  A printer_visualizer can be forced to convert all symbols to lower case before they are printed. This is controlled by 
  *  the printer_visualizer::use_lower_case flag. This flag can be set by the method printer_visualizer::set_use_lower_case().
  */
-class printer_visualizer : public output_device {
+class printer_visualizer : public printer_base {
 public:
     /*! \brief Constructor. The parameters pos_x and pos_y have to specify the upper left corner of the white paper strip. The
      *         callback enc_state_func has to return a boolean which is used to determine if the underlying rotor machine is
@@ -325,8 +398,8 @@ public:
      *         given in parameter parms.
      */                
     virtual void set_printer_params(printer_params parms) { params = parms; }
-
-    /*! \brief This method returns the printer_params that are currently in use in this printer_visualizer.
+    
+    /*! \brief This method returns the printer_params that are currently in use in this printer_base object.
      */                
     virtual printer_params get_printer_params() { return params; }
 
@@ -343,15 +416,15 @@ protected:
      */                    
     void init_data();
 
+    /*! \brief Connects the printer_visualizer::reset() method to the signal specified in parameter signal. This method is
+     *         intended to be called by the two constructors.
+     */                    
+    void connect_signal(sigc::signal<void>& signal);
+
     /*! \brief Returns the number of pixels it takes to draw the text specified in parameter to_measure into the drawing
      *         context given in parameter cr.
      */                    
     double measure_string(Cairo::RefPtr<Cairo::Context> cr, ustring& to_measure);
-
-    /*! \brief Connects the printer_visualizer::reset() method to the signal specified in paramete signal. This method is
-     *         intended to be called by the two constructors.
-     */                    
-    void connect_signal(sigc::signal<void>& signal);
 
     /*! \brief Holds the printer_params that are in use in this instance of printer_visualizer. */                        
     printer_params params;
@@ -366,20 +439,125 @@ protected:
     unsigned int grouping_width;
     
     /*! \brief Holds the number of characters that are currently missing to a full group. */    
-    unsigned int grouping_count;
+    unsigned int grouping_count;  
     
     /*! \brief Holds the connection object by which this printer_visualizer subscribes to the sig_mode_change signal 
      *         specified in the constructor. 
      */        
-    sigc::connection mode_change_conn;
-
-    /*! \brief Holds the callback that can be used to determine the current state (en/decryption) of the underlying rotor machine. */    
-    sigc::slot<bool> enc_state;
-
-    /*! \brief Holds the callback that can be used to redraw the simulator's GUI. */    
-    sigc::slot<void> redraw;       
+    sigc::connection mode_change_conn;      
 };
 
+/*! \brief A GUI class that knows how to draw a simulated dual printer that prints the input characters as well 
+ *         as the output characters into a Cairo drawing context.
+ *
+ *  Its implementation makes use of two separate printer_visualizer objects where calls to the dual_printer
+ *  methods are forwarded appropriately.
+ */
+class dual_printer : public printer_base {
+public:
+    /*! \brief Constructor. The parameters pos_x and pos_y have to specify the upper left corner of the white paper strip of
+     *         the first (input) printer. The callback enc_state_func has to return a boolean which is used to determine if the
+     *         underlying rotor machine is doing encryptios (True) or not (False). The callback redraw_func is intended to
+     *         initiate a redraw of the simulator's GUI. A dual_printer subscribes to the sig_mode_change signal in order 
+     *         to reset itself when the mode (en-/decryption) of the underlying rotor machine changes.
+     */
+    dual_printer(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, sigc::signal<void>& sig_mode_change, int pos_x, int pos_y);
+
+    /*! \brief Draws the simulated dual printer into the drawing contex specified by parameter cr.
+     */        
+    virtual void draw(Cairo::RefPtr<Cairo::Context> cr) { printer_base::draw(cr); input_printer->draw(cr); output_printer->draw(cr); }
+
+    /*! \brief This method implements the first phase of the visualization of the character pressed on the keyboard
+     *         given in parameter symbol. The result of this visualization is drawn into the drawing context specified
+     *         in parameter cr.
+     *
+     *  This method is intended to care for the situation where the output device of a rotor machine prints both input
+     *  and output characters.
+     */
+    virtual void keyboard_symbol_start(Cairo::RefPtr<Cairo::Context> cr, gunichar symbol) { input_printer->output_symbol_start(cr, symbol); }
+    
+    /*! \brief This method prints the character given in parameter symbol. For this it utilizes the drawing context
+     *         specified in parameter cr.
+     */            
+    virtual void output_symbol_start(Cairo::RefPtr<Cairo::Context> cr, gunichar symbol) { output_printer->output_symbol_start(cr, symbol); }
+
+    /*! \brief This method does nothing.
+     */            
+    virtual void output_symbol_stop(Cairo::RefPtr<Cairo::Context> cr) { ; }
+
+    /*! \brief This method sets the width of the GtK::DrawingArea in which the visualization of the dual printer does
+     *         happen.
+     */    
+    virtual void set_width(int new_val) { input_printer->set_width(new_val); output_printer->set_width(new_val); }
+
+    /*! \brief This method returns the width of the GtK::DrawingArea in which the visualization of the dual printer does
+     *         happen.
+     */    
+    virtual int get_width() { return output_printer->get_width(); }
+
+    /*! \brief Calling this method with parameter new_value set to True forces this dual_printer object to convert all characters
+     *         to lower case before they are printed. Calling this method with new_value = False instructs this dual_printer
+     *         object to perform no forced conversion to lower case.
+     *
+     *  Calling this method with new_value = True does not change the case of letters that have already been printed.
+     */                
+    virtual void set_use_lower_case(bool new_value) { input_printer->set_use_lower_case(new_value); output_printer->set_use_lower_case(new_value); }
+
+    /*! \brief This method returns the value of the flag that determines if characters a converted to lower case before
+     *         being printed.
+     */                
+    virtual bool get_use_lower_case() { return output_printer->get_use_lower_case(); }
+
+    /*! \brief This method allows to set the printer_params that are in use in this instance of dual_printer to the new value
+     *         given in parameter parms.
+     */                
+    virtual void set_printer_params(printer_params parms) { input_printer->set_printer_params(parms); output_printer->set_printer_params(parms); }
+
+    /*! \brief This method returns the printer_params that are currently in use in this dual_printer object.
+     */                
+    virtual printer_params get_printer_params() { return output_printer->get_printer_params(); }
+
+    /*! \brief This method can be use to set the number of characters in a group. The new group size gas to be specified
+     *         through the parameter new_width.
+     */                
+    virtual void set_grouping_width(unsigned int new_width) { input_printer->set_grouping_width(new_width); output_printer->set_grouping_width(new_width); }
+
+    /*! \brief This method returns the number of characters that make up a group in this instance of printer_visualizer.
+     */                
+    virtual unsigned int get_grouping_width() { return output_printer->get_grouping_width(); }
+
+    /*! \brief Clears both paper strips and redraws the simulator's GUI.
+     */                    
+    virtual void reset() { input_printer->reset(); output_printer->reset(); }
+
+    /*! \brief Destructor.
+     */                    
+    virtual ~dual_printer() { ; }   
+    
+protected:
+    /*! \brief Connects the dual_printer::reset() method to the signal specified in parameter signal. This method is
+     *         intended to be called by the two constructors.
+     */                    
+    void connect_signal(sigc::signal<void>& signal);
+
+    /*! \brief Returns the inverse value of enc_state().
+     */                    
+    bool always_enc() { return !enc_state(); }
+
+    /*! \brief Holds the printer_visualizer that is used to print the characters entered via the keyboard. */
+    boost::shared_ptr<printer_visualizer> input_printer;        
+
+    /*! \brief Holds the printer_visualizer that is used to print the characters that are produced as output. */    
+    boost::shared_ptr<printer_visualizer> output_printer;   
+    
+    /*! \brief Holds a dummy signal to which input_printer and output_printer can connect. */        
+    sigc::signal<void> dummy_signal;         
+
+    /*! \brief Holds the connection object by which this dual_printer subscribes to the sig_mode_change signal 
+     *         specified in the constructor. 
+     */        
+    sigc::connection mode_change_conn;      
+};
 
 #endif /* __output_device_h__ */
 

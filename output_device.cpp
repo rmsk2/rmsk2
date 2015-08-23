@@ -263,6 +263,15 @@ void enigma_real_lamp_board::output_symbol_stop(Cairo::RefPtr<Cairo::Context> cr
 
 /* ----------------------------------------------------------- */
 
+printer_base::printer_base(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, int pos_x, int pos_y)
+    : output_device(pos_x, pos_y) 
+{ 
+    enc_state = enc_state_func;
+    redraw = redraw_func;
+}
+
+/* ----------------------------------------------------------- */
+
 void printer_visualizer::init_data()
 {
     grouping_width = 5;
@@ -270,20 +279,16 @@ void printer_visualizer::init_data()
 }
 
 printer_visualizer::printer_visualizer(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, sigc::signal<void>& sig_mode_change, int pos_x, int pos_y)
-    : output_device(pos_x, pos_y) 
+    : printer_base(enc_state_func, redraw_func, pos_x, pos_y) 
 { 
     init_data();
-    enc_state = enc_state_func;
-    redraw = redraw_func;
-    connect_signal(sig_mode_change);
+    connect_signal(sig_mode_change);    
 }
 
 printer_visualizer::printer_visualizer(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, sigc::signal<void>& sig_mode_change)
-    : output_device(0, PRINTER_Y) 
+    : printer_base(enc_state_func, redraw_func, 0, PRINTER_Y) 
 {
     init_data();    
-    enc_state = enc_state_func;
-    redraw = redraw_func;    
     connect_signal(sig_mode_change);    
 }
 
@@ -305,7 +310,7 @@ double printer_visualizer::measure_string(Cairo::RefPtr<Cairo::Context> cr, ustr
 
 void printer_visualizer::draw(Cairo::RefPtr<Cairo::Context> cr)
 {
-    output_device::draw(cr);
+    printer_base::draw(cr);
     
     double text_width;
     unsigned int font_size = (params.height / 2) + FONT_SIZE_OFFSET;
@@ -399,4 +404,21 @@ void printer_visualizer::output_symbol_stop(Cairo::RefPtr<Cairo::Context> cr)
     ;
 }
 
+/* ----------------------------------------------------------- */
+
+dual_printer::dual_printer(sigc::slot<bool> enc_state_func, sigc::slot<void> redraw_func, sigc::signal<void>& sig_mode_change, int pos_x, int pos_y)
+    : printer_base(enc_state_func, redraw_func, pos_x, pos_y) 
+{       
+    input_printer = boost::shared_ptr<printer_visualizer>(new printer_visualizer(sigc::mem_fun(*this, &dual_printer::always_enc), redraw_func, dummy_signal, pos_x, pos_y));    
+    output_printer = boost::shared_ptr<printer_visualizer>(new printer_visualizer(enc_state_func, redraw_func, dummy_signal, pos_x, pos_y + 90));        
+    
+    connect_signal(sig_mode_change);
+}
+
+void dual_printer::connect_signal(sigc::signal<void>& signal)
+{
+    mode_change_conn.disconnect();    
+    mode_change_conn = signal.connect(sigc::mem_fun(*this, &dual_printer::reset));        
+    reset();
+}
 

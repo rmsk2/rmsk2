@@ -363,6 +363,8 @@ void keyboard_base::process_key_press(Cairo::RefPtr<Cairo::Context> cr, unsigned
     // Check whether input key was letter shift or figure shift    
     if ((key_pressed != '<') and (key_pressed != '>'))
     {
+        // In case of a dual printer also print input symbol
+        output->keyboard_symbol_start(cr, key_pressed);
         // Only emit an input char if it was neither letter shift nor figure shift
         input_char.emit(key_pressed);    
     }

@@ -111,7 +111,8 @@ void rotor_draw::build_sg39(vector<string>& r_names)
     keys = boost::shared_ptr<keyboard_base>(new enigma_keyboard(sigc::mem_fun(this, &rotor_draw::get_enc_flag), 
                                                                 sigc::mem_fun(this, &rotor_draw::get_machine), sigc::mem_fun(this, &rotor_draw::update_rotors)));  
     set_triangular_keyboard_layout(keys.get(), "qwertzuiopasdfghjklyxcvbnm", SIZE_Y_DEFAULT);
-    add_printer();
+    //add_printer();
+    add_dual_printer();
     visualizer = boost::shared_ptr<rotor_visualizer>(new sg39_rotor_visualizer(r_names, 420));
     add_counter(530, COUNTER_ROW_Y);
 }
@@ -245,6 +246,17 @@ void rotor_draw::add_printer()
     lamps = boost::shared_ptr<output_device>(temp);
     lamps->set_width(SIZE_X_BIG_KEYBOARD);
 }
+
+void rotor_draw::add_dual_printer()
+{
+    int current_width, current_height;
+    
+    get_size_request(current_width, current_height);
+    printer_base *temp = new dual_printer(sigc::mem_fun(this, &rotor_draw::get_enc_flag), sigc::mem_fun(this, &rotor_draw::redraw), signal_mode_changed(), 0, 320 - 50);
+    lamps = boost::shared_ptr<output_device>(temp);
+    lamps->set_width(current_width);
+}
+
 
 void rotor_draw::set_triangular_lampboard_layout(enigma_lamp_board *lamps_help)
 {

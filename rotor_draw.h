@@ -207,6 +207,10 @@ protected:
     */                        
     void add_printer();
 
+    /*! \brief Causes a dual printer (simulated paper strips for input and output characters) to be shown in the simulator's GUI.
+    */                        
+    void add_dual_printer();
+
     /*! \brief Causes a lampboard to be shown in the simulator's GUI.
     */                        
     void add_lampboard();
