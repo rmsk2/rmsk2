@@ -676,18 +676,18 @@ void machine_config::make_random_ukw_d_wiring()
     temp = permutation::get_random_permutation(gen, 26);
     temp.to_vec(help);
     
-    // Remove contacts 1 and 14 from the random permutation
+    // Remove contacts 0 and 13 from the random permutation
     for (unsigned int count = 0; count < 26; count++)
     {
-        if ((help[count] != 1) and (help[count] != 14))
+        if ((help[count] != 0) and (help[count] != 13))
         {
             new_ukwd_data.push_back(help[count]);
         }
     }
     
-    // "Connect" contacts 1 and 14
-    new_ukwd_data.push_back(1);
-    new_ukwd_data.push_back(14);
+    // "Connect" contacts 0 and 13
+    new_ukwd_data.push_back(0);
+    new_ukwd_data.push_back(13);
     
     // Interpret the data in new_ukw_data as the sequence of pairs of an involution 
     for (unsigned int count = 0; count < 13; count++)
