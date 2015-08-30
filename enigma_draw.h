@@ -78,6 +78,7 @@ to build rmsk and the sample simulators.
     apt-get install libgtkmm-3.0-dev    
     apt-get install libboost-dev    
     apt-get install libboost-system-dev    
+    apt-get install libboost-program-options-dev        
     apt-get install doxygen    
     apt-get install yelp (Raspbian only)
 

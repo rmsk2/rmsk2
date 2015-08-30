@@ -676,18 +676,18 @@ void machine_config::make_random_ukw_d_wiring()
     temp = permutation::get_random_permutation(gen, 26);
     temp.to_vec(help);
     
-    // Remove contacts 0 and 13 from the random permutation
+    // Remove contacts UKWD_FIXED_CONTACT_Y and UKWD_FIXED_CONTACT_J from the random permutation
     for (unsigned int count = 0; count < 26; count++)
     {
-        if ((help[count] != 0) and (help[count] != 13))
+        if ((help[count] != UKWD_FIXED_CONTACT_Y) and (help[count] != UKWD_FIXED_CONTACT_J))
         {
             new_ukwd_data.push_back(help[count]);
         }
     }
     
-    // "Connect" contacts 0 and 13
-    new_ukwd_data.push_back(0);
-    new_ukwd_data.push_back(13);
+    // "Connect" contacts UKWD_FIXED_CONTACT_Y and UKWD_FIXED_CONTACT_J
+    new_ukwd_data.push_back(UKWD_FIXED_CONTACT_Y);
+    new_ukwd_data.push_back(UKWD_FIXED_CONTACT_J);
     
     // Interpret the data in new_ukw_data as the sequence of pairs of an involution 
     for (unsigned int count = 0; count < 13; count++)
@@ -829,7 +829,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
                 break;
             }
             
-            // Create an enigma object and use it so read the general settings from the ini file
+            // Create an enigma object and use it to read the general settings from the ini file
             enigma = make_machine(get_machine_type());
             result = enigma->load_ini(ini_file);
             

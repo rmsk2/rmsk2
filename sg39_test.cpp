@@ -37,7 +37,7 @@ void register_tests(composite_test_case *container)
     schluesselgeraet39 *sg39 = new schluesselgeraet39(SG39_ROTOR_5, SG39_ROTOR_1, SG39_ROTOR_4, SG39_ROTOR_3);
     schluesselgeraet39 *sg39_dec = new schluesselgeraet39(SG39_ROTOR_4, SG39_ROTOR_2, SG39_ROTOR_1, SG39_ROTOR_5);
     ustring plain = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", spruch;
-    ustring cipher ="obkjdynovmmlwecxvyqstbepogmdskbengespfrpkrjkfivhgugknhclgzlgdqjrkwwvoprwszturkjfioyfbudxsytietcyppnyocoufqxvgozqpskhkmprdzyzcjgcszepfuppqmcitghyvpoo";
+    ustring cipher = "obkjdynovmmlwecxvyqstbepogmdskbengespfrpkrjkfivhgugknhclgzlgdqjrkwwvoprwszturkjfioyfbudxsytietcyppnyocoufqxvgozqpskhkmprdzyzcjgcszepfuppqmcitghyvpoo";
     vector<unsigned int> step_1, step_2, step_3, ring_3, ring_1, ring_2;
     
     // Create ring data for the wheels

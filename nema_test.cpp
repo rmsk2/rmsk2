@@ -40,7 +40,7 @@ void register_tests(composite_test_case *container)
     nema_conf[KW_NEMA_ROTORS] = "abcd";
     nema_conf[KW_NEMA_RINGS] = "12 13 14 15";
     nema_conf[KW_NEMA_WAR_MACHINE] = CONF_TRUE;
-    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator("Nema"));  
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(MNAME_NEMA));  
     nema *n = dynamic_cast<nema *>(c->make_machine(nema_conf));
     
     // Create second machine using the explicit C++ API    

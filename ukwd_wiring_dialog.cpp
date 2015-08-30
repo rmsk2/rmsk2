@@ -47,7 +47,7 @@ vector<pair<char, char> > ukwd_wiring_dialog::perm_to_plugs(permutation& perm)
     vector<pair<char, char> > result;
     set<pair<unsigned int, unsigned int> > involution;
     set<pair<unsigned int, unsigned int> >::iterator iter;
-    pair<unsigned int, unsigned int> fixed_connection(0, 13);
+    pair<unsigned int, unsigned int> fixed_connection(UKWD_FIXED_CONTACT_Y, UKWD_FIXED_CONTACT_J);
     char f, s;
     vector<pair<char, char> > data_sorted;
 

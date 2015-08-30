@@ -262,7 +262,7 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     vector<string> rotor_names;
     
     stepper = NULL;
-    machine_name = "Enigma";
+    machine_name = MNAME_ENIGMA_I;
     
     // Set names of rotor slots
     rotor_names.push_back(FAST);
@@ -321,19 +321,19 @@ unsteckered_enigma::unsteckered_enigma(unsigned int ukw_id, unsigned int slow_id
 railway_enigma::railway_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id) 
     : unsteckered_enigma(UKW_RB, slow_id, middle_id, fast_id, WALZE_RB_ETW) 
 { 
-    machine_name = "RailwayEnigma"; 
+    machine_name = MNAME_RAILWAY_ENIGMA; 
 }
 
 tirpitz_enigma::tirpitz_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id) 
     : unsteckered_enigma(UKW_T, slow_id, middle_id, fast_id, WALZE_T_ETW) 
 { 
-    machine_name = "TirpitzEnigma"; 
+    machine_name = MNAME_TIRPITZ_ENIGMA; 
 }
 
 kd_enigma::kd_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id) 
     : unsteckered_enigma(UKW_D, slow_id, middle_id, fast_id, WALZE_KD_ETW) 
 { 
-    machine_name = "KDEnigma"; 
+    machine_name = MNAME_KD_ENIGMA; 
 }
 
 abwehr_enigma::abwehr_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id)
@@ -342,7 +342,7 @@ abwehr_enigma::abwehr_enigma(unsigned int slow_id, unsigned int middle_id, unsig
     vector<string> rotor_names;
     
     stepper = NULL;
-    machine_name = "AbwehrEnigma";
+    machine_name = MNAME_ABWEHR_ENIGMA;
     
     // Set names of rotor slots
     rotor_names.push_back(ETW);
@@ -380,7 +380,7 @@ enigma_M4::enigma_M4(unsigned int ukw_id, unsigned int griechen_id, unsigned int
     vector<string> rotor_names;
     
     stepper = NULL;
-    machine_name = "M4Enigma";
+    machine_name = MNAME_M4_ENIGMA;
     
     // Set rotor slot names
     rotor_names.push_back(FAST);

@@ -35,10 +35,6 @@
  */ 
 #define DEFAULT_SET "defaultset"
 
-/*! \brief Contains the section name that is used when saving machine specific information (in contrast for 
- *         instance to information about a rotor_descriptor) in a gnome settings file.
- */ 
-#define MACHINE_SECTION "machine"
 
 class printing_device;
 class rotor_keyboard;

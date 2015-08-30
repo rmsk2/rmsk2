@@ -133,9 +133,9 @@ bool rotor_machine::load_ini(Glib::KeyFile& ini_file)
     bool result = false;
     string machine_name_temp;
 
-    if (!(result = !ini_file.has_key(MACHINE_SECTION, "name")))
+    if (!(result = !ini_file.has_key(MACHINE_SECTION, KEY_MACHINE_NAME)))
     {
-        machine_name_temp = ini_file.get_string(MACHINE_SECTION, "name");
+        machine_name_temp = ini_file.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
         
         if (!(result = (machine_name_temp != machine_name)))
         {        
@@ -244,7 +244,7 @@ void rotor_machine::prepare_rotor(string& rotor_set_name, rotor_id r_id, string&
 void rotor_machine::save_ini(Glib::KeyFile& ini_file)
 {
     get_stepping_gear()->save_ini(ini_file);
-    ini_file.set_string(MACHINE_SECTION, "name", machine_name);
+    ini_file.set_string(MACHINE_SECTION, KEY_MACHINE_NAME, machine_name);
     ini_file.set_string(MACHINE_SECTION, "rotorsetname", default_rotor_set_name);
     save_additional_components(ini_file);
 }

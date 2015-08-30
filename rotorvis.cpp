@@ -375,7 +375,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
     
     if ((name == "CSP2900") || (name == "CSP889"))
     {
-        configurator_name = "SIGABA";        
+        configurator_name = MNAME_SIGABA;        
     }
     
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(configurator_name)); 
@@ -383,7 +383,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
     do
     {
         // Construct SIGABA machine with default settings
-        if (configurator_name == "SIGABA")
+        if (configurator_name == MNAME_SIGABA)
         {            
             machine_conf[KW_CIPHER_ROTORS] = "0N1N2R3N4N";
             machine_conf[KW_CONTROL_ROTORS] = "5N6N7R8N9N";
@@ -420,7 +420,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
         } 
 
         // Construct Typex machine with default settings                
-        if (name == "Typex")
+        if (name == MNAME_TYPEX)
         {              
             machine_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
             machine_conf[KW_TYPEX_RINGS] = "aaaaa";
@@ -437,7 +437,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
         }
 
         // Construct Nema machine with default settings        
-        if (name == "Nema")
+        if (name == MNAME_NEMA)
         {                        
             machine_conf[KW_NEMA_ROTORS] = "abcd";
             machine_conf[KW_NEMA_RINGS] = "12 13 14 15";
@@ -462,7 +462,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
         }
 
         // Construct KL7 machine with default settings        
-        if (name == "KL7")
+        if (name == MNAME_KL7)
         {                                            
             machine_conf[KW_KL7_ROTORS] = "lfcgabhd";
             machine_conf[KW_KL7_ALPHA_POS] = "17 1 1 23 1 36 1 1";
@@ -689,7 +689,7 @@ void rotorvis_simulator_app::init(int argc, char **argv)
 {
     if (allowed_names.count(m_name) == 0)
     {
-        m_name = "SG39";
+        m_name = MNAME_SG39;
     }
            
     win = new Gtk::Window();
@@ -728,10 +728,10 @@ int main(int argc, char *argv[])
     // Set the names of the machine variants that are known to this simulator
     allowed_names.insert("CSP889");
     allowed_names.insert("CSP2900");
-    allowed_names.insert("SG39");
-    allowed_names.insert("Typex");    
-    allowed_names.insert("Nema");        
-    allowed_names.insert("KL7"); 
+    allowed_names.insert(MNAME_SG39);
+    allowed_names.insert(MNAME_TYPEX);    
+    allowed_names.insert(MNAME_NEMA);        
+    allowed_names.insert(MNAME_KL7); 
         
     rotorvis_simulator_app rotorvis_sim(allowed_names);  
       

@@ -221,7 +221,7 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     add_rotor_set(DEFAULT_SET, sg39_rotor_factory::get_rotor_set());  
     
     is_pre_step = true;
-    machine_name = "SG39";
+    machine_name = MNAME_SG39;
     
     // Set names of rotor slots
     rotor_names.push_back(ROTOR_1);

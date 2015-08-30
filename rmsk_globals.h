@@ -24,6 +24,30 @@
 #include<glibmm.h>
 #include<alphabet.h>
 
+class rotor_machine;
+
+// Machine names used in INI files that contain saved rotor_machine states.
+#define MNAME_ENIGMA_I "Enigma"
+#define MNAME_RAILWAY_ENIGMA "RailwayEnigma"
+#define MNAME_TIRPITZ_ENIGMA "TirpitzEnigma"
+#define MNAME_KD_ENIGMA "KDEnigma"
+#define MNAME_ABWEHR_ENIGMA "AbwehrEnigma"
+#define MNAME_M4_ENIGMA "M4Enigma"
+#define MNAME_KL7 "KL7"
+#define MNAME_NEMA "Nema"
+#define MNAME_SG39 "SG39"
+#define MNAME_SIGABA "SIGABA"
+#define MNAME_TYPEX "Typex"
+
+/*! \brief Contains the section name that is used when saving machine specific information (in contrast for 
+ *         instance to information about a rotor_descriptor) in a gnome settings file.
+ */ 
+#define MACHINE_SECTION "machine"
+
+/*! \brief Contains the name of the key in the section MACHINE_SECTION where the machine name is stored.
+ */ 
+#define KEY_MACHINE_NAME "name"
+
 /*! \brief Used in the ::configurator class and its children to represent the boolean value true.  
  */
 #define CONF_TRUE "true"
@@ -40,6 +64,11 @@
  */
 #define KL7_RING_CIRCUMFENCE_HELP "ab1cde2fg3hij4klm5no6pqr7st8uvw9xyz0"
 
+/*! \brief Holds the contact number of the upper fixed contact in a UKW D plugable reflector. */      
+const unsigned int UKWD_FIXED_CONTACT_Y = 0;
+
+/*! \brief Holds the contact number of the lower fixed contact in a UKW D plugable reflector. */      
+const unsigned int UKWD_FIXED_CONTACT_J = 13;
 
 /*! \brief Constant which specifies that a printing_device or rotor_keyboard is in FIGURE state.  
  */
@@ -194,6 +223,13 @@ public:
      *  An exception of type runtime_error is thrown, when the given condition is true.
      */            
     static void simple_assert(bool condition, const char *exception_message);
+
+    /*! \brief Restores the state stored in the file named by parameter file_name into a rotor_machine object
+     *         and returns that object.
+     *
+     *  In case of an error NULL is returned.
+     */
+    static rotor_machine *restore_from_file(string& file_name);
 
     /*! \brief Reads the ini file specified by the parameter file_name and uses the callback given in the 
      *         parameter processor to process the data contained in the resulting KeyFile object.

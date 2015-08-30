@@ -120,7 +120,7 @@ void test_typex::register_tests(composite_test_case *container)
     typex_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
     typex_conf[KW_TYPEX_RINGS] = "aaaaa";
     typex_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";
-    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator("Typex"));            
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(MNAME_TYPEX));            
     typex_t = c->make_machine(typex_conf);
     
     

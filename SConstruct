@@ -28,7 +28,7 @@ rmsk_defines = {}
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
-rmsk_libs = rmsk['LIBS'] + ['specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'boost_system', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
+rmsk_libs = rmsk['LIBS'] + ['specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'boost_system', 'boost_program_options', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
 enigma_includes = rmsk['CPPPATH']
 
 base_files = ['permutation.cpp', 'rand_gen.cpp', 'rotor.cpp', 'simple_mod_int.cpp', 'stepping.cpp']
@@ -53,6 +53,8 @@ rotor_vis_files = ['rotorvis.cpp', 'configurator_dialog.cpp']
 
 perm_files = ['rand_perm.cpp']
 
+rotor_sim_files = ['rotor_sim.cpp']
+
 hdr = rmsk.Gladeheader('glade_data.h', 'rotor_dialog_2.ui')
 rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'enigrotorset.py')
 base_lib = rmsk.Library('rmsk_base', base_files, CPPDEFINES = rmsk_defines)
@@ -63,9 +65,11 @@ rmsk_prog = rmsk.Program('rmsk', rmsk_files, LIBS = rmsk_libs, LIBPATH = rmsk_li
 enigma_prog = rmsk.Program('enigma', enigma_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes)
 rand_perm_prog = rmsk.Program('rand_perm', perm_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 rotorvis_prog = rmsk.Program('rotorvis', rotor_vis_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes)
+rotor_sim_prog = rmsk.Program('rotorsim', rotor_sim_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 
 rmsk.Install('dist', rotorvis_prog)
 rmsk.Install('dist', enigma_prog)
+rmsk.Install('dist', rotor_sim_prog)
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.page'))
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.png'))
 rmsk.Install('dist/doc/rotorvis', Glob('doc/rotorvis/*.page'))

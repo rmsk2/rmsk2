@@ -32,27 +32,27 @@ configurator *configurator_factory::get_configurator(string& machine_name)
 {
     configurator *result = NULL;
     
-    if (machine_name == "SIGABA")
+    if (machine_name == MNAME_SIGABA)
     {
         result = new sigaba_configurator;
     }
 
-    if (machine_name == "SG39")
+    if (machine_name == MNAME_SG39)
     {
         result = new sg39_configurator;
     }
 
-    if (machine_name == "Typex")
+    if (machine_name == MNAME_TYPEX)
     {
         result = new typex_configurator;
     }
 
-    if (machine_name == "KL7")
+    if (machine_name == MNAME_KL7)
     {
         result = new kl7_configurator;
     }
 
-    if (machine_name == "Nema")
+    if (machine_name == MNAME_NEMA)
     {
         result = new nema_configurator;
     }

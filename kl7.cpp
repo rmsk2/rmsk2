@@ -333,7 +333,7 @@ kl7::kl7(vector<rotor_id>& r_ids)
     rotor_names.push_back(KL7_ROT_7);
     rotor_names.push_back(KL7_ROT_8);
     
-    machine_name = "KL7";
+    machine_name = MNAME_KL7;
 
     kl7_stepping_gear *s = new kl7_stepping_gear(rotor_names);
         

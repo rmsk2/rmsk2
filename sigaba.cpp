@@ -146,7 +146,7 @@ sigaba_index_machine::sigaba_index_machine(rotor_id null_id, rotor_id one_id, ro
     
     stepper = NULL;
     
-    machine_name = "SIGABA";        
+    machine_name = MNAME_SIGABA;        
 
     // Set up names of rotor slots    
     rotor_names.push_back(I_ZERO);
@@ -192,7 +192,7 @@ sigaba_driver::sigaba_driver(rotor_id stat_l_id, rotor_id slow_id, rotor_id fast
     vector<string> rotor_names;
     
     stepper = NULL;    
-    machine_name = "SIGABA";
+    machine_name = MNAME_SIGABA;
     
     // Set up names of rotor slots
     rotor_names.push_back(STATOR_L);
@@ -554,7 +554,7 @@ sigaba::sigaba(vector<rotor_id>& r_ids, bool csp_2900_flag)
     rotor_names.push_back(R_THREE);
     rotor_names.push_back(R_FOUR);
     
-    machine_name = "SIGABA";
+    machine_name = MNAME_SIGABA;
 
     // Set up stepping mechanism
     sigaba_stepper *s = new sigaba_stepper(rotor_names, csp_2900_flag);

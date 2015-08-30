@@ -62,7 +62,7 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     vector<gunichar> norm_alph, shift_alph, out_alph;
     
     stepper = NULL;
-    machine_name = "Typex";
+    machine_name = MNAME_TYPEX;
     
     // Set rotor slot names
     rotor_names.push_back(ETW);

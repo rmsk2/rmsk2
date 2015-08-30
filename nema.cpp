@@ -283,7 +283,7 @@ nema::nema(vector<rotor_assembly>& rotor_settings, unsigned int left_red_drive_w
     vector<string> rotor_names;
     
     is_pre_step = true;
-    machine_name = "Nema";
+    machine_name = MNAME_NEMA;
     
     // Set up names of rotor slots 
     rotor_names.push_back(ETW);
