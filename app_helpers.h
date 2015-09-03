@@ -159,6 +159,11 @@ public:
      */            
     virtual void on_file_save();    
 
+    /*! \brief This method allows to save the default rotor set data which is in use in the rotor machines specified by the parameters
+     *         the_machine and index_machine. The parameter index_machine may has to be NULL if there is no index machine.
+     */        
+    virtual void on_save_rotor_set_activate(rotor_machine *the_machine, rotor_machine *index_machine);
+
     /*! \brief This method allows to handle the event when the user clicked on the "Save settings as ..." menu item.
      *
      *  Calls on_do_save() to do most of the work.

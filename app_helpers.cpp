@@ -84,6 +84,69 @@ void help_menu_helper::on_about_activate()
 
 /* ------------------------------------------------------------------ */
 
+void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machine, rotor_machine *index_machine)
+{
+    Gtk::FileChooserDialog file_dialog(*win, "Save default rotor set", Gtk::FILE_CHOOSER_ACTION_SAVE);
+    Glib::RefPtr<Gtk::FileFilter> filter = Gtk::FileFilter::create();
+    Glib::ustring temp_file_name;
+    
+    filter->add_pattern("*.ini");
+    filter->set_name("Rotor set file");
+    file_dialog.add_filter(filter);
+    file_dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    file_dialog.add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);
+    file_dialog.set_transient_for(*win); 
+    string default_set_name = the_machine->get_default_set_name(); 
+    string chosen_file_name;   
+    bool save_failed = false;
+
+    // If last_dir is not empty then set the file selection dialog to open this directory.
+    if ((*last_dir) != "")
+    {
+        file_dialog.set_current_folder(*last_dir);
+    }    
+
+    if (file_dialog.run() == Gtk::RESPONSE_OK)
+    {
+        temp_file_name = file_dialog.get_filename();
+        
+        if (temp_file_name.rfind(".ini") == Glib::ustring::npos)
+        {
+            temp_file_name = temp_file_name + ".ini";
+        }
+        
+        file_dialog.hide();
+        
+        chosen_file_name = temp_file_name;
+        
+        // Save default rotor set used in the_machine
+        save_failed = the_machine->get_rotor_set(default_set_name).save(chosen_file_name);
+        
+        // Save index rotor set if index_machine is not NULL
+        if ((!save_failed) and (index_machine != NULL))
+        {
+            default_set_name = index_machine->get_default_set_name();
+            chosen_file_name = chosen_file_name.substr(0, chosen_file_name.length() - 4) + "_index.ini";
+            save_failed = index_machine->get_rotor_set(default_set_name).save(chosen_file_name);
+        }
+
+        if (save_failed)
+        {
+            error_message("Saving rotor set data failed");
+        }
+        else
+        {
+            *last_dir = file_dialog.get_current_folder();
+            info_message("rotor set data successfully saved");
+        }                        
+    }
+    else
+    {
+        file_dialog.hide();
+    }
+}
+
+
 void file_operations_helper::on_file_open()
 {
     Glib::ustring temp_file_name;

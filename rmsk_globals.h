@@ -224,6 +224,12 @@ public:
      */            
     static void simple_assert(bool condition, const char *exception_message);
 
+    /*! \brief Returns a default instance of the rotor machine specified in parameter machine_name.
+     *
+     *  In case of an error NULL is returned.
+     */
+    static rotor_machine *make_default_machine(string& machine_name);
+
     /*! \brief Restores the state stored in the file named by parameter file_name into a rotor_machine object
      *         and returns that object.
      *

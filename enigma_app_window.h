@@ -84,6 +84,10 @@ public:
     /*! \brief Callback that is executed, when the "UKW Dora wiring ..." menu entry is selected.
      */
     virtual void on_ukwd_activate();    
+
+    /*! \brief Callback that is executed, when the "Save rotor set data" menu entry is selected.
+     */
+    virtual void on_save_rotor_set_data_activate();
         
     /*! \brief Callback that is executed, when the "Randomize" menu entry is selected.
      */        

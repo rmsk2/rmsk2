@@ -337,12 +337,133 @@ void rmsk::simple_assert(bool condition, const char *exception_message)
     }
 }
 
+rotor_machine *rmsk::make_default_machine(string& machine_name)
+{
+    rotor_machine *result = NULL;
+    
+    // Used for Services and M3 Enigma
+    if (machine_name == MNAME_ENIGMA_I)
+    {
+        result = new enigma_I(UKW_C, WALZE_I, WALZE_II, WALZE_III);
+    }
+
+    // Used for M4 Enigma
+    if (machine_name == MNAME_M4_ENIGMA)
+    {
+        result = new enigma_M4(UKW_C_DN, WALZE_BETA, WALZE_I, WALZE_II, WALZE_VII);
+    }
+
+    // Used for Railway Enigma
+    if (machine_name == MNAME_RAILWAY_ENIGMA)
+    {
+        result = new railway_enigma(WALZE_RB_I, WALZE_RB_II, WALZE_RB_III);
+    }
+
+    // Used for Tirpitz Enigma
+    if (machine_name == MNAME_TIRPITZ_ENIGMA)
+    {
+        result = new tirpitz_enigma(WALZE_T_I, WALZE_T_II, WALZE_T_III);
+    }
+
+    // Used for Abwehr Enigma
+    if (machine_name == MNAME_ABWEHR_ENIGMA)
+    {
+        result = new abwehr_enigma(WALZE_ABW_I, WALZE_ABW_II, WALZE_ABW_III);
+    }
+
+    // Used for KD Enigma
+    if (machine_name == MNAME_KD_ENIGMA)
+    {
+        result = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
+    }
+
+    // Used for Tpex
+    if (machine_name == MNAME_TYPEX)
+    {
+        result = new typex(TYPEX_SP_02390_UKW, TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E);
+    }
+
+    // Used for SIGABA
+    if (machine_name == MNAME_SIGABA)
+    {
+        rotor_id r5(SIGABA_ROTOR_5), r6(SIGABA_ROTOR_6), r7(SIGABA_ROTOR_7, true), r8(SIGABA_ROTOR_8), r9(SIGABA_ROTOR_9);
+        rotor_id r0(SIGABA_ROTOR_0), r1(SIGABA_ROTOR_1), r2(SIGABA_ROTOR_2, true), r3(SIGABA_ROTOR_3), r4(SIGABA_ROTOR_4);
+        rotor_id i0(SIGABA_INDEX_0), i1(SIGABA_INDEX_1), i2(SIGABA_INDEX_2, true), i3(SIGABA_INDEX_3), i4(SIGABA_INDEX_4);
+        vector<rotor_id> all_ids;
+        
+        // Pack together rotor ids for simple test machine
+        all_ids.push_back(r0);
+        all_ids.push_back(r1);
+        all_ids.push_back(r2);
+        all_ids.push_back(r3);
+        all_ids.push_back(r4);
+        all_ids.push_back(r5);
+        all_ids.push_back(r6);
+        all_ids.push_back(r7);
+        all_ids.push_back(r8);
+        all_ids.push_back(r9);
+        all_ids.push_back(i0);
+        all_ids.push_back(i1);
+        all_ids.push_back(i2);
+        all_ids.push_back(i3);
+        all_ids.push_back(i4);
+        
+        result = new sigaba(all_ids, false);                    
+    }
+
+    // Used for Schluesselgeraet39
+    if (machine_name == MNAME_SG39)
+    {
+        result = new schluesselgeraet39(SG39_ROTOR_0, SG39_ROTOR_1, SG39_ROTOR_2, SG39_ROTOR_3);
+    }
+    
+    // Used for KL7
+    if (machine_name == MNAME_KL7)
+    {
+        rotor_id id_1(KL7_ROTOR_A, KL7_RING_1);
+        rotor_id id_2(KL7_ROTOR_B, KL7_RING_2);
+        rotor_id id_3(KL7_ROTOR_C, KL7_RING_3);
+        rotor_id id_4(KL7_ROTOR_L, KL7_RING_WIDE);    
+        rotor_id id_5(KL7_ROTOR_D, KL7_RING_4);
+        rotor_id id_6(KL7_ROTOR_E, KL7_RING_5);
+        rotor_id id_7(KL7_ROTOR_F, KL7_RING_6);
+        rotor_id id_8(KL7_ROTOR_G, KL7_RING_7);        
+        
+        vector<rotor_id> rotor_spec;
+        rotor_spec.push_back(id_1);
+        rotor_spec.push_back(id_2);
+        rotor_spec.push_back(id_3);        
+        rotor_spec.push_back(id_4);
+        rotor_spec.push_back(id_5);
+        rotor_spec.push_back(id_6);    
+        rotor_spec.push_back(id_7);    
+        rotor_spec.push_back(id_8); 
+        
+        result = new kl7(rotor_spec);               
+    }
+    
+    // Used for Nema
+    if (machine_name == MNAME_NEMA)
+    {
+        vector<rotor_assembly> settings_l;        
+        
+        settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_13, NEMA_ROTOR_D));
+        settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_12, NEMA_ROTOR_C));
+        settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_15, NEMA_ROTOR_B));
+        settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_14, NEMA_ROTOR_A));    
+        
+        result = new nema(settings_l, NEMA_DRIVE_WHEEL_23, NEMA_DRIVE_WHEEL_2);
+    }    
+    
+    return result;
+}
+
 rotor_machine *rmsk::restore_from_file(string& file_name)
 {
     rotor_machine *result = NULL;    
     bool ini_load_successful = true;
     Glib::KeyFile ini_file;    
-    Glib::ustring machine_name = "";
+    string machine_name = "";
     
     // First load ini file
     try
@@ -359,122 +480,9 @@ rotor_machine *rmsk::restore_from_file(string& file_name)
         // load machine name from ini file
         machine_name = ini_file.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
         
-        // construct dummy machines which are then used to load the settings file designated
-        // by the parameter file_name
-        
-        // Used for Services and M3 Enigma
-        if (machine_name == MNAME_ENIGMA_I)
-        {
-            result = new enigma_I(UKW_C, WALZE_I, WALZE_II, WALZE_III);
-        }
-
-        // Used for M4 Enigma
-        if (machine_name == MNAME_M4_ENIGMA)
-        {
-            result = new enigma_M4(UKW_C_DN, WALZE_BETA, WALZE_I, WALZE_II, WALZE_VII);
-        }
-
-        // Used for Railway Enigma
-        if (machine_name == MNAME_RAILWAY_ENIGMA)
-        {
-            result = new railway_enigma(WALZE_RB_I, WALZE_RB_II, WALZE_RB_III);
-        }
-
-        // Used for Tirpitz Enigma
-        if (machine_name == MNAME_TIRPITZ_ENIGMA)
-        {
-            result = new tirpitz_enigma(WALZE_T_I, WALZE_T_II, WALZE_T_III);
-        }
-
-        // Used for Abwehr Enigma
-        if (machine_name == MNAME_ABWEHR_ENIGMA)
-        {
-            result = new abwehr_enigma(WALZE_ABW_I, WALZE_ABW_II, WALZE_ABW_III);
-        }
-
-        // Used for KD Enigma
-        if (machine_name == MNAME_KD_ENIGMA)
-        {
-            result = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
-        }
-
-        // Used for Tpex
-        if (machine_name == MNAME_TYPEX)
-        {
-            result = new typex(TYPEX_SP_02390_UKW, TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E);
-        }
-
-        // Used for SIGABA
-        if (machine_name == MNAME_SIGABA)
-        {
-            rotor_id r5(SIGABA_ROTOR_5), r6(SIGABA_ROTOR_6), r7(SIGABA_ROTOR_7, true), r8(SIGABA_ROTOR_8), r9(SIGABA_ROTOR_9);
-            rotor_id r0(SIGABA_ROTOR_0), r1(SIGABA_ROTOR_1), r2(SIGABA_ROTOR_2, true), r3(SIGABA_ROTOR_3), r4(SIGABA_ROTOR_4);
-            rotor_id i0(SIGABA_INDEX_0), i1(SIGABA_INDEX_1), i2(SIGABA_INDEX_2, true), i3(SIGABA_INDEX_3), i4(SIGABA_INDEX_4);
-            vector<rotor_id> all_ids;
-            
-            // Pack together rotor ids for simple test machine
-            all_ids.push_back(r0);
-            all_ids.push_back(r1);
-            all_ids.push_back(r2);
-            all_ids.push_back(r3);
-            all_ids.push_back(r4);
-            all_ids.push_back(r5);
-            all_ids.push_back(r6);
-            all_ids.push_back(r7);
-            all_ids.push_back(r8);
-            all_ids.push_back(r9);
-            all_ids.push_back(i0);
-            all_ids.push_back(i1);
-            all_ids.push_back(i2);
-            all_ids.push_back(i3);
-            all_ids.push_back(i4);
-            
-            result = new sigaba(all_ids, false);                    
-        }
-
-        // Used for Schluesselgeraet39
-        if (machine_name == MNAME_SG39)
-        {
-            result = new schluesselgeraet39(SG39_ROTOR_0, SG39_ROTOR_1, SG39_ROTOR_2, SG39_ROTOR_3);
-        }
-        
-        // Used for KL7
-        if (machine_name == MNAME_KL7)
-        {
-            rotor_id id_1(KL7_ROTOR_A, KL7_RING_1);
-            rotor_id id_2(KL7_ROTOR_B, KL7_RING_2);
-            rotor_id id_3(KL7_ROTOR_C, KL7_RING_3);
-            rotor_id id_4(KL7_ROTOR_L, KL7_RING_WIDE);    
-            rotor_id id_5(KL7_ROTOR_D, KL7_RING_4);
-            rotor_id id_6(KL7_ROTOR_E, KL7_RING_5);
-            rotor_id id_7(KL7_ROTOR_F, KL7_RING_6);
-            rotor_id id_8(KL7_ROTOR_G, KL7_RING_7);        
-            
-            vector<rotor_id> rotor_spec;
-            rotor_spec.push_back(id_1);
-            rotor_spec.push_back(id_2);
-            rotor_spec.push_back(id_3);        
-            rotor_spec.push_back(id_4);
-            rotor_spec.push_back(id_5);
-            rotor_spec.push_back(id_6);    
-            rotor_spec.push_back(id_7);    
-            rotor_spec.push_back(id_8); 
-            
-            result = new kl7(rotor_spec);               
-        }
-        
-        // Used for Nema
-        if (machine_name == MNAME_NEMA)
-        {
-            vector<rotor_assembly> settings_l;        
-            
-            settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_13, NEMA_ROTOR_D));
-            settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_12, NEMA_ROTOR_C));
-            settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_15, NEMA_ROTOR_B));
-            settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_14, NEMA_ROTOR_A));    
-            
-            result = new nema(settings_l, NEMA_DRIVE_WHEEL_23, NEMA_DRIVE_WHEEL_2);
-        }
+        // construct a dummy machine which is then used to load the settings file designated
+        // by the parameter file_name        
+        result = make_default_machine(machine_name);
         
         if (result != NULL)
         {

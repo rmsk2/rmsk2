@@ -144,6 +144,12 @@ the simulator has regained the focus.
         <p>Opens this help file.</p>
     </item>
     <item>
+        <title><code>Save rotor set data ...</code></title>
+        <p>Allows to save the rotor set data (permutations and ring data) used by this software for simulating the currently selected machine. In case
+        of the SIGABA two files are saved. The rotor set of the cipher and driver rotors and the rotor set of the index rotors.
+        </p> 
+    </item>   
+    <item>
         <title><code>About ...</code></title>
         <p>Gives some information about the author of this software.</p>
     </item>    

@@ -179,6 +179,7 @@ void enigma_app_window::setup_menus()
 
     menu_action->add(Gtk::Action::create("MenuHelp", "_Help"));
     menu_action->add(Gtk::Action::create("howtouse", "_How to use this simulator ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
+    menu_action->add(Gtk::Action::create("saverotorset", "Save rotor se_t data ..."), sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));        
     menu_action->add(Gtk::Action::create("about", "_About ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
     ui_manager->insert_action_group(menu_action);
@@ -213,6 +214,7 @@ void enigma_app_window::setup_menus()
         "    </menu>"        
         "    <menu action='MenuHelp'>"
         "      <menuitem action='howtouse'/>"
+        "      <menuitem action='saverotorset'/>"                
         "      <menuitem action='about'/>"
         "    </menu>"        
         "  </menubar>"
@@ -283,6 +285,11 @@ void enigma_app_window::update_stecker_brett()
             }
         }
     }        
+}
+
+void enigma_app_window::on_save_rotor_set_data_activate()
+{
+    file_helper.on_save_rotor_set_activate(enigma, NULL);
 }
 
 void enigma_app_window::on_ukwd_activate()

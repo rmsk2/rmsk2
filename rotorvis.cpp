@@ -77,6 +77,10 @@ public:
     /*! \brief Callback that is executed, when the "Configure machine" menu entry is selected.
      */    
     virtual void on_configure_machine();      
+
+    /*! \brief Callback that is executed, when the "Save rotor set data" menu entry is selected.
+     */    
+    virtual void on_save_rotor_set_activate();      
     
     /*! \brief Method that can be used to set the least recently used directory. The new value has to be specified by the string referenced by the
      *         l_dir parameter.
@@ -329,6 +333,19 @@ bool rotor_visual::do_save(Glib::ustring& desired_file_name)
     }
     
     return result;
+}
+
+void rotor_visual::on_save_rotor_set_activate()
+{
+    if (simulator_gui->get_machine()->get_name() != "SIGABA")
+    {
+        file_helper.on_save_rotor_set_activate(simulator_gui->get_machine(), NULL);
+    }
+    else
+    {
+        sigaba *s = dynamic_cast<sigaba *>(simulator_gui->get_machine());
+        file_helper.on_save_rotor_set_activate(s, s->get_sigaba_stepper()->get_index_bank());   
+    }
 }
 
 bool rotor_visual::do_load(Glib::ustring& desired_file_name)
@@ -618,6 +635,7 @@ void rotor_visual::setup_menus()
     menu_action->add(Gtk::Action::create("MenuHelp", "_Help"));
     
     menu_action->add(Gtk::Action::create("howtouse", "How to use the simulato_r ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
+    menu_action->add(Gtk::Action::create("saverotorset", "Save rotor se_t data ..."), sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));    
     menu_action->add(Gtk::Action::create("about", "A_bout ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
 
@@ -641,6 +659,7 @@ void rotor_visual::setup_menus()
         "    </menu>" 
         "    <menu action='MenuHelp'>"
         "      <menuitem action='howtouse'/>"
+        "      <menuitem action='saverotorset'/>"        
         "      <menuitem action='about'/>"
         "    </menu>"                         
         "  </menubar>"
