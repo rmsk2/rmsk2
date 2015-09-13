@@ -24,8 +24,10 @@
 #include<string>
 #include<exception>
 #include<boost/program_options.hpp>
-#include<boost/scoped_ptr.hpp>
+#include<boost/shared_ptr.hpp>
 #include<rotor_machine.h>
+#include<sigaba.h>
+#include<glibmm.h>
 
 namespace po = boost::program_options;
 using namespace std;
@@ -62,6 +64,11 @@ protected:
      */
     int process_stream(istream *in, ostream *out, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok);
 
+    /*! \brief This method reads data from the stream specified in parameter in and stores that data in the string referenced
+     *         by parameter data_read until either the value stored in delimiter is read or the end of the stream is reached.
+     */
+    int read_delimited_stream(istream *in, string& data_read, int delimiter);
+
     /*! \brief Holds a specification of the positional parameters that should be recognized. Here the only positional 
      *         parameter is the command (encrypt/decrypt) to execute.
      */
@@ -79,6 +86,10 @@ protected:
      */
     int grouping_width;
 
+    /*! \brief Holds the number of the SIGABA rotor to "setup step". 0 means no setup stepping is requested.
+     */
+    int setup_step_rotor_num;
+
     /*! \brief Holds the name of the input file as specified on the command line by the -i option or "" if
      *         no name has been given.
      */
@@ -94,10 +105,22 @@ protected:
      */
     string config_file;
 
+    /*! \brief Holds the name of the file into which the final state of the machine is saved after processing when
+     *         the -s option has been used.
+     */
+    string state_file;
+
+
     /*! \brief Holds the command that is to be executed as specified on the command line by the -c option or as
      *         a positional parameter.
      */
     string command;
+
+    /*! \brief This flag is true if the state reached at the end of processing should be stored. If state_file
+     *         is not equal to the empty string the state is stored in the file named by state_file. Else the
+     *         state is written to stdout. 
+     */    
+    bool state_progression;
 
 };
 
@@ -108,18 +131,22 @@ rotorsim::rotorsim()
 
     desc.add_options()
         ("help,h", "Produce help message")
+        ("state-progression", "Write state reached after processing to stdout. Optional.")
+        ("sigaba-setup", po::value<int>(&setup_step_rotor_num)->default_value(0), "Setup step the rotor number with the given number 1-5. Optional.")            
         ("config-file,f", po::value<string>(), "Configuration file to read")
         ("input-file,i", po::value<string>(), "Input file to read. Optional. stdin used if missing.")        
         ("output-file,o", po::value<string>(), "Output file to produce. Optional. stdout used if missing.")                    
         ("command,c", po::value<string>(), "Command to execute. Can be used without -c or --command")
+        ("save-state,s", po::value<string>(), "Save state of machine in specified file after processing. Optional.")        
         ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")            
     ;
+    
+    state_progression = false;
 }
 
 int rotorsim::execute_command()
 {
     int result = RETVAL_OK;
-    boost::scoped_ptr<rotor_machine> the_machine(rmsk::restore_from_file(config_file));
     istream *in = &cin;
     ostream *out = &cout;
     ifstream file_in;
@@ -129,10 +156,27 @@ int rotorsim::execute_command()
     // functor that allows to check whether a given symbol is a valid input character for
     // the underlying rotor machine at the time when it is called
     sigc::slot<bool, gunichar> verifier;
+    string config_data;
+    boost::shared_ptr<rotor_machine> the_machine;
+    Glib::KeyFile ini_file;
+    Glib::ustring data_temp;
+    string ini_data;
     
     do
     {
-        // Check wehther the state of the rotor machine was successfully restored
+        if (config_file != "")
+        {
+            the_machine = boost::shared_ptr<rotor_machine>(rmsk::restore_from_file(config_file));        
+        }
+        else
+        {
+            if (read_delimited_stream(&cin, config_data, 0xFF) == RETVAL_OK)
+            {
+                the_machine = boost::shared_ptr<rotor_machine>(rmsk::restore_from_data(config_data));        
+            }
+        }
+    
+        // Check whether the state of the rotor machine was successfully restored
         if (the_machine.get() == NULL)
         {
             result = ERR_IO_FAILURE;
@@ -173,26 +217,116 @@ int rotorsim::execute_command()
                 out = &file_out;
             }
         }        
-        
-        // Prepare functors for processing and validity checking
-        if (command == "encrypt")
+                
+        if ((command == "encrypt") or (command == "decrypt"))
         {
-            processor = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::symbol_typed_encrypt);
-            verifier = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::is_valid_input_encrypt);
+            // Prepare functors for processing and validity checking
+            if (command == "encrypt")
+            {
+                processor = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::symbol_typed_encrypt);
+                verifier = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::is_valid_input_encrypt);
+            }
+            else
+            {
+                processor = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::symbol_typed_decrypt);
+                verifier = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::is_valid_input_decrypt);            
+            }
+            
+            // Do processing
+            result = process_stream(in, out, grouping_width, processor, verifier);
+            
         }
-        else
+        else            
         {
-            processor = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::symbol_typed_decrypt);
-            verifier = sigc::mem_fun(*(the_machine->get_keyboard().get()), &rotor_keyboard::is_valid_input_decrypt);            
-        }
+            // step command
+            const char *rotor_names[5] = {STATOR_L, S_SLOW, S_FAST, S_MIDDLE, STATOR_R};
+            
+            sigaba *machine_as_sigaba = dynamic_cast<sigaba *>(the_machine.get());
         
-        // Do processing
-        result = process_stream(in, out, grouping_width, processor, verifier);
+            // Was a simple stepping or a SIGABA setup stepping requested
+            if ((setup_step_rotor_num > 0) and (machine_as_sigaba != NULL))
+            {   
+                // Setup stepping
+                machine_as_sigaba->get_sigaba_stepper()->setup_step(rotor_names[(setup_step_rotor_num - 1) % 5]);
+            }
+            else
+            {
+                // Do normal stepping if no setup stepping was requested
+                if (setup_step_rotor_num <= 0)
+                {
+                    the_machine->step_rotors();
+                }
+                // Do nothing if setup stepping was requested but the_machine is no SIGABA
+            }
+            
+            string help = the_machine->visualize_all_positions();
+        
+            (*out) << help << endl;
+        }
+                
+        if ((result == RETVAL_OK) and state_progression)
+        {
+            if (state_file != "")
+            {
+                if (the_machine->save(state_file))
+                {
+                    result = ERR_IO_FAILURE;
+                }
+            }
+            else
+            {
+                the_machine->save_ini(ini_file);
+                                
+                cout << (char)(255);
+                
+                data_temp = ini_file.to_data();
+                ini_data = data_temp;
+                cout << ini_data;                                
+            }            
+        }
     
     } while(0);
     
     file_in.close();
     file_out.close();
+    
+    return result;
+}
+
+int rotorsim::read_delimited_stream(istream *in, string& data_read, int delimiter)
+{
+    int result = RETVAL_OK;
+    int char_read = 0;
+
+    data_read.clear();
+    
+    try
+    {
+        while (in->good() and (char_read != delimiter))
+        {
+            // Read input character
+            char_read = in->get();
+            
+            if ((char_read != char_traits<char>::eof()) and (char_read != delimiter))
+            {
+                data_read += (char)char_read;
+            }
+        }
+        
+        // Check if input and output streams are still ok. If the failbit is set on either 
+        // of the streams then flag an error. If the failbit is set but the corresponding
+        // stream has also reached EOF, then everything is still OK.
+        if (in->fail() and !in->eof())
+        {
+            result = ERR_IO_FAILURE;
+            cout << "IO error!" << endl;        
+        }        
+    }
+    catch(...)
+    {
+        result = ERR_IO_FAILURE;
+        cout << "IO error!" << endl;
+    }    
     
     return result;
 }
@@ -278,6 +412,7 @@ void rotorsim::print_help_message(po::options_description *desc)
     cout << "    rotorsim encrypt -f machine_config.ini -i in_file.txt -o out_file.txt -g 5" << endl;
     cout << "    rotorsim -c decrypt -f machine_config.ini -i in_file.txt -o out_file.txt" << endl;         
     cout << "    rotorsim encrypt -f machine_config.ini" << endl;            
+    cout << "    rotorsim step -f machine_config.ini" << endl;                
     cout << endl;
 }
 
@@ -301,11 +436,14 @@ int rotorsim::parse(int argc, char **argv)
         // Check if -f was specified
         if (vm.count("config-file") == 0) 
         {
-            cout << "You have to specify a configuration file" << endl << endl;
-            print_help_message(&desc);
-            
-            return ERR_WRONG_COMMAND_LINE;
-        } 
+            // No: Config is read from stdin delimited by 0xFF
+            config_file = "";
+        }
+        else
+        {
+            // Yes: Config is read from file specified
+            config_file = vm["config-file"].as<string>();
+        }
 
         // Check if -c was specified either directly or through a positional parameter
         if (vm.count("command") == 0) 
@@ -316,8 +454,8 @@ int rotorsim::parse(int argc, char **argv)
             return ERR_WRONG_COMMAND_LINE;
         } 
 
-        // Check if command is either encrypt or decrypt. No further commands are allowed.
-        if ((vm["command"].as<string>() != "decrypt") and ((vm["command"].as<string>() != "encrypt")))
+        // Check if command is either encrypt, decrypt o step. No further commands are allowed.
+        if ((vm["command"].as<string>() != "decrypt") and (vm["command"].as<string>() != "encrypt") and (vm["command"].as<string>() != "step"))
         {
             cout << "Unknown command " << vm["command"].as<string>() << endl;
             
@@ -326,7 +464,7 @@ int rotorsim::parse(int argc, char **argv)
 
         // Command line specified by user is corret. Retrieve data from variable vm and store it
         // in the corresponding instance variables.
-        config_file = vm["config-file"].as<string>();
+        
         command = vm["command"].as<string>();
 
         if (vm.count("input-file")) 
@@ -337,6 +475,17 @@ int rotorsim::parse(int argc, char **argv)
         if (vm.count("output-file")) 
         {
             output_file = vm["output-file"].as<string>();
+        } 
+
+        if (vm.count("save-state")) 
+        {
+            state_file = vm["save-state"].as<string>();
+            state_progression = true;
+        } 
+
+        if (vm.count("state-progression")) 
+        {          
+            state_progression = true;
         } 
         
         if ((grouping_width < 0) or (grouping_width > 10))

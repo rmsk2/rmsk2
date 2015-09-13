@@ -214,6 +214,12 @@ public:
      *         zero terminated string.
      */    
     virtual ustring visualize_rotor_pos(const char *rotor_identifier);
+    
+    /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
+     *         of the machine. Uses rotor_machine::visualize_rotor_pos() to visualize each position and 
+     *         rotor_machine::unvisualized_rotor_names to determine which rotors are not to be visualized at all.
+     */
+    virtual ustring visualize_all_positions();
 
     /*! \brief Setter method for the printing_device in use in this rotor_machine.
      */        
@@ -386,6 +392,10 @@ protected:
     /*! \brief Holds the name of the default rotor set.
      */                            
     string default_rotor_set_name;
+
+    /*! \brief Holds the symbolic rotor identifiers which are excluded from visualization by rotor_machine::visualize_all_positions.
+     */                                
+    set<string> unvisualized_rotor_names;
 };
 
 #endif /* __rotor_machine_h__ */

@@ -519,6 +519,26 @@ ustring sigaba::visualize_rotor_pos(string& rotor_identifier)
     return visualize_sigaba_rotor_pos(rotor_identifier, *rmsk::std_alpha());
 }
 
+ustring sigaba::visualize_all_positions()
+{
+    ustring result;
+    string temp;
+    
+    temp = get_sigaba_stepper()->get_index_bank()->visualize_all_positions();
+    reverse(temp.begin(), temp.end());
+    result = temp;
+
+    temp = get_sigaba_stepper()->get_driver_machine()->visualize_all_positions();
+    reverse(temp.begin(), temp.end());
+    result += temp;
+    
+    temp = rotor_machine::visualize_all_positions();    
+    reverse(temp.begin(), temp.end());
+    result += temp;
+    
+    return result;
+}
+
 string sigaba::get_description()
 {
     string result;

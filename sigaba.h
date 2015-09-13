@@ -358,6 +358,14 @@ public:
     /*! \brief Calls sigaba_base_machine::visualize_sigaba_rotor_pos with the standard alphabet.
      */    
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+    
+    /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
+     *         of the machine.
+     *
+     *  This overloaded version includes the position of the driver and index rotors and additionally reverses their
+     *  character sequence.
+     */
+    virtual ustring visualize_all_positions();    
 
     /*! \brief Returns a description that differentiates between CSP 2900 and CSP 889 mode.
      */    

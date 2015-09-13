@@ -177,6 +177,24 @@ ustring rotor_machine::visualize_rotor_pos(const char *rotor_identifier)
     return visualize_rotor_pos(help);
 }
 
+ustring rotor_machine::visualize_all_positions()
+{
+    ustring result;
+    vector<string> rotor_names;
+    
+    get_stepping_gear()->get_rotor_identifiers(rotor_names);
+    
+    for (int count = get_stepping_gear()->get_num_rotors() - 1; count >= 0; count--)
+    {
+        if (unvisualized_rotor_names.count(rotor_names[count]) == 0)
+        {
+            result += visualize_rotor_pos(rotor_names[count]);
+        }
+    }
+    
+    return result;
+}
+
 void rotor_machine::prepare_rotor(const char *rotor_set_name, rotor_id r_id, const char *rotor_name, bool reverse)
 { 
     string help1(rotor_name); 

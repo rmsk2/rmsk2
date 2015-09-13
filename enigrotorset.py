@@ -288,6 +288,40 @@ alpha_mapping = {}
 for i in range(26):
     alpha_mapping[STD_ALPHA[i]] = i
 
+## \brief This function converts the permutation specified as a string in parameter perm into
+#         a vector of ints where alpha_mapping is used to map each character of perm into an int.
+#
+def perm_to_int_vector(perm):
+    result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    
+    for i in range(26):
+        result[i] = alpha_mapping[perm[i]]
+        
+    return result
+
+## \brief This function returns ring data in the form of an int vector of length 26 where 
+#         each position in the returned vector that corresponds to a value in the string 
+#         parameter ring_data is set to 1.
+#
+def ring_data_to_int_vector(ring_data):
+    result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    for i in ring_data:
+        result[alpha_mapping[i]] = 1
+        
+    return result
+
+## \brief This function converts the vector of ints given in parameter vec into a string where
+#         each int component of the output is followed by a ;.
+#
+def int_vector_to_string(vec):
+    result = ''
+
+    for i in vec:
+        result += str(i) + ";"
+    
+    return result
+
 ## \brief This function generates a section in an ini file which corresponds to the given rotor_id.
 #         The format of the created ini entries equals the ones that the rotor_set class uses to 
 #         save rotor_set data.
@@ -298,18 +332,14 @@ def write_rotor_entry(rotor_id, fd):
     result += str(rotor_id) + ']\\n\\\n'
     
     result += 'permutation='
+    perm_as_ints = perm_to_int_vector(known_wheels[rotor_id][0])
     
-    for i in range(26):
-        result += str(alpha_mapping[known_wheels[rotor_id][0][i]]) + ";"
-
+    result += int_vector_to_string(perm_as_ints)
+    
     result += '\\n\\\nringdata='
-    ring_data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-    for i in known_wheels[rotor_id][1]:
-        ring_data[alpha_mapping[i]] = 1
-    
-    for i in range(26):
-        result += str(ring_data[i]) + ";"
+    ring_data = ring_data_to_int_vector(known_wheels[rotor_id][1])
+        
+    result += int_vector_to_string(ring_data)
     
     result += '\\n\\\n'
     

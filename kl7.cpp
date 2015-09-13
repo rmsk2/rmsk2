@@ -314,6 +314,18 @@ ustring kl7::visualize_rotor_pos(string& rotor_identifier)
     return result;
 }
 
+ustring kl7::visualize_all_positions()
+{
+    ustring result;
+    string temp;
+    
+    temp = rotor_machine::visualize_all_positions();
+    reverse(temp.begin(), temp.end());
+    result = temp;
+        
+    return result;
+}
+
 kl7::kl7(vector<rotor_id>& r_ids)
     : rotor_machine()
 {

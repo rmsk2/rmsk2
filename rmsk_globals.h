@@ -237,6 +237,20 @@ public:
      */
     static rotor_machine *restore_from_file(string& file_name);
 
+    /*! \brief Restores the state contained in the keyfile referenced by parameter machine_state into a
+     *         rotor_machine object and returns that object.
+     *
+     *  In case of an error NULL is returned.
+     */
+    static rotor_machine *restore_from_ini(Glib::KeyFile& machine_state);
+
+    /*! \brief Restores the state contained in the string referenced by parameter machine_state into a
+     *         rotor_machine object and returns that object.
+     *
+     *  In case of an error NULL is returned.
+     */
+    static rotor_machine *restore_from_data(string& machine_state);
+
     /*! \brief Reads the ini file specified by the parameter file_name and uses the callback given in the 
      *         parameter processor to process the data contained in the resulting KeyFile object.
      */                

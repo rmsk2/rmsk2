@@ -35,8 +35,10 @@ bool decipherment_test::test()
         return result;
     }
 
+    append_note("Rotor start positions: " + machine_enc->visualize_all_positions());
     decryption_result = machine_enc->get_keyboard()->symbols_typed_decrypt(spruch);
     append_note(decryption_result);
+    append_note("Rotor end positions: " + machine_enc->visualize_all_positions());    
 
     result = (decryption_result == plain);
     

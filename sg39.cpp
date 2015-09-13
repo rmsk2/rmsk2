@@ -257,9 +257,22 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
 
     // Use standard keyboard
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("abcdefghijklmnopqrstuvwxyz")));
-    set_keyboard(kbd);                   
+    set_keyboard(kbd);        
+    
+    unvisualized_rotor_names.insert(UKW_SG39);               
 
     get_stepping_gear()->reset();    
+}
+
+ustring schluesselgeraet39::visualize_all_positions()
+{
+    ustring result = rotor_machine::visualize_all_positions();
+    
+    result += rmsk::std_alpha()->to_val(get_sg39_stepper()->get_wheel_pos(ROTOR_3));
+    result += rmsk::std_alpha()->to_val(get_sg39_stepper()->get_wheel_pos(ROTOR_2));
+    result += rmsk::std_alpha()->to_val(get_sg39_stepper()->get_wheel_pos(ROTOR_1));        
+    
+    return result;
 }
 
 void schluesselgeraet39::save_additional_components(Glib::KeyFile& ini_file)

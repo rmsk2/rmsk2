@@ -458,12 +458,64 @@ rotor_machine *rmsk::make_default_machine(string& machine_name)
     return result;
 }
 
+rotor_machine *rmsk::restore_from_ini(Glib::KeyFile& machine_state)
+{
+    rotor_machine *result = NULL;    
+    string machine_name = "";
+        
+    if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_NAME))
+    {
+        // load machine name from ini file
+        machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
+        
+        // construct a dummy machine which is then used to load the settings file designated
+        // by the parameter file_name        
+        result = make_default_machine(machine_name);
+        
+        if (result != NULL)
+        {
+            // Use dummy rotor machine object to restore the state given in the ini file
+            if (result->load_ini(machine_state))
+            {
+                // Loading failed. Clean up.
+                delete result;
+                result = NULL;
+            }
+        }
+    }
+    
+    return result;
+}
+
+rotor_machine *rmsk::restore_from_data(string& machine_state)
+{
+    rotor_machine *result = NULL;    
+    bool ini_load_successful = true;
+    Glib::KeyFile ini_file;    
+    
+    // First construct KeyFile object from data
+    try
+    {
+        ini_load_successful = ini_file.load_from_data(machine_state);        
+    }
+    catch(...)
+    {
+        ini_load_successful = false; 
+    }    
+    
+    if (ini_load_successful)
+    {
+        result = restore_from_ini(ini_file);
+    }
+    
+    return result;
+}
+
 rotor_machine *rmsk::restore_from_file(string& file_name)
 {
     rotor_machine *result = NULL;    
     bool ini_load_successful = true;
     Glib::KeyFile ini_file;    
-    string machine_name = "";
     
     // First load ini file
     try
@@ -475,26 +527,9 @@ rotor_machine *rmsk::restore_from_file(string& file_name)
         ini_load_successful = false; 
     }    
     
-    if (ini_load_successful and ini_file.has_key(MACHINE_SECTION, KEY_MACHINE_NAME))
+    if (ini_load_successful)
     {
-        // load machine name from ini file
-        machine_name = ini_file.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
-        
-        // construct a dummy machine which is then used to load the settings file designated
-        // by the parameter file_name        
-        result = make_default_machine(machine_name);
-        
-        if (result != NULL)
-        {
-            // Use dummy rotor machine object to restore the state given in the ini file
-            if (result->load_ini(ini_file))
-            {
-                // Loading failed. Clean up.
-                delete result;
-                result = NULL;
-            }
-        }
-
+        result = restore_from_ini(ini_file);
     }
     
     return result;

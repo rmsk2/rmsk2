@@ -313,7 +313,9 @@ unsteckered_enigma::unsteckered_enigma(unsigned int ukw_id, unsigned int slow_id
     
     // No fancy character translations on input side    
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("abcdefghijklmnopqrstuvwxyz")));
-    set_keyboard(kbd);            
+    set_keyboard(kbd);
+    
+    unvisualized_rotor_names.insert(ETW);            
         
     get_stepping_gear()->reset();    
 }
@@ -334,6 +336,7 @@ kd_enigma::kd_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int 
     : unsteckered_enigma(UKW_D, slow_id, middle_id, fast_id, WALZE_KD_ETW) 
 { 
     machine_name = MNAME_KD_ENIGMA; 
+    unvisualized_rotor_names.insert(UMKEHRWALZE);
 }
 
 abwehr_enigma::abwehr_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id)
@@ -369,6 +372,8 @@ abwehr_enigma::abwehr_enigma(unsigned int slow_id, unsigned int middle_id, unsig
     // No special character transforms on the input side
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("abcdefghijklmnopqrstuvwxyz")));
     set_keyboard(kbd);
+    
+    unvisualized_rotor_names.insert(ETW);
             
     get_stepping_gear()->reset();
 }
@@ -459,7 +464,9 @@ steckered_enigma::steckered_enigma()
     
     // No special character transformations on input
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("abcdefghijklmnopqrstuvwxyz")));
-    set_keyboard(kbd);    
+    set_keyboard(kbd);
+    
+    unvisualized_rotor_names.insert(UMKEHRWALZE);    
 }
 
 bool steckered_enigma::uses_uhr()

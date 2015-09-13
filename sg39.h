@@ -176,6 +176,13 @@ public:
      *         involution should specify an actual involution but it is possible to use any permutation.
      */
     virtual void set_reflector(boost::shared_ptr<permutation> involution);   
+
+    /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
+     *         of the machine.
+     *
+     *  This overloaded version includes the pinwheel positions in the output. 
+     */
+    virtual ustring visualize_all_positions();
     
     /*! \brief Destructor.
      */             

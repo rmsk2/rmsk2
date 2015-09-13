@@ -107,7 +107,10 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     prepare_rotor(fast_id, FAST);
     prepare_rotor(middle_id, MIDDLE);
     prepare_rotor(slow_id, SLOW);    
-    prepare_rotor(ukw_id, UMKEHRWALZE);    
+    prepare_rotor(ukw_id, UMKEHRWALZE);
+    
+    unvisualized_rotor_names.insert(ETW);        
+    unvisualized_rotor_names.insert(UMKEHRWALZE);  
     
     get_stepping_gear()->reset();
 }

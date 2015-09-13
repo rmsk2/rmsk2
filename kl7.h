@@ -195,6 +195,14 @@ public:
      *  are returned for the first, second, third, ... empty position.
      */    
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+    
+    /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
+     *         of the machine.
+     *
+     *  This overloaded version reverses the character sequence. 
+     */
+    virtual ustring visualize_all_positions();    
+    
 
     /*! \brief Destructor.
      */          
