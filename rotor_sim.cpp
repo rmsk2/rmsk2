@@ -55,6 +55,62 @@ protected:
      */
     void print_help_message(po::options_description *desc);
 
+    /*! \brief Creates the machine that is to be simulated on the basis of the name of the config file contained in parameter
+     *         config_file. Returns NULL in case of an error.
+     */
+    rotor_machine *determine_machine(string& config_file);
+
+    /*! \brief This method creates the input stream used by this program. In case an error occurs NULL is returned. The parameter
+     *         file_name has to specify the name of the input file or "" in case stdin is to be used. The second parameter is
+     *         an ifstream instance which is returned as an istream if file_name is not the empty string.
+     */
+    istream *determine_input_stream(string& file_name, ifstream& file_in);
+
+    /*! \brief This method creates the output stream used by this program. In case an error occurs NULL is returned. The parameter
+     *         file_name has to specify the name of the output file or "" in case stdout is to be used. The second parameter is
+     *         an ofstream instance which is returned as an ostream if file_name is not the empty string.
+     */
+    ostream *determine_output_stream(string& file_name, ofstream& file_out);
+
+    /*! \brief This method save the state of the rotor machine specified through parameter machine in the file named by the parameter
+     *         file_name. Use "" as file_name in order to save the state to stdout. In case of success RETVAL_OK is returned.
+     */
+    int save_machine_state(string& file_name, rotor_machine *machine);
+
+    /*! \brief This method returns the permutations the underlying rotor machine generates during the next num_iterations - 1 steps.
+     * 
+     *  \param [num_iterations] Has to specify the number of permutations that are to be returned. The machine is stepped num_iterations - 1
+     *                          by this method. 
+     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [machine] Has to specify the rotor machine that is to be queried for permutations.
+     */
+    void execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine);
+
+    /*! \brief This method performs the operations required for the step command which is to step the underlying rotor machine a given
+     *         number of times.
+     * 
+     *  \param [num_iterations] Has to specify the number times the underlying machine is to be stepped
+     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [machine] Has to specify the rotor machine that is to be stepped.
+     */
+    void execute_step_command(int num_iterations, ostream *out, rotor_machine *machine);
+
+    /*! \brief This method performs the operations required for setup stepping a SIGABA instance.
+     * 
+     *  \param [num_iterations] Has to specify the number times the underlying machine is to be stepped
+     *  \param [setup_step_rotor_num] Has to specify the rotor number (1-5) which is to be setup stepped
+     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [machine] Has to specify the rotor machine that is to be setup stepped.
+     */
+    void execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine);
+
+    /*! \brief This method writes a visualization of the current rotor positions to the output stream.
+     * 
+     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [machine] Has to specify the rotor machine which rotor positions are to be visualized.
+     */
+    void execute_pos_command(ostream *out, rotor_machine *machine);
+
     /*! \brief This method prints a message that describes how to use rotorsim.
      */
     int execute_command();
@@ -89,6 +145,10 @@ protected:
     /*! \brief Holds the number of the SIGABA rotor to "setup step". 0 means no setup stepping is requested.
      */
     int setup_step_rotor_num;
+
+    /*! \brief Holds the number iterations a "perm" or "step" command should be executed.
+     */
+    int num_iterations;
 
     /*! \brief Holds the name of the input file as specified on the command line by the -i option or "" if
      *         no name has been given.
@@ -132,23 +192,197 @@ rotorsim::rotorsim()
     desc.add_options()
         ("help,h", "Produce help message")
         ("state-progression", "Write state reached after processing to stdout. Optional.")
-        ("sigaba-setup", po::value<int>(&setup_step_rotor_num)->default_value(0), "Setup step the rotor number with the given number 1-5. Optional.")            
+        ("rotor-num,r", po::value<int>(&setup_step_rotor_num)->default_value(-1), "Setup step the rotor number with the given number 1-5.")            
         ("config-file,f", po::value<string>(), "Configuration file to read")
         ("input-file,i", po::value<string>(), "Input file to read. Optional. stdin used if missing.")        
         ("output-file,o", po::value<string>(), "Output file to produce. Optional. stdout used if missing.")                    
-        ("command,c", po::value<string>(), "Command to execute. Can be used without -c or --command")
+        ("command,c", po::value<string>(), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, pos, sigabasetup.")
         ("save-state,s", po::value<string>(), "Save state of machine in specified file after processing. Optional.")        
-        ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")            
+        ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")
+        ("num-iterations,n", po::value<int>(&num_iterations)->default_value(1), "Number of iterations to execute perm or step commands.")            
     ;
     
     state_progression = false;
 }
 
+istream *rotorsim::determine_input_stream(string& file_name, ifstream& file_in)
+{
+    istream *result = NULL;
+
+    if (file_name != "")
+    {        
+        file_in.open(file_name, ifstream::in | ifstream::binary);
+        
+        if (file_in.good())
+        {
+            result = &file_in;
+        }
+    }
+    else
+    {
+        result = &cin;
+    }
+    
+    return result;
+}
+
+ostream *rotorsim::determine_output_stream(string& file_name, ofstream& file_out)
+{
+    ostream *result = NULL;
+    
+    if (file_name != "")
+    {
+        file_out.open(file_name, ofstream::out | ofstream::binary);
+        
+        if (file_out.good())
+        {
+            result = &file_out;
+        }
+    }            
+    else
+    {
+        result = &cout;
+    }
+    
+    return result;
+}
+
+rotor_machine *rotorsim::determine_machine(string& config_file)
+{
+    rotor_machine *machine = NULL;
+    string config_data;
+    int error_code;    
+
+    if (config_file != "")
+    {
+        machine = rmsk::restore_from_file(config_file);        
+    }
+    else
+    {
+        if ((error_code = read_delimited_stream(&cin, config_data, 0xFF)) == RETVAL_OK)
+        {
+            machine = rmsk::restore_from_data(config_data);        
+        }
+    }
+        
+    return machine;
+}
+
+int rotorsim::save_machine_state(string& file_name, rotor_machine *machine)
+{
+    Glib::KeyFile ini_file;
+    int result = RETVAL_OK;
+    Glib::ustring data_temp; 
+    string ini_data;       
+
+    if (file_name != "")
+    {
+        if (machine->save(file_name))
+        {
+            result = ERR_IO_FAILURE;
+        }
+    }
+    else
+    {
+        // Write state to stdout using 0xFF as delimiter between the state and the output data
+        machine->save_ini(ini_file);
+                        
+        cout << (char)(255);
+        
+        data_temp = ini_file.to_data();
+        ini_data = data_temp;
+        cout << ini_data;                                
+    }            
+    
+    return result;
+}
+
+void rotorsim::execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine)
+{
+    // perm command
+    vector<unsigned int> current_perm;
+    
+    for (int count = 0; count < num_iterations; count++)
+    {                    
+        current_perm.clear();
+        
+        machine->get_current_perm(current_perm);
+        
+        (*out) <<  "[";
+
+        // Write all but the last permutation component to output        
+        for (unsigned int count = 0; count < current_perm.size() - 1; count++)
+        {
+            (*out) << current_perm[count] << ", ";
+        }
+                
+        // Write last permutation component to output
+        (*out) << current_perm[current_perm.size() - 1] << "]" << endl;   
+        
+        // Step machine if this is not the last iteration
+        if (count < num_iterations - 1)
+        {
+            machine->step_rotors();
+        }             
+    }
+    
+    // num_iterations <= 0. Write at least an LF as output. The python side depends on it.
+    if (num_iterations <= 0)
+    {
+        (*out) << endl;
+    }                
+}
+
+void rotorsim::execute_pos_command(ostream *out, rotor_machine *machine)
+{        
+    string help = machine->visualize_all_positions();
+
+    (*out) << help << endl;
+}
+
+
+void rotorsim::execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine)
+{
+    const char *rotor_names[5] = {STATOR_L, S_SLOW, S_FAST, S_MIDDLE, STATOR_R};
+    
+    sigaba *machine_as_sigaba = dynamic_cast<sigaba *>(machine);
+
+    for (int count = 0; (count < num_iterations) and (setup_step_rotor_num > 0) and (machine_as_sigaba != NULL); count++)
+    {
+        // Setup stepping
+        machine_as_sigaba->get_sigaba_stepper()->setup_step(rotor_names[(setup_step_rotor_num - 1) % 5]);        
+        string help = machine->visualize_all_positions();    
+        (*out) << help << endl;
+    }
+    
+    if ((num_iterations <= 0) or (setup_step_rotor_num <= 0) or (machine_as_sigaba == NULL))
+    {
+        (*out) << endl;
+    }                                
+}
+
+void rotorsim::execute_step_command(int num_iterations, ostream *out, rotor_machine *machine)
+{
+
+    for (int count = 0; count < num_iterations; count++)
+    {
+        machine->step_rotors();
+        string help = machine->visualize_all_positions();    
+        (*out) << help << endl;
+    }
+    
+    if (num_iterations <= 0)
+    {
+        (*out) << endl;
+    }                                
+}
+
+
 int rotorsim::execute_command()
 {
     int result = RETVAL_OK;
-    istream *in = &cin;
-    ostream *out = &cout;
+    istream *in = NULL;
+    ostream *out = NULL;
     ifstream file_in;
     ofstream file_out;
     // functor that allows to encrypt or decrypt a character
@@ -156,68 +390,37 @@ int rotorsim::execute_command()
     // functor that allows to check whether a given symbol is a valid input character for
     // the underlying rotor machine at the time when it is called
     sigc::slot<bool, gunichar> verifier;
-    string config_data;
     boost::shared_ptr<rotor_machine> the_machine;
-    Glib::KeyFile ini_file;
-    Glib::ustring data_temp;
-    string ini_data;
     
     do
-    {
-        if (config_file != "")
-        {
-            the_machine = boost::shared_ptr<rotor_machine>(rmsk::restore_from_file(config_file));        
-        }
-        else
-        {
-            if (read_delimited_stream(&cin, config_data, 0xFF) == RETVAL_OK)
-            {
-                the_machine = boost::shared_ptr<rotor_machine>(rmsk::restore_from_data(config_data));        
-            }
-        }
-    
-        // Check whether the state of the rotor machine was successfully restored
+    {        
+        // Create rotor machine object
+        the_machine = boost::shared_ptr<rotor_machine>(determine_machine(config_file));        
         if (the_machine.get() == NULL)
         {
             result = ERR_IO_FAILURE;
             cout << "Unable to load machine configuration " << config_file << endl;
             break;
         }
-        
-        // Open input file
-        if (input_file != "")
+
+        // Open input stream        
+        in = determine_input_stream(input_file, file_in);        
+        if (in == NULL)
         {
-            file_in.open(input_file, ifstream::in | ifstream::binary);
-            
-            if (!file_in.good())
-            {
-                result = ERR_IO_FAILURE;
-                cout << "Unable to open input file " << input_file << endl;
-                break;
-            }
-            else
-            {
-                in = &file_in;
-            }
+            result = ERR_IO_FAILURE;
+            cout << "Unable to open input file " << input_file << endl;
+            break;
         }
         
-        // Open output file
-        if (output_file != "")
+        // Open output stream
+        out = determine_output_stream(output_file, file_out);        
+        if (in == NULL)
         {
-            file_out.open(output_file, ofstream::out | ofstream::binary);
-            
-            if (!file_out.good())
-            {
-                result = ERR_IO_FAILURE;
-                cout << "Unable to open output file " << output_file << endl;
-                break;
-            }
-            else
-            {
-                out = &file_out;
-            }
-        }        
-                
+            result = ERR_IO_FAILURE;
+            cout << "Unable to open output file " << input_file << endl;
+            break;
+        }
+                        
         if ((command == "encrypt") or (command == "decrypt"))
         {
             // Prepare functors for processing and validity checking
@@ -233,56 +436,42 @@ int rotorsim::execute_command()
             }
             
             // Do processing
-            result = process_stream(in, out, grouping_width, processor, verifier);
-            
+            result = process_stream(in, out, grouping_width, processor, verifier);            
         }
         else            
         {
-            // step command
-            const char *rotor_names[5] = {STATOR_L, S_SLOW, S_FAST, S_MIDDLE, STATOR_R};
-            
-            sigaba *machine_as_sigaba = dynamic_cast<sigaba *>(the_machine.get());
-        
-            // Was a simple stepping or a SIGABA setup stepping requested
-            if ((setup_step_rotor_num > 0) and (machine_as_sigaba != NULL))
-            {   
-                // Setup stepping
-                machine_as_sigaba->get_sigaba_stepper()->setup_step(rotor_names[(setup_step_rotor_num - 1) % 5]);
+            if (command == "sigabasetup")
+            {
+                execute_sigabasetup_command(num_iterations, setup_step_rotor_num, out, the_machine.get());
             }
             else
             {
-                // Do normal stepping if no setup stepping was requested
-                if (setup_step_rotor_num <= 0)
+                if (command == "pos")
                 {
-                    the_machine->step_rotors();
+                    execute_pos_command(out, the_machine.get());
                 }
-                // Do nothing if setup stepping was requested but the_machine is no SIGABA
+                else
+                {
+                    if (command == "step")
+                    {
+                        execute_step_command(num_iterations, out, the_machine.get());
+                    }
+                    else
+                    {
+                        // perm command
+                        execute_perm_command(num_iterations, out, the_machine.get());                
+                    }
+                }                
             }
-            
-            string help = the_machine->visualize_all_positions();
-        
-            (*out) << help << endl;
         }
-                
+        
+        // Save rotor machine state if required        
         if ((result == RETVAL_OK) and state_progression)
         {
-            if (state_file != "")
+            if ((result = save_machine_state(state_file, the_machine.get())) != RETVAL_OK)
             {
-                if (the_machine->save(state_file))
-                {
-                    result = ERR_IO_FAILURE;
-                }
-            }
-            else
-            {
-                the_machine->save_ini(ini_file);
-                                
-                cout << (char)(255);
-                
-                data_temp = ini_file.to_data();
-                ini_data = data_temp;
-                cout << ini_data;                                
-            }            
+                cout << "Unable to save state information" << endl;
+            } 
         }
     
     } while(0);
@@ -412,7 +601,10 @@ void rotorsim::print_help_message(po::options_description *desc)
     cout << "    rotorsim encrypt -f machine_config.ini -i in_file.txt -o out_file.txt -g 5" << endl;
     cout << "    rotorsim -c decrypt -f machine_config.ini -i in_file.txt -o out_file.txt" << endl;         
     cout << "    rotorsim encrypt -f machine_config.ini" << endl;            
-    cout << "    rotorsim step -f machine_config.ini" << endl;                
+    cout << "    rotorsim step -f machine_config.ini -n 2" << endl;                
+    cout << "    rotorsim perm -f machine_config.ini -n 3" << endl;    
+    cout << "    rotorsim pos -f machine_config.ini" << endl;        
+    cout << "    rotorsim sigabasetup -f machine_config.ini -r 1 -n 4" << endl;            
     cout << endl;
 }
 
@@ -455,7 +647,9 @@ int rotorsim::parse(int argc, char **argv)
         } 
 
         // Check if command is either encrypt, decrypt o step. No further commands are allowed.
-        if ((vm["command"].as<string>() != "decrypt") and (vm["command"].as<string>() != "encrypt") and (vm["command"].as<string>() != "step"))
+        if ((vm["command"].as<string>() != "decrypt") and (vm["command"].as<string>() != "encrypt") and 
+            (vm["command"].as<string>() != "step")  and (vm["command"].as<string>() != "perm") and 
+            (vm["command"].as<string>() != "pos") and (vm["command"].as<string>() != "sigabasetup") )
         {
             cout << "Unknown command " << vm["command"].as<string>() << endl;
             

@@ -170,6 +170,18 @@ class RotorSet:
                 
         return result
 
+    ## \brief Changes to permutation of the specified rotor.
+    #
+    #  \param [rotor_id] Is a integer holding the id of the rotor the permutation of which is to be changed.
+    #
+    #  \param [new_perm] Is an integer list specifying the new permutation.
+    #
+    #  \returns Nothing
+    #    
+    def change_perm(self, rotor_id, new_perm):
+        self.data[rotor_id]['permutation'] = new_perm
+
+
 ## \brief This class implements a set of transformations for permutations, where a permutation is
 #         a vector of a certain length containing ints, in which each of the values 0 ... length-1
 #         appears exactly once.
@@ -287,44 +299,134 @@ class Permutation:
     def get_len(self):
         return len(self.__val)
 
-class UnsteckeredEnigmaState:
-    def __init__(self, machine_name, rotor_set):
-        self.__name = machine_name
-        self.__rotor_set = rotor_set
-        self.__slot_names = ['rotor_eintrittswalze', 'rotor_fast', 'rotor_middle', 'rotor_slow', 'rotor_umkehrwalze']
-        self.__config = {}
+class GenericRotorMachineState:
+    def __init__(self, machine_name, slot_names, rotor_set):
+        self._name = machine_name
+        self._rotor_set = rotor_set
+        self._slot_names = slot_names
+        self._config = {}
+        
+        for slot in self._slot_names:
+            self.insert_rotor(slot, rotor_set.ids[0], rotor_set.ids[0], 0, 0)
 
     def get_slot_names(self):
-        return self.__slot_names
+        return self._slot_names
+        
+    def _save_additional_rotor_data(self, slot_name, ini_file):
+        pass
+    
+    def _save_additional_data(self, ini_file):
+        pass
 
-    def insert_rotor(self, slot_id, rotor_id, ring_offset, rotor_pos, use_inverse = False):
-        help = Permutation()
-        self.__config[self.__slot_names[slot_id]] = {'rid': rotor_id, 'ringoffset':help.from_val(ring_offset), 'rotorpos':help.from_val(rotor_pos), 'inverse':use_inverse}
+    def insert_rotor(self, slot_name, rotor_id, ring_id, ring_offset, rotor_pos, use_inverse = False):
+        self._config[slot_name] = {'rid': rotor_id, 'ringid':ring_id, 'ringoffset':ring_offset, 'rotorpos':rotor_pos, 'inverse':use_inverse}
         
     def render_state(self):
         result = GLib.KeyFile()
         
-        result.set_string('machine', 'name', self.__name)
+        result.set_string('machine', 'name', self._name)
         result.set_string('machine', 'rotorsetname', 'defaultset')
         
-        for i in self.__slot_names:
-            conf = self.__config[i]
+        for i in self._slot_names:
+            section_name = 'rotor_' + i
+            conf = self._config[i]
             p = Permutation()
-            p.from_int_vector(self.__rotor_set.data[conf['rid']]['permutation'])
+            p.from_int_vector(self._rotor_set.data[conf['rid']]['permutation'])
             
             if conf['inverse']:
-                result.set_integer_list(i, 'permutation', p.to_inverse())
+                result.set_integer_list(section_name, 'permutation', p.to_inverse())
             else:
-                result.set_integer_list(i, 'permutation', p.to_int_vector())
+                result.set_integer_list(section_name, 'permutation', p.to_int_vector())
             
-            result.set_integer_list(i, 'ringdata', self.__rotor_set.data[conf['rid']]['ringdata'])
-            result.set_integer(i, 'rid', conf['rid'])
-            result.set_integer(i, 'ringid', conf['rid'])            
-            result.set_boolean(i, 'insertinverse', False)
-            result.set_integer(i, 'ringoffset', conf['ringoffset'])
-            result.set_integer(i, 'rotordisplacement', (conf['rotorpos'] + p.neg(conf['ringoffset'])) % p.get_len()) 
+            result.set_integer_list(section_name, 'ringdata', self._rotor_set.data[conf['ringid']]['ringdata'])
+            result.set_integer(section_name, 'rid', conf['rid'])
+            result.set_integer(section_name, 'ringid', conf['ringid'])            
+            result.set_boolean(section_name, 'insertinverse', False)
+            result.set_integer(section_name, 'ringoffset', conf['ringoffset'])
+            result.set_integer(section_name, 'rotordisplacement', (conf['rotorpos'] + p.neg(conf['ringoffset'])) % p.get_len()) 
+            
+            self._save_additional_rotor_data(i, result)
         
-        return result.to_data()[0].encode()        
+        self._save_additional_data(result)
+        
+        return result.to_data()[0].encode()
+    
+    def save(self, file_name):
+        result = True
+        try:
+            data_to_save = self.render_state()
+            f = open(file_name, 'wb')
+            f.write(data_to_save)
+            f.close()
+        except:
+            result = False
+        
+        return result
+
+class EnigmaRotorSet(RotorSet):
+    def __init__(self):
+        super().__init__()
+    
+    def change_ukw_d(self, new_perm):
+        help = Permutation('yzxwvutsrqponjmlkihgfedcba')
+        help.involution_from_pairs(new_perm)
+        self.change_perm(es.UKW_D, help.to_int_vector())
+
+class BasicEnigmaState(GenericRotorMachineState):
+    def __init__(self, machine_name, machine_type, slots, rotor_set):
+        super().__init__(machine_name, slots, rotor_set)
+        self._machine_type = machine_type
+
+    def _save_additional_data(self, ini_file):  
+        super()._save_additional_data(ini_file)      
+        
+        ini_file.set_integer_list('machine', 'ukwdwiring', self._rotor_set.data[es.UKW_D]['permutation'])
+        ini_file.set_string('machine', 'machinetype', self._machine_type)
+
+class UnsteckeredEnigmaState(BasicEnigmaState):
+    def __init__(self, machine_name, rotor_set, etw_id):
+        slots = ['eintrittswalze', 'fast', 'middle', 'slow', 'umkehrwalze']
+        type_helper = {}
+        type_helper['TirpitzEnigma'] = 'Tirpitz'
+        type_helper['RailwayEnigma'] = 'Railway'
+        type_helper['AbwehrEnigma'] = 'Abwehr'        
+        type_helper['KDEnigma'] = 'KD'        
+        super().__init__(machine_name, type_helper[machine_name], slots, rotor_set)
+        
+        self.insert_rotor('eintrittswalze', etw_id, etw_id, 0, 0, True)
+
+class SteckeredEnigmaState(BasicEnigmaState):
+    def __init__(self, machine_name, machine_type, slots, rotor_set):
+        super().__init__(machine_name, machine_type, slots, rotor_set)
+    
+    def set_stecker_brett(self, cabling, use_uhr = False, uhr_dial_pos = 0):
+        self._config['plugboard'] = {}
+        self._config['plugboard']['cabling'] = cabling
+        self._config['plugboard']['uhr'] = use_uhr
+        self._config['plugboard']['dialpos'] = uhr_dial_pos
+    
+    def _save_additional_data(self, ini_file):  
+        super()._save_additional_data(ini_file)      
+        entry_perm = Permutation()
+        entry_perm.involution_from_pairs(self._config['plugboard']['cabling'])
+        
+        ini_file.set_boolean('plugboard', 'usesuhr', self._config['plugboard']['uhr'])
+        ini_file.set_integer_list('plugboard', 'entry', entry_perm.to_int_vector())
+        
+        if self._config['plugboard']['uhr']:
+            ini_file.set_string('plugboard', 'uhrcabling', self._config['plugboard']['cabling'])
+            ini_file.set_integer('plugboard', 'uhrdialpos', self._config['plugboard']['dialpos'])            
+
+class ServicesEnigmaState(SteckeredEnigmaState):
+    def __init__(self, machine_type, rotor_set):
+        slots = ['fast', 'middle', 'slow', 'umkehrwalze']
+        super().__init__('Enigma', machine_type, slots, rotor_set)
+
+class M4EnigmaState(SteckeredEnigmaState):
+    def __init__(self, rotor_set):
+        slots = ['fast', 'middle', 'slow', 'griechenwalze', 'umkehrwalze']
+        super().__init__('M4Enigma', 'M4', slots, rotor_set)
+
 
 ## \brief This class provides the simplest possible interface to the C++ rotorsim program and hides the
 #         gory details of how to communicate with it
@@ -339,7 +441,7 @@ class Processor:
     # \param [progress_state] Is a boolean. If it is true then the member self.__state is updated with
     #         the new state after a call to encrypt, decrypt or process.
     #
-    def __init__(self, state, binary_name = './rotorsim', progress_state = False):
+    def __init__(self, state, binary_name = './rotorsim', progress_state = True):
         self.__rotorsim_binary = binary_name
         self.__state = state
         self.__do_state_progression = progress_state
@@ -347,7 +449,7 @@ class Processor:
     ## \brief Returns the current machine state known to this instance.
     #        
     def get_state(self):
-        return state
+        return self.__state
 
     ## \brief Sets the current machine state known to this instance to the value given in the parameter new_state.
     #        
@@ -363,6 +465,9 @@ class Processor:
     #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
     #                     that can not be encoded in ASCII.
     #  \param [output_grouping] Is an int. Specifies the group size which is used when producing the output string.
+    #
+    #  \param [additional_params] Is a list of strings. Each element of the list is appended to the command line
+    #                             when "calling" the C++ rotorsim program.
     #
     #  \returns A string containing the machine output. In case of an error an exception is thrown.
     #            
@@ -395,7 +500,7 @@ class Processor:
                 raise RotorSimException(RESULT_ROTORSIM_FORMAT)          
             
             # output is everyting before the 0xFF            
-            result = (comm_result[0][:pos]).decode().strip()    
+            result = (comm_result[0][:pos]).decode().strip('\n')    
             # new state is contained in the bytes following the 0xFF
             self.__state = comm_result[0][pos + 1:]
         else:            
@@ -428,31 +533,149 @@ class Processor:
 
     ## \brief Simple wrapper for the process method that allows to step the rotor machine specified by self.__state.
     #
-    #  \returns A string specifyng the new rotor positions.
+    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
+    #
+    #  \returns A vector of strings specifying the rotor positions encountered while stepping the machine
     #                        
-    def step(self):
-        return self.process('step', '', 0)
+    def step(self, num_iterations = 1):
+        help =  self.process('step', '', 0, ['--num-iterations', str(num_iterations)])
+        return self._response_to_string_vector(help)
 
     ## \brief Simple wrapper for the process method that allows to "setup step" the rotor given in parameter rotor_num.
     #         If self.__state does not describe a SIGABA calling this method does not step any rotors.
     #
     #  \param [rotor_num] Is an int specifying the number of the rotor which is to "setup step", where the numbering
     #                     goes from left to right of the driver machine rotors (the five in the middle in rotorvis).
+    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
     #
-    #  \returns A string specifyng the new rotor positions.
+    #  \returns A vector of strings string specifying the rotor positions generated.
     #                        
-    def setup_step(self, rotor_num):
-        return self.process('step', '', 0, ['--sigaba-setup', str(rotor_num)])
+    def setup_step(self, rotor_num, num_iterations = 1):
+        help =  self.process('sigabasetup', '', 0, ['--rotor-num', str(rotor_num), '--num-iterations', str(num_iterations)])
+        return self._response_to_string_vector(help)
+
+    ## \brief Simple wrapper for the process method that allows to retrieve the current rotor positions.
+    #
+    #  \returns A string specifying the current rotor positions.
+    #                        
+    def get_rotor_positions(self):
+        return self.process('pos', '', 0)
+
+    ## \brief Simple wrapper for the process method that allows to retrieve the current machine permutation.
+    #
+    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
+    #
+    #  \returns A vector of vector of ints that specifies the permutations generated by the underlying machine.
+    #                        
+    def get_perm(self, num_iterations = 1):
+        help = self.process('perm', '', 0, ['--num-iterations', str(num_iterations)])        
+        return self._response_to_int_vectors(help)
+
+    ## \brief Turns string parameter into a vector of vector of ints. Separator is '\n'.
+    #
+    #  \param [string_data] A string that contains the data which is to be transformed.
+    #
+    #  \returns A vector of vector of ints.
+    #                                
+    def _response_to_int_vectors(self, string_data):
+        result = '[' + string_data.strip() + ']'
+        result = result.replace('\n', ',')
+        return eval(result)
+
+    ## \brief Turns string parameter into a vector of strings. Separator is '\n'.
+    #
+    #  \param [string_data] A string that contains the data which is to be transformed.
+    #
+    #  \returns A vector of strings.
+    #                                
+    def _response_to_string_vector(self, string_data):
+        result = "['" + string_data.strip() + "']"
+        result = result.replace('\n', "','")
+        return eval(result)
 
 
+def load_machine(file_name):
+    f = open(file_name, 'rb')
+    s = f.read()
+    f.close()
+    machine = Processor(s)
+    
+    return machine
+    
 def test():
     f = open("Enigma M4 Test 1.ini", "rb")
     s = f.read()
     f.close()
-    
+
     machine = Processor(s, progress_state = True)
     help = Permutation()
     
-    print(machine.encrypt('nczwvusx'))
-    print(help.to_int_vector())
+    print(machine.decrypt('nczwvusx'))
+    
+    r_set = EnigmaRotorSet()
+    
+    if r_set.load('enigma_rotor_set.ini'):        
+        enigma_t_state = UnsteckeredEnigmaState('TirpitzEnigma', r_set, es.WALZE_T_ETW)
+        enigma_t_state.insert_rotor('fast', es.WALZE_T_V, es.WALZE_T_V, help.from_val('b'), help.from_val('m'))
+        enigma_t_state.insert_rotor('middle', es.WALZE_T_VIII, es.WALZE_T_VIII, help.from_val('r'), help.from_val('f'))        
+        enigma_t_state.insert_rotor('slow', es.WALZE_T_VII, es.WALZE_T_VII, help.from_val('q'), help.from_val('c'))  
+        enigma_t_state.insert_rotor('umkehrwalze', es.UKW_T, es.UKW_T, help.from_val('k'), help.from_val('a'))                      
+                
+        machine = Processor(enigma_t_state.render_state())
+        print(machine.decrypt('rhmbwnbzgmmnkperufvnyjfkyqg'))                
+        
+        enigma_I_state = ServicesEnigmaState('M3', r_set)
+        enigma_I_state.insert_rotor('fast', es.WALZE_III, es.WALZE_III, help.from_val('h'), help.from_val('z'))
+        enigma_I_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('z'), help.from_val('t'))        
+        enigma_I_state.insert_rotor('slow', es.WALZE_I, es.WALZE_I, help.from_val('p'), help.from_val('r'))  
+        enigma_I_state.insert_rotor('umkehrwalze', es.UKW_B, es.UKW_B, 0, 0)
+        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)                      
+                
+        machine = Processor(enigma_I_state.render_state())
+        print(machine.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx'))
+
+        r_set.change_ukw_d('azbpcxdqetfogshvirjyknlmuw')
+        enigma_kd_state = UnsteckeredEnigmaState('KDEnigma', r_set, es.WALZE_KD_ETW)
+        enigma_kd_state.insert_rotor('fast', es.WALZE_KD_V, es.WALZE_KD_V, help.from_val('b'), help.from_val('m'))
+        enigma_kd_state.insert_rotor('middle', es.WALZE_KD_VI, es.WALZE_KD_VI, help.from_val('r'), help.from_val('f'))        
+        enigma_kd_state.insert_rotor('slow', es.WALZE_KD_II, es.WALZE_KD_II, help.from_val('q'), help.from_val('c'))  
+        enigma_kd_state.insert_rotor('umkehrwalze', es.UKW_D, es.UKW_D, 0, 0)                      
+                
+        machine = Processor(enigma_kd_state.render_state())
+        print(machine.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr'))    
+        
+        enigma_M4_state = M4EnigmaState(r_set)
+        enigma_M4_state.insert_rotor('fast', es.WALZE_I, es.WALZE_I, help.from_val('v'), help.from_val('a'))
+        enigma_M4_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('a'), help.from_val('n'))        
+        enigma_M4_state.insert_rotor('slow', es.WALZE_II, es.WALZE_II, help.from_val('a'), help.from_val('j'))  
+        enigma_M4_state.insert_rotor('griechenwalze', es.WALZE_BETA, es.WALZE_BETA, help.from_val('a'), help.from_val('v'))          
+        enigma_M4_state.insert_rotor('umkehrwalze', es.UKW_B_DN, es.UKW_B_DN, 0, 0)
+        enigma_M4_state.set_stecker_brett('atbldfgjhmnwopqyrzvx')                      
+                
+        machine = Processor(enigma_M4_state.render_state())
+        print(machine.decrypt('nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez'))
+        
+        if not enigma_M4_state.save('egal.ini'):
+            print('Error saving M4 state')
+
+        enigma_abw_state = UnsteckeredEnigmaState('AbwehrEnigma', r_set, es.WALZE_ABW_ETW)
+        enigma_abw_state.insert_rotor('slow', es.WALZE_ABW_III, es.WALZE_ABW_III, 0, 0)
+        enigma_abw_state.insert_rotor('middle', es.WALZE_ABW_II, es.WALZE_ABW_II, 0, 0)        
+        enigma_abw_state.insert_rotor('fast', es.WALZE_ABW_I, es.WALZE_ABW_I, 0, 0)  
+        enigma_abw_state.insert_rotor('umkehrwalze', es.UKW_ABW, es.UKW_ABW, 0, 0)                      
+
+        machine = Processor(enigma_abw_state.render_state())
+        print(machine.decrypt('gjuiycmdguvttffqpzmxkvctzusobzldzumhqmjxwtzwmqnnuwidyeqpgvfzetolb'))
+
+        enigma_rb_state = UnsteckeredEnigmaState('RailwayEnigma', r_set, es.WALZE_RB_ETW)
+        enigma_rb_state.insert_rotor('fast', es.WALZE_RB_III, es.WALZE_RB_III, 0, 0)
+        enigma_rb_state.insert_rotor('middle', es.WALZE_RB_II, es.WALZE_RB_II, 0, 0)        
+        enigma_rb_state.insert_rotor('slow', es.WALZE_RB_I, es.WALZE_RB_I, 0, 0)  
+        enigma_rb_state.insert_rotor('umkehrwalze', es.UKW_RB, es.UKW_RB, 0, 0)                      
+
+        machine = Processor(enigma_rb_state.render_state())
+        print(machine.decrypt('zbijbjetellsdidqbyocxeohngdsxnwlifuuvdqlzsyrbtbwlwlxpgujbhurbikgtkdztgtexjxhulfkiuqnjbeqgccryitomeyirckuji'))
+            
+    else:
+        print('Unable to load rotor set data')
 

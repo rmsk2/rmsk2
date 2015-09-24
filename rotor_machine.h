@@ -92,7 +92,8 @@ public:
      */  
     virtual unsigned int decrypt(unsigned int in_char);
 
-    /*! \brief Returns the size of the rotors (their number of contacts) in this machine.
+    /*! \brief Returns the size of the permutation this machine generates. Normally this is equal to the number of
+     *         contacts of the rotors in this machine.
      */      
     virtual unsigned int get_size() { return stepper->get_size(); }
     
@@ -220,6 +221,11 @@ public:
      *         rotor_machine::unvisualized_rotor_names to determine which rotors are not to be visualized at all.
      */
     virtual ustring visualize_all_positions();
+
+    /*! \brief This method changes the vector which is referenced through the parameter current_perm in such a way that
+     *         it reflects the permutation that is produced by the rotor machine in its current state.
+     */        
+    virtual void get_current_perm(vector<unsigned int>& current_perm);
 
     /*! \brief Setter method for the printing_device in use in this rotor_machine.
      */        
@@ -355,7 +361,11 @@ protected:
      *         when restoring state from a KeyFile object. This method is called by load_ini(Glib::KeyFile&). Its default implementation does nothing.
      *         Reimplementations have to return false if no errors occured while restoring the state. true is to be returned otherwise.
      */         
-    virtual bool load_additional_components(Glib::KeyFile& ini_file) { return false; }        
+    virtual bool load_additional_components(Glib::KeyFile& ini_file) { return false; }
+
+    /*! \brief This method encrypts the symbol specified in parameter symbol but does *not* step the machine.
+     */                        
+    virtual unsigned int get_enc_symbol(unsigned int symbol);        
 
     /*! \brief Holds the stpping_gear in use in this rotor_machine.
      */                    

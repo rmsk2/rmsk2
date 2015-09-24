@@ -51,6 +51,36 @@ unsigned int rotor_machine::encrypt(unsigned int in_char)
     return result;
 }
 
+unsigned int rotor_machine::get_enc_symbol(unsigned int symbol)
+{
+    unsigned int result = symbol;
+   
+    result = safe_encrypt(input_transform.get(), result);   
+        
+    result = stepper->get_stack().encrypt(result);
+    
+    if (stepper->get_stack().get_reflecting_flag())
+    {
+        result = safe_decrypt(input_transform.get(), result);
+    }
+    else
+    {
+        result = safe_encrypt(output_transform.get(), result);   
+    }    
+    
+    return result;
+}
+
+void rotor_machine::get_current_perm(vector<unsigned int>& current_perm)
+{
+    current_perm.clear();
+    
+    for (unsigned int count = 0; count < get_size(); count++)
+    {
+        current_perm.push_back(get_enc_symbol(count));
+    }
+}
+
 unsigned int rotor_machine::decrypt(unsigned int in_char)
 {
     unsigned int result = in_char;

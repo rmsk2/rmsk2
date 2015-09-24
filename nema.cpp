@@ -327,7 +327,9 @@ nema::nema(vector<rotor_assembly>& rotor_settings, unsigned int left_red_drive_w
 
     // Set up keyboard    
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("ijklmnopqrstuvwxyzabcdefgh")));
-    set_keyboard(kbd);                       
+    set_keyboard(kbd); 
+    
+    unvisualized_rotor_names.insert(ETW);                          
         
     get_stepping_gear()->reset(); 
 }

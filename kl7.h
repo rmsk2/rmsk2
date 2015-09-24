@@ -186,6 +186,11 @@ public:
      *         the correct type kl7_stepping_gear.
      */    
     virtual kl7_stepping_gear *get_kl7_stepper() { return dynamic_cast<kl7_stepping_gear *>(stepper); }
+    
+    /*! \brief Even though the rotors of the KL7 have 36 contacts, the machine still only generates a permutation of
+     *         size 26. This is due to the feedback feature of the rotor stack. 
+     */            
+    virtual unsigned int get_size() { return 26; }    
 
     /*! \brief Returns the letter currently visible in the rotor window of the rotor identified by the parameter
      *         rotor_identifier. 
