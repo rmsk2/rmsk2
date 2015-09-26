@@ -414,7 +414,7 @@ int rotorsim::execute_command()
         
         // Open output stream
         out = determine_output_stream(output_file, file_out);        
-        if (in == NULL)
+        if (out == NULL)
         {
             result = ERR_IO_FAILURE;
             cout << "Unable to open output file " << input_file << endl;
