@@ -26,6 +26,8 @@ import subprocess
 from gi.repository import GLib
 import enigrotorset as es
 import os
+import datetime
+import tlvobject
 
 RESULT_OK = 0
 RESULT_ERROR = 42
@@ -428,6 +430,24 @@ class M4EnigmaState(SteckeredEnigmaState):
         super().__init__('M4Enigma', 'M4', slots, rotor_set)
 
 
+class RotorMachine(tlvobject.TlvProxy):
+    def __init__(self, machine_state, server_address):
+        tlvobject.TlvProxy.__init__(self, server_address)
+        param = tlvobject.TlvEntry().to_byte_array(machine_state)
+        res = self.do_method_call('new', 'rotorproxy', param)        
+        self._handle = res[0]
+    
+    def encrypt(self, data_to_encrypt):
+        param = tlvobject.TlvEntry().to_string(data_to_encrypt)    
+        res = self.do_method_call(self._handle, 'encrypt', param)
+        return res[0]
+
+    def decrypt(self, data_to_decrypt):
+        param = tlvobject.TlvEntry().to_string(data_to_decrypt)    
+        res = self.do_method_call(self._handle, 'decrypt', param)
+        return res[0]
+
+
 ## \brief This class provides the simplest possible interface to the C++ rotorsim program and hides the
 #         gory details of how to communicate with it
 #
@@ -453,7 +473,7 @@ class Processor:
 
     ## \brief Sets the current machine state known to this instance to the value given in the parameter new_state.
     #        
-    #  \param [new_state] Is a byte array that represnets the new machine state to use.
+    #  \param [new_state] Is a byte array that represents the new machine state to use.
     #    
     def set_state(self, new_state):
         self.__state = new_state
@@ -541,8 +561,8 @@ class Processor:
         help =  self.process('step', '', 0, ['--num-iterations', str(num_iterations)])
         return self._response_to_string_vector(help)
 
-    ## \brief Simple wrapper for the process method that allows to "setup step" the rotor given in parameter rotor_num.
-    #         If self.__state does not describe a SIGABA calling this method does not step any rotors.
+    ## \brief Simple wrapper for the process method that allows to "setup step" the rotor given in parameter rotor_num. If 
+    #         the current state does not describe a SIGABA calling this method does not step any rotors.
     #
     #  \param [rotor_num] Is an int specifying the number of the rotor which is to "setup step", where the numbering
     #                     goes from left to right of the driver machine rotors (the five in the middle in rotorvis).
@@ -678,4 +698,33 @@ def test():
             
     else:
         print('Unable to load rotor set data')
+
+def massen_test(num_iterations):
+    jetzt = datetime.datetime.now()
+    m4_test = load_machine('Enigma M4 Test 1.ini')
+    
+    for i in range(num_iterations):
+        res = m4_test.encrypt('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+    spaeter = datetime.datetime.now()
+    print(spaeter - jetzt)    
+
+m4 = load_machine('Enigma M4 Test 1.ini')
+m4_state = m4.get_state()
+csp2900 = load_machine('CSP 2900 Test.ini')
+csp2900_state = csp2900.get_state()
+sg39 = load_machine('SG39 Test.ini')
+sg39_state = sg39.get_state()
+
+def time_trial(num_iterations, test_data):    
+    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:    
+        print(m4_obj.decrypt('nczwvusx'))            
+        jetzt = datetime.datetime.now()
+        
+        for i in range(num_iterations):
+            m4_obj.decrypt(test_data)
+        
+        spaeter = datetime.datetime.now()
+        print(spaeter - jetzt)        
+    
 

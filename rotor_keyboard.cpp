@@ -31,6 +31,18 @@ ustring rotor_keyboard::symbol_typed_decrypt(gunichar in)
     return machine->get_printer()->print_decrypt(get_key_code_decrypt(in));
 }
 
+void rotor_keyboard::symbols_typed_encrypt(ustring& in, ustring& out)
+{
+    ustring::iterator iter;
+    
+    out.clear();
+    
+    for(iter = in.begin(); iter != in.end(); ++iter)
+    {
+        out += symbol_typed_encrypt(*iter);
+    }    
+}
+
 ustring rotor_keyboard::symbols_typed_encrypt(ustring& in)
 {
     ustring result;
@@ -43,7 +55,19 @@ ustring rotor_keyboard::symbols_typed_encrypt(ustring& in)
     
     return result;
 }
- 
+
+void rotor_keyboard::symbols_typed_decrypt(ustring& in, ustring& out)
+{
+    ustring::iterator iter;
+
+    out.clear();
+    
+    for(iter = in.begin(); iter != in.end(); ++iter)
+    {
+        out += symbol_typed_decrypt(*iter);
+    }
+}
+
 ustring rotor_keyboard::symbols_typed_decrypt(ustring& in)
 {
     ustring result;

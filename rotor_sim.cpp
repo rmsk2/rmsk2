@@ -48,6 +48,10 @@ public:
     /*! \brief This method parses the command line and processes the input data using the appropriate rotor machine.
      */
     int parse(int argc, char **argv);
+
+    /*! \brief This method executes the command requested by the user.
+     */
+    int execute_command();
     
 protected:
 
@@ -81,49 +85,45 @@ protected:
      * 
      *  \param [num_iterations] Has to specify the number of permutations that are to be returned. The machine is stepped num_iterations - 1
      *                          by this method. 
-     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [out_s] Has to specify the output stream used by this method.
      *  \param [machine] Has to specify the rotor machine that is to be queried for permutations.
      */
-    void execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine);
+    void execute_perm_command(int num_iterations, ostream *out_s, rotor_machine *machine);
 
     /*! \brief This method performs the operations required for the step command which is to step the underlying rotor machine a given
      *         number of times.
      * 
      *  \param [num_iterations] Has to specify the number times the underlying machine is to be stepped
-     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [out_s] Has to specify the output stream used by this method.
      *  \param [machine] Has to specify the rotor machine that is to be stepped.
      */
-    void execute_step_command(int num_iterations, ostream *out, rotor_machine *machine);
+    void execute_step_command(int num_iterations, ostream *out_s, rotor_machine *machine);
 
     /*! \brief This method performs the operations required for setup stepping a SIGABA instance.
      * 
      *  \param [num_iterations] Has to specify the number times the underlying machine is to be stepped
      *  \param [setup_step_rotor_num] Has to specify the rotor number (1-5) which is to be setup stepped
-     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [out_s] Has to specify the output stream used by this method.
      *  \param [machine] Has to specify the rotor machine that is to be setup stepped.
      */
-    void execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine);
+    void execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out_s, rotor_machine *machine);
 
     /*! \brief This method writes a visualization of the current rotor positions to the output stream.
      * 
-     *  \param [out] Has to specify the output stream used by this method.
+     *  \param [out_s] Has to specify the output stream used by this method.
      *  \param [machine] Has to specify the rotor machine which rotor positions are to be visualized.
      */
-    void execute_pos_command(ostream *out, rotor_machine *machine);
-
-    /*! \brief This method prints a message that describes how to use rotorsim.
-     */
-    int execute_command();
-
+    void execute_pos_command(ostream *out_s, rotor_machine *machine);
+    
     /*! \brief This method performs the actual en/decyption of the input data using the rotor machine specified
      *         on the command line.
      */
-    int process_stream(istream *in, ostream *out, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok);
+    int process_stream(istream *in_s, ostream *out_s, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok);
 
-    /*! \brief This method reads data from the stream specified in parameter in and stores that data in the string referenced
+    /*! \brief This method reads data from the stream specified in parameter in_s and stores that data in the string referenced
      *         by parameter data_read until either the value stored in delimiter is read or the end of the stream is reached.
      */
-    int read_delimited_stream(istream *in, string& data_read, int delimiter);
+    int read_delimited_stream(istream *in_s, string& data_read, int delimiter);
 
     /*! \brief Holds a specification of the positional parameters that should be recognized. Here the only positional 
      *         parameter is the command (encrypt/decrypt) to execute.
@@ -693,12 +693,6 @@ int rotorsim::parse(int argc, char **argv)
         return_code = ERR_WRONG_COMMAND_LINE;
     }
     
-    if (return_code == RETVAL_OK)
-    {
-        // Parsing the command line was successful. Now do what the user requested.
-        return_code = execute_command();
-    }
-
     return return_code;
 }
 
@@ -708,6 +702,12 @@ int main(int argc, char **argv)
 {
     rotorsim sim;   
     int ret_val = sim.parse(argc, argv);
+ 
+    if (ret_val == RETVAL_OK)
+    {
+        // Parsing the command line was successful. Now do what the user requested.
+        ret_val = sim.execute_command();
+    }
         
     return ret_val;
 }

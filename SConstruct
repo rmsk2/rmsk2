@@ -55,6 +55,8 @@ perm_files = ['rand_perm.cpp']
 
 rotor_sim_files = ['rotor_sim.cpp']
 
+tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp']
+
 hdr = rmsk.Gladeheader('glade_data.h', 'rotor_dialog_2.ui')
 rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'enigrotorset.py')
 base_lib = rmsk.Library('rmsk_base', base_files, CPPDEFINES = rmsk_defines)
@@ -66,10 +68,12 @@ enigma_prog = rmsk.Program('enigma', enigma_files, LIBS = rmsk_libs, LIBPATH = r
 rand_perm_prog = rmsk.Program('rand_perm', perm_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 rotorvis_prog = rmsk.Program('rotorvis', rotor_vis_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes)
 rotor_sim_prog = rmsk.Program('rotorsim', rotor_sim_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
+tlv_object_server = rmsk.Program('tlv_object', tlv_object_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 
 rmsk.Install('dist', rotorvis_prog)
 rmsk.Install('dist', enigma_prog)
 rmsk.Install('dist', rotor_sim_prog)
+rmsk.Install('dist', tlv_object_server)
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.page'))
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.png'))
 rmsk.Install('dist/doc/rotorvis', Glob('doc/rotorvis/*.page'))

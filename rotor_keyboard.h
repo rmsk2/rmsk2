@@ -86,10 +86,20 @@ public:
      */    
     virtual ustring symbols_typed_encrypt(ustring& in);
 
+    /*! \brief Applies symbol_typed_encrypt(gunichar) to each character in the parameter in and returns
+     *         the resulting output symbols in the string out.
+     */    
+    virtual void symbols_typed_encrypt(ustring& in, ustring& out);
+
     /*! \brief Applies symbol_typed_decrypt(gunichar) to each character in the parameter in and returns
      *         the resulting output symbols.
      */    
     virtual ustring symbols_typed_decrypt(ustring& in);
+
+    /*! \brief Applies symbol_typed_decrypt(gunichar) to each character in the parameter in and returns
+     *         the resulting output symbols in string out.
+     */    
+    virtual void symbols_typed_decrypt(ustring& in, ustring& out);
 
     /*! \brief This method returns true if the symbol in parameter to_test is contained in the input
      *         encryption alphabet that is active in the current state.

@@ -100,8 +100,8 @@ public:
     /*! \brief Constructor. The parameter state_base_name has to specify the name of the hidden file which is used to store the
      *         application state. The parameter valid_names specifies the names of the machines that this simulator is able to
      *         simulate. The parameter use_enigma_pic influences the picture that is shown when the user is presented with a
-     *         machine selection dialog. If true a picture of an Enigma is shown. In case use_enigma_pic a picture of another
-     *         rotor machine is depicted.
+     *         machine selection dialog. If true a picture of an Enigma is shown. In case use_enigma_pic is false a picture of
+     *         another rotor machine is depicted.
      *
      *  The set of names given in valid_names is used to parse the first parameter given to simulator_app::run(). If no parameter
      *  was specified by the user this set is used to display a dialog that lets the user select the desired machine.
