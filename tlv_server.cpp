@@ -115,16 +115,13 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
 
 unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, object_registry *registry)
 {
-    unsigned int result = ERR_OK, result_temp;
+    unsigned int result = ERR_OK;
     string string_val;
     vector<tlv_entry> entries;
     tlv_entry end_marker;
     tlv_entry object_name_read, method_name_read, parameters_read;
     string object_name, method_name;
     tlv_entry error_code, success_code;
-        
-    end_marker.to_null();
-    success_code.to_int(0);
     
     do
     {
@@ -135,8 +132,7 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
         
         if (!object_name_read.tlv_convert(object_name))
         {
-            error_code.to_int(ERR_READ_OBJECT_NAME);
-            result = client_stream->write_tlv(error_code);
+            result = client_stream->write_error_tlv(ERR_READ_OBJECT_NAME);
             break;
         }
         
@@ -147,8 +143,7 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
         
         if (!method_name_read.tlv_convert(method_name))
         {
-            error_code.to_int(ERR_READ_METHOD_NAME);
-            result = client_stream->write_tlv(error_code);
+            result = client_stream->write_error_tlv(ERR_READ_METHOD_NAME);
             break;
         }
 
@@ -160,14 +155,14 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
         if ((object_name == "root") and (method_name == "close"))
         {
             (void)stop();
-            result = client_stream->write_tlv(success_code);
+            result = client_stream->write_error_tlv(0);
             break;
         }
 
         if (method_name == "delete")
         {
             registry->delete_object(object_name);
-            result = client_stream->write_tlv(success_code);
+            result = client_stream->write_error_tlv(0);
             break;
         }
         
@@ -175,27 +170,18 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
             
         if (processor.get() == NULL)
         {
-            error_code.to_int(ERR_DETERMINE_PROCESSOR);
-            result = client_stream->write_tlv(error_code);
+            result = client_stream->write_error_tlv(ERR_DETERMINE_PROCESSOR);
             break;
         }        
         
         if ((result = (*processor)(parameters_read, client_stream)) != ERR_OK)
         {         
-            error_code.to_int((int)result);        
-            (void)client_stream->write_tlv(error_code);
+            //(void)client_stream->write_error_tlv(result);
             break;        
         }
                     
     } while(0);
-        
-    result_temp = client_stream->write_tlv(end_marker);
-    
-    if (result == ERR_OK)
-    {
-        result = result_temp;
-    }
-        
+            
     return result;
 }
 

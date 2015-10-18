@@ -184,8 +184,7 @@ unsigned int registry_manager::list_objects_processor(tlv_entry& params, tlv_str
         result = out_stream->write_tlv(object_handle);
     }
     
-    result_code.to_int((int)result);        
-    (void)out_stream->write_tlv(result_code);
+    (void)out_stream->write_error_tlv(result);
     
     return result;
 }
@@ -202,9 +201,8 @@ unsigned int registry_manager::list_providers_processor(tlv_entry& params, tlv_s
         object_handle.to_string(iter->first);
         result = out_stream->write_tlv(object_handle);
     }
-
-    result_code.to_int((int)result);    
-    (void)out_stream->write_tlv(result_code);
+    
+    (void)out_stream->write_error_tlv(result);
     
     return result;
 }

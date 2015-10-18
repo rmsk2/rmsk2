@@ -217,7 +217,7 @@ unsigned int rotor_machine_proxy::encdec_processor(tlv_entry& params, tlv_stream
 
     if (params.tag != TAG_STRING)
     {
-        result = out_stream->write_error_tlv((int)ERR_SYNTAX_INPUT);
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
     }
     else
     {
@@ -240,11 +240,231 @@ unsigned int rotor_machine_proxy::encdec_processor(tlv_entry& params, tlv_stream
 
 }
 
+unsigned int rotor_machine_proxy::get_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    Glib::KeyFile ini_file;
+    Glib::ustring ini_data;
+    tlv_entry dumped_state;
+    
+    machine->save_ini(ini_file);
+    ini_data = ini_file.to_data();
+    dumped_state.tag = TAG_BYTE_ARRAY;
+    dumped_state.value = basic_string<unsigned char>((unsigned char *)ini_data.c_str(), ini_data.length());
+    
+    result = out_stream->write_success_tlv(dumped_state);
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::get_description_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry description_tlv;
+    string description;
+    
+    description = machine->get_description();
+    description_tlv.to_string(description);    
+    result = out_stream->write_success_tlv(description_tlv);
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::get_positions_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry positions_tlv;
+    ustring positions;
+    
+    positions = machine->visualize_all_positions();
+    positions_tlv.to_string(positions.raw());    
+    result = out_stream->write_success_tlv(positions_tlv);
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::sigaba_setup_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    sigaba *machine_as_sigaba;
+    int rotor_num, num_steps;
+    const char *rotor_names[5] = {STATOR_L, S_SLOW, S_FAST, S_MIDDLE, STATOR_R};
+    ustring current_pos;
+    tlv_entry current_pos_tlv;
+    
+    do
+    {
+        if (!params.parse_all())
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+        
+        if (params.children.size() != 2)
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+
+        if (!(params.children[0].tlv_convert(rotor_num) and params.children[1].tlv_convert(num_steps)))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);        
+            break;
+        }
+        
+        if ((machine_as_sigaba = dynamic_cast<sigaba *>(machine)) == NULL)
+        {
+            result = out_stream->write_error_tlv(ERR_SEMANTICS_INPUT);        
+            break;        
+        }
+
+        if ((rotor_num < 1) or (rotor_num > 5))
+        {
+            result = out_stream->write_error_tlv(ERR_SEMANTICS_INPUT);        
+            break;        
+        }
+        
+        if (num_steps <= 0)
+        {
+            num_steps =  1;
+        }
+        
+        for (int count = 0; (count < num_steps) and (result == ERR_OK); count++)
+        {
+            machine_as_sigaba->get_sigaba_stepper()->setup_step(rotor_names[rotor_num -1]);
+            current_pos = machine->visualize_all_positions();
+            current_pos_tlv.to_string(current_pos.raw());
+            result = out_stream->write_tlv(current_pos_tlv);
+        }
+        
+        (void)out_stream->write_error_tlv(result);        
+        
+    } while(0);
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::set_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    rotor_machine *new_machine;
+    
+    if (params.tag != TAG_BYTE_ARRAY)
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        string state_data = string((char *)params.value.data(), params.value.length());
+        new_machine = rmsk::restore_from_data(state_data);
+        
+        if (new_machine == NULL)
+        {
+            result = out_stream->write_error_tlv(ERR_OBJECT_CREATE);
+        }
+        else
+        {
+            set_new_machine(new_machine);
+            result = out_stream->write_error_tlv(ERR_OK);
+        }
+    }
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::step_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    int num_iterations;
+    tlv_entry current_pos_tlv;
+    ustring current_pos;
+    
+    if (!params.tlv_convert(num_iterations))
+    {
+        out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        if (num_iterations < 0)
+        {
+            num_iterations = 1;
+        }
+        
+        for (int count = 0; (count < num_iterations) and (result == ERR_OK); count++)
+        {
+            machine->step_rotors();
+            current_pos = machine->visualize_all_positions();
+            current_pos_tlv.to_string(current_pos.raw());
+            result = out_stream->write_tlv(current_pos_tlv);
+        }
+        
+        (void)out_stream->write_error_tlv(result);
+    }
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::get_permutations_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    int num_iterations;
+    tlv_entry current_perm_tlv;
+    ustring current_pos;
+    vector<unsigned int> current_perm;
+    
+    if (!params.tlv_convert(num_iterations))
+    {
+        out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        if (num_iterations < 0)
+        {
+            num_iterations = 0;
+        }
+        
+        machine->get_current_perm(current_perm);
+        perm_to_byte_array(current_perm, current_perm_tlv);
+        result = out_stream->write_tlv(current_perm_tlv);
+        
+        for (int count = 0; (count < num_iterations) and (result == ERR_OK); count++)
+        {
+            machine->step_rotors();
+            machine->get_current_perm(current_perm);
+            perm_to_byte_array(current_perm, current_perm_tlv);
+            result = out_stream->write_tlv(current_perm_tlv);
+        }
+        
+        (void)out_stream->write_error_tlv(result);
+    }
+    
+    return result;
+}
+
+void rotor_machine_proxy::perm_to_byte_array(vector<unsigned int>& perm, tlv_entry& byte_array)
+{
+    byte_array.value.clear();
+    byte_array.tag = TAG_BYTE_ARRAY;
+    vector<unsigned int>::iterator iter;
+    
+    for (iter = perm.begin(); iter != perm.end(); ++iter)
+    {
+        byte_array.value.push_back((unsigned char)*iter);
+    }
+}
+
 rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry) 
     : service_provider(obj_registry) 
 { 
     rotor_proxy_proc["encrypt"] = &rotor_machine_proxy::encrypt_processor;
     rotor_proxy_proc["decrypt"] = &rotor_machine_proxy::decrypt_processor;    
+    rotor_proxy_proc["getstate"] = &rotor_machine_proxy::get_state_processor;
+    rotor_proxy_proc["setstate"] = &rotor_machine_proxy::set_state_processor;
+    rotor_proxy_proc["step"] = &rotor_machine_proxy::step_processor;    
+    rotor_proxy_proc["getdescription"] = &rotor_machine_proxy::get_description_processor;
+    rotor_proxy_proc["sigabasetup"] = &rotor_machine_proxy::sigaba_setup_processor;
+    rotor_proxy_proc["getpositions"] = &rotor_machine_proxy::get_positions_processor;
+    rotor_proxy_proc["getpermutations"] = &rotor_machine_proxy::get_permutations_processor;        
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()
@@ -281,7 +501,7 @@ unsigned int rotor_machine_provider::new_object(tlv_entry& params, tlv_stream *o
     {
         if (params.tag != TAG_BYTE_ARRAY)
         {
-            result = out_stream->write_error_tlv((int)ERR_SYNTAX_INPUT);
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
             break;
         }
         
@@ -291,7 +511,7 @@ unsigned int rotor_machine_provider::new_object(tlv_entry& params, tlv_stream *o
         
         if (machine ==  NULL)
         {
-            result = out_stream->write_error_tlv((int)ERR_OBJECT_CREATE);
+            result = out_stream->write_error_tlv(ERR_OBJECT_CREATE);
             break;            
         }
         

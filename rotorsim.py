@@ -22,7 +22,6 @@
 #        create rotor machine state files which then can be used with the rotorsim program.
 
 import sys
-import subprocess
 from gi.repository import GLib
 import enigrotorset as es
 import os
@@ -301,6 +300,7 @@ class Permutation:
     def get_len(self):
         return len(self.__val)
 
+
 class GenericRotorMachineState:
     def __init__(self, machine_name, slot_names, rotor_set):
         self._name = machine_name
@@ -365,6 +365,7 @@ class GenericRotorMachineState:
         
         return result
 
+
 class EnigmaRotorSet(RotorSet):
     def __init__(self):
         super().__init__()
@@ -373,6 +374,7 @@ class EnigmaRotorSet(RotorSet):
         help = Permutation('yzxwvutsrqponjmlkihgfedcba')
         help.involution_from_pairs(new_perm)
         self.change_perm(es.UKW_D, help.to_int_vector())
+
 
 class BasicEnigmaState(GenericRotorMachineState):
     def __init__(self, machine_name, machine_type, slots, rotor_set):
@@ -385,6 +387,7 @@ class BasicEnigmaState(GenericRotorMachineState):
         ini_file.set_integer_list('machine', 'ukwdwiring', self._rotor_set.data[es.UKW_D]['permutation'])
         ini_file.set_string('machine', 'machinetype', self._machine_type)
 
+
 class UnsteckeredEnigmaState(BasicEnigmaState):
     def __init__(self, machine_name, rotor_set, etw_id):
         slots = ['eintrittswalze', 'fast', 'middle', 'slow', 'umkehrwalze']
@@ -396,6 +399,7 @@ class UnsteckeredEnigmaState(BasicEnigmaState):
         super().__init__(machine_name, type_helper[machine_name], slots, rotor_set)
         
         self.insert_rotor('eintrittswalze', etw_id, etw_id, 0, 0, True)
+
 
 class SteckeredEnigmaState(BasicEnigmaState):
     def __init__(self, machine_name, machine_type, slots, rotor_set):
@@ -419,10 +423,12 @@ class SteckeredEnigmaState(BasicEnigmaState):
             ini_file.set_string('plugboard', 'uhrcabling', self._config['plugboard']['cabling'])
             ini_file.set_integer('plugboard', 'uhrdialpos', self._config['plugboard']['dialpos'])            
 
+
 class ServicesEnigmaState(SteckeredEnigmaState):
     def __init__(self, machine_type, rotor_set):
         slots = ['fast', 'middle', 'slow', 'umkehrwalze']
         super().__init__('Enigma', machine_type, slots, rotor_set)
+
 
 class M4EnigmaState(SteckeredEnigmaState):
     def __init__(self, rotor_set):
@@ -446,276 +452,152 @@ class RotorMachine(tlvobject.TlvProxy):
         param = tlvobject.TlvEntry().to_string(data_to_decrypt)    
         res = self.do_method_call(self._handle, 'decrypt', param)
         return res[0]
-
-
-## \brief This class provides the simplest possible interface to the C++ rotorsim program and hides the
-#         gory details of how to communicate with it
-#
-class Processor:
-    ## \brief Constructor. 
-    #
-    # \param [state] Is a byte array. Has to specifiy the machine state with which this instance is to
-    #         operate.
-    # \param [binary_name] Is a string. Has to contain the path to the binary of the rotorsim C++
-    #         program
-    # \param [progress_state] Is a boolean. If it is true then the member self.__state is updated with
-    #         the new state after a call to encrypt, decrypt or process.
-    #
-    def __init__(self, state, binary_name = './rotorsim', progress_state = True):
-        self.__rotorsim_binary = binary_name
-        self.__state = state
-        self.__do_state_progression = progress_state
-    
-    ## \brief Returns the current machine state known to this instance.
-    #        
+        
     def get_state(self):
-        return self.__state
-
-    ## \brief Sets the current machine state known to this instance to the value given in the parameter new_state.
-    #        
-    #  \param [new_state] Is a byte array that represents the new machine state to use.
-    #    
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getstate', param)
+        return res[0]
+    
     def set_state(self, new_state):
-        self.__state = new_state
+        param = tlvobject.TlvEntry().to_byte_array(new_state)    
+        res = self.do_method_call(self._handle, 'setstate', param)
 
-    ## \brief Constructs a command line for the C++ program rotorsim and executes rotorsim.
-    #
-    #  \param [command] Is a string and has to specifiy the command which is used as the paraemter for the -c option
-    #                  Allowed values at the moment are "encrypt" and "decrypt".
-    #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
-    #                     that can not be encoded in ASCII.
-    #  \param [output_grouping] Is an int. Specifies the group size which is used when producing the output string.
-    #
-    #  \param [additional_params] Is a list of strings. Each element of the list is appended to the command line
-    #                             when "calling" the C++ rotorsim program.
-    #
-    #  \returns A string containing the machine output. In case of an error an exception is thrown.
-    #            
-    def process(self, command, input_data, output_grouping = 0, additional_params = []):
-        result = ''
+    def step(self, num_iterations =  1):
+        param = tlvobject.TlvEntry().to_int(num_iterations)    
+        res = self.do_method_call(self._handle, 'step', param)
         
-        proc_arguments = [self.__rotorsim_binary, command, '-g', str(output_grouping)]
-        
-        if self.__do_state_progression:
-            proc_arguments.append('--state-progression')
-        
-        proc_arguments = proc_arguments + additional_params
-        
-        # call rotorsim program
-        p = subprocess.Popen(proc_arguments, cwd=os.getcwd(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-        comm_result = p.communicate(self.__state + bytes([0xFF]) + input_data.encode())
-        
-        if p.returncode != 0:
-            raise RotorSimException(p.returncode)
-        
-        if self.__do_state_progression:
-            pos = 0
-            
-            # search for terminator (0xFF) between machine output and state information
-            while (pos < len(comm_result[0])) and (comm_result[0][pos] != 255):
-                pos += 1
-            
-            # At least a new line is returned as procssing result    
-            if (pos < 1) or (pos == len(comm_result[0])):            
-                raise RotorSimException(RESULT_ROTORSIM_FORMAT)          
-            
-            # output is everyting before the 0xFF            
-            result = (comm_result[0][:pos]).decode().strip('\n')    
-            # new state is contained in the bytes following the 0xFF
-            self.__state = comm_result[0][pos + 1:]
-        else:            
-            result = comm_result[0].decode().strip()
-                    
-        return result
+        return res
+    
+    def get_description(self):
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getdescription', param)
+        return res[0]
 
-    ## \brief Simple wrapper for the process method that allows to decrypt the string value specified in paramter 
-    #         input_data.
-    #
-    #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
-    #                     that can not be encoded in ASCII.
-    #
-    #  \returns A string containing the decryption result.
-    #            
-    def decrypt(self, input_data):
-        return self.process('decrypt', input_data, 0)
-
-    ## \brief Simple wrapper for the process method that allows to encrypt the string value specified in paramter 
-    #         input_data.
-    #
-    #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
-    #                      that can not be encoded in ASCII.
-    #  \param [out_grouping] Is an int. Specifies the group size which is used when producing the output string.
-    #
-    #  \returns A string containing the encryption result.
-    #                    
-    def encrypt(self, input_data, out_grouping = 0):
-        return self.process('encrypt', input_data, out_grouping)
-
-    ## \brief Simple wrapper for the process method that allows to step the rotor machine specified by self.__state.
-    #
-    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
-    #
-    #  \returns A vector of strings specifying the rotor positions encountered while stepping the machine
-    #                        
-    def step(self, num_iterations = 1):
-        help =  self.process('step', '', 0, ['--num-iterations', str(num_iterations)])
-        return self._response_to_string_vector(help)
-
-    ## \brief Simple wrapper for the process method that allows to "setup step" the rotor given in parameter rotor_num. If 
-    #         the current state does not describe a SIGABA calling this method does not step any rotors.
-    #
-    #  \param [rotor_num] Is an int specifying the number of the rotor which is to "setup step", where the numbering
-    #                     goes from left to right of the driver machine rotors (the five in the middle in rotorvis).
-    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
-    #
-    #  \returns A vector of strings string specifying the rotor positions generated.
-    #                        
-    def setup_step(self, rotor_num, num_iterations = 1):
-        help =  self.process('sigabasetup', '', 0, ['--rotor-num', str(rotor_num), '--num-iterations', str(num_iterations)])
-        return self._response_to_string_vector(help)
-
-    ## \brief Simple wrapper for the process method that allows to retrieve the current rotor positions.
-    #
-    #  \returns A string specifying the current rotor positions.
-    #                        
     def get_rotor_positions(self):
-        return self.process('pos', '', 0)
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getpositions', param)
+        return res[0]
 
-    ## \brief Simple wrapper for the process method that allows to retrieve the current machine permutation.
-    #
-    #  \param [num_iterations] An int that specifies how many times the machine is to be stepped.
-    #
-    #  \returns A vector of vector of ints that specifies the permutations generated by the underlying machine.
-    #                        
-    def get_perm(self, num_iterations = 1):
-        help = self.process('perm', '', 0, ['--num-iterations', str(num_iterations)])        
-        return self._response_to_int_vectors(help)
+    def sigaba_setup(self, rotor_num, num_iterations =  1):
+        param = tlvobject.TlvEntry().to_sequence([tlvobject.TlvEntry().to_int(rotor_num), tlvobject.TlvEntry().to_int(num_iterations)])    
+        res = self.do_method_call(self._handle, 'sigabasetup', param)
+        
+        return res
 
-    ## \brief Turns string parameter into a vector of vector of ints. Separator is '\n'.
-    #
-    #  \param [string_data] A string that contains the data which is to be transformed.
-    #
-    #  \returns A vector of vector of ints.
-    #                                
-    def _response_to_int_vectors(self, string_data):
-        result = '[' + string_data.strip() + ']'
-        result = result.replace('\n', ',')
-        return eval(result)
-
-    ## \brief Turns string parameter into a vector of strings. Separator is '\n'.
-    #
-    #  \param [string_data] A string that contains the data which is to be transformed.
-    #
-    #  \returns A vector of strings.
-    #                                
-    def _response_to_string_vector(self, string_data):
-        result = "['" + string_data.strip() + "']"
-        result = result.replace('\n', "','")
-        return eval(result)
+    def get_permutations(self, num_iterations =  0):
+        param = tlvobject.TlvEntry().to_int(num_iterations)    
+        res = self.do_method_call(self._handle, 'getpermutations', param)
+        res = list(map(lambda x: list(x), res))
+        
+        return res
 
 
-def load_machine(file_name):
+def load_machine_state(file_name):
     f = open(file_name, 'rb')
     s = f.read()
     f.close()
-    machine = Processor(s)
     
-    return machine
+    return s
     
 def test():
-    f = open("Enigma M4 Test 1.ini", "rb")
-    s = f.read()
-    f.close()
-
-    machine = Processor(s, progress_state = True)
-    help = Permutation()
-    
-    print(machine.decrypt('nczwvusx'))
-    
+    s = load_machine_state("Enigma M4 Test 1.ini")
+        
+    help = Permutation()    
     r_set = EnigmaRotorSet()
     
     if r_set.load('enigma_rotor_set.ini'):        
-        enigma_t_state = UnsteckeredEnigmaState('TirpitzEnigma', r_set, es.WALZE_T_ETW)
-        enigma_t_state.insert_rotor('fast', es.WALZE_T_V, es.WALZE_T_V, help.from_val('b'), help.from_val('m'))
-        enigma_t_state.insert_rotor('middle', es.WALZE_T_VIII, es.WALZE_T_VIII, help.from_val('r'), help.from_val('f'))        
-        enigma_t_state.insert_rotor('slow', es.WALZE_T_VII, es.WALZE_T_VII, help.from_val('q'), help.from_val('c'))  
-        enigma_t_state.insert_rotor('umkehrwalze', es.UKW_T, es.UKW_T, help.from_val('k'), help.from_val('a'))                      
+        with tlvobject.TlvServer(server_address = 'sock_hsdkfjhskdjhfksjdhf') as server:
+            with RotorMachine(s, server.address) as machine:
+                jetzt = datetime.datetime.now()
+                print(machine.decrypt('nczwvusx'))
+
+                enigma_t_state = UnsteckeredEnigmaState('TirpitzEnigma', r_set, es.WALZE_T_ETW)
+                enigma_t_state.insert_rotor('fast', es.WALZE_T_V, es.WALZE_T_V, help.from_val('b'), help.from_val('m'))
+                enigma_t_state.insert_rotor('middle', es.WALZE_T_VIII, es.WALZE_T_VIII, help.from_val('r'), help.from_val('f'))        
+                enigma_t_state.insert_rotor('slow', es.WALZE_T_VII, es.WALZE_T_VII, help.from_val('q'), help.from_val('c'))  
+                enigma_t_state.insert_rotor('umkehrwalze', es.UKW_T, es.UKW_T, help.from_val('k'), help.from_val('a'))                      
+                        
+                machine.set_state(enigma_t_state.render_state())
+                print(machine.decrypt('rhmbwnbzgmmnkperufvnyjfkyqg'))                
                 
-        machine = Processor(enigma_t_state.render_state())
-        print(machine.decrypt('rhmbwnbzgmmnkperufvnyjfkyqg'))                
-        
-        enigma_I_state = ServicesEnigmaState('M3', r_set)
-        enigma_I_state.insert_rotor('fast', es.WALZE_III, es.WALZE_III, help.from_val('h'), help.from_val('z'))
-        enigma_I_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('z'), help.from_val('t'))        
-        enigma_I_state.insert_rotor('slow', es.WALZE_I, es.WALZE_I, help.from_val('p'), help.from_val('r'))  
-        enigma_I_state.insert_rotor('umkehrwalze', es.UKW_B, es.UKW_B, 0, 0)
-        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)                      
+                enigma_I_state = ServicesEnigmaState('M3', r_set)
+                enigma_I_state.insert_rotor('fast', es.WALZE_III, es.WALZE_III, help.from_val('h'), help.from_val('z'))
+                enigma_I_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('z'), help.from_val('t'))        
+                enigma_I_state.insert_rotor('slow', es.WALZE_I, es.WALZE_I, help.from_val('p'), help.from_val('r'))  
+                enigma_I_state.insert_rotor('umkehrwalze', es.UKW_B, es.UKW_B, 0, 0)
+                enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)                      
+                        
+                machine.set_state(enigma_I_state.render_state())
+                print(machine.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx'))
+
+                r_set.change_ukw_d('azbpcxdqetfogshvirjyknlmuw')
+                enigma_kd_state = UnsteckeredEnigmaState('KDEnigma', r_set, es.WALZE_KD_ETW)
+                enigma_kd_state.insert_rotor('fast', es.WALZE_KD_V, es.WALZE_KD_V, help.from_val('b'), help.from_val('m'))
+                enigma_kd_state.insert_rotor('middle', es.WALZE_KD_VI, es.WALZE_KD_VI, help.from_val('r'), help.from_val('f'))        
+                enigma_kd_state.insert_rotor('slow', es.WALZE_KD_II, es.WALZE_KD_II, help.from_val('q'), help.from_val('c'))  
+                enigma_kd_state.insert_rotor('umkehrwalze', es.UKW_D, es.UKW_D, 0, 0)                      
+                        
+                machine.set_state(enigma_kd_state.render_state())
+                print(machine.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr'))    
                 
-        machine = Processor(enigma_I_state.render_state())
-        print(machine.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx'))
-
-        r_set.change_ukw_d('azbpcxdqetfogshvirjyknlmuw')
-        enigma_kd_state = UnsteckeredEnigmaState('KDEnigma', r_set, es.WALZE_KD_ETW)
-        enigma_kd_state.insert_rotor('fast', es.WALZE_KD_V, es.WALZE_KD_V, help.from_val('b'), help.from_val('m'))
-        enigma_kd_state.insert_rotor('middle', es.WALZE_KD_VI, es.WALZE_KD_VI, help.from_val('r'), help.from_val('f'))        
-        enigma_kd_state.insert_rotor('slow', es.WALZE_KD_II, es.WALZE_KD_II, help.from_val('q'), help.from_val('c'))  
-        enigma_kd_state.insert_rotor('umkehrwalze', es.UKW_D, es.UKW_D, 0, 0)                      
+                enigma_M4_state = M4EnigmaState(r_set)
+                enigma_M4_state.insert_rotor('fast', es.WALZE_I, es.WALZE_I, help.from_val('v'), help.from_val('a'))
+                enigma_M4_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('a'), help.from_val('n'))        
+                enigma_M4_state.insert_rotor('slow', es.WALZE_II, es.WALZE_II, help.from_val('a'), help.from_val('j'))  
+                enigma_M4_state.insert_rotor('griechenwalze', es.WALZE_BETA, es.WALZE_BETA, help.from_val('a'), help.from_val('v'))          
+                enigma_M4_state.insert_rotor('umkehrwalze', es.UKW_B_DN, es.UKW_B_DN, 0, 0)
+                enigma_M4_state.set_stecker_brett('atbldfgjhmnwopqyrzvx')                      
+                        
+                machine.set_state(enigma_M4_state.render_state())
+                print(machine.decrypt('nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez'))
                 
-        machine = Processor(enigma_kd_state.render_state())
-        print(machine.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr'))    
-        
-        enigma_M4_state = M4EnigmaState(r_set)
-        enigma_M4_state.insert_rotor('fast', es.WALZE_I, es.WALZE_I, help.from_val('v'), help.from_val('a'))
-        enigma_M4_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('a'), help.from_val('n'))        
-        enigma_M4_state.insert_rotor('slow', es.WALZE_II, es.WALZE_II, help.from_val('a'), help.from_val('j'))  
-        enigma_M4_state.insert_rotor('griechenwalze', es.WALZE_BETA, es.WALZE_BETA, help.from_val('a'), help.from_val('v'))          
-        enigma_M4_state.insert_rotor('umkehrwalze', es.UKW_B_DN, es.UKW_B_DN, 0, 0)
-        enigma_M4_state.set_stecker_brett('atbldfgjhmnwopqyrzvx')                      
-                
-        machine = Processor(enigma_M4_state.render_state())
-        print(machine.decrypt('nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez'))
-        
-        if not enigma_M4_state.save('egal.ini'):
-            print('Error saving M4 state')
+                if not enigma_M4_state.save('egal.ini'):
+                    print('Error saving M4 state')
 
-        enigma_abw_state = UnsteckeredEnigmaState('AbwehrEnigma', r_set, es.WALZE_ABW_ETW)
-        enigma_abw_state.insert_rotor('slow', es.WALZE_ABW_III, es.WALZE_ABW_III, 0, 0)
-        enigma_abw_state.insert_rotor('middle', es.WALZE_ABW_II, es.WALZE_ABW_II, 0, 0)        
-        enigma_abw_state.insert_rotor('fast', es.WALZE_ABW_I, es.WALZE_ABW_I, 0, 0)  
-        enigma_abw_state.insert_rotor('umkehrwalze', es.UKW_ABW, es.UKW_ABW, 0, 0)                      
+                enigma_abw_state = UnsteckeredEnigmaState('AbwehrEnigma', r_set, es.WALZE_ABW_ETW)
+                enigma_abw_state.insert_rotor('slow', es.WALZE_ABW_III, es.WALZE_ABW_III, 0, 0)
+                enigma_abw_state.insert_rotor('middle', es.WALZE_ABW_II, es.WALZE_ABW_II, 0, 0)        
+                enigma_abw_state.insert_rotor('fast', es.WALZE_ABW_I, es.WALZE_ABW_I, 0, 0)  
+                enigma_abw_state.insert_rotor('umkehrwalze', es.UKW_ABW, es.UKW_ABW, 0, 0)                      
 
-        machine = Processor(enigma_abw_state.render_state())
-        print(machine.decrypt('gjuiycmdguvttffqpzmxkvctzusobzldzumhqmjxwtzwmqnnuwidyeqpgvfzetolb'))
+                machine.set_state(enigma_abw_state.render_state())
+                print(machine.decrypt('gjuiycmdguvttffqpzmxkvctzusobzldzumhqmjxwtzwmqnnuwidyeqpgvfzetolb'))
 
-        enigma_rb_state = UnsteckeredEnigmaState('RailwayEnigma', r_set, es.WALZE_RB_ETW)
-        enigma_rb_state.insert_rotor('fast', es.WALZE_RB_III, es.WALZE_RB_III, 0, 0)
-        enigma_rb_state.insert_rotor('middle', es.WALZE_RB_II, es.WALZE_RB_II, 0, 0)        
-        enigma_rb_state.insert_rotor('slow', es.WALZE_RB_I, es.WALZE_RB_I, 0, 0)  
-        enigma_rb_state.insert_rotor('umkehrwalze', es.UKW_RB, es.UKW_RB, 0, 0)                      
+                enigma_rb_state = UnsteckeredEnigmaState('RailwayEnigma', r_set, es.WALZE_RB_ETW)
+                enigma_rb_state.insert_rotor('fast', es.WALZE_RB_III, es.WALZE_RB_III, 0, 0)
+                enigma_rb_state.insert_rotor('middle', es.WALZE_RB_II, es.WALZE_RB_II, 0, 0)        
+                enigma_rb_state.insert_rotor('slow', es.WALZE_RB_I, es.WALZE_RB_I, 0, 0)  
+                enigma_rb_state.insert_rotor('umkehrwalze', es.UKW_RB, es.UKW_RB, 0, 0)                      
 
-        machine = Processor(enigma_rb_state.render_state())
-        print(machine.decrypt('zbijbjetellsdidqbyocxeohngdsxnwlifuuvdqlzsyrbtbwlwlxpgujbhurbikgtkdztgtexjxhulfkiuqnjbeqgccryitomeyirckuji'))
-            
+                machine.set_state(enigma_rb_state.render_state())
+                print(machine.decrypt('zbijbjetellsdidqbyocxeohngdsxnwlifuuvdqlzsyrbtbwlwlxpgujbhurbikgtkdztgtexjxhulfkiuqnjbeqgccryitomeyirckuji'))  
+                spaeter = datetime.datetime.now()
+                print(spaeter - jetzt)                              
     else:
         print('Unable to load rotor set data')
 
-def massen_test(num_iterations):
-    jetzt = datetime.datetime.now()
-    m4_test = load_machine('Enigma M4 Test 1.ini')
-    
-    for i in range(num_iterations):
-        res = m4_test.encrypt('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+m4_state = load_machine_state('Enigma M4 Test 1.ini')
+csp2900_state = load_machine_state('CSP 2900 Test.ini')
+sg39_state = load_machine_state('SG39 Test.ini')
 
-    spaeter = datetime.datetime.now()
-    print(spaeter - jetzt)    
-
-m4 = load_machine('Enigma M4 Test 1.ini')
-m4_state = m4.get_state()
-csp2900 = load_machine('CSP 2900 Test.ini')
-csp2900_state = csp2900.get_state()
-sg39 = load_machine('SG39 Test.ini')
-sg39_state = sg39.get_state()
-
+def tester():
+    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
+        original_state = m4_obj.get_state()
+        print(original_state.decode())
+        print(m4_obj.decrypt('nczwvusx'))
+        print(m4_obj.decrypt('nczwvusx'))
+        m4_obj.set_state(original_state)
+        print(m4_obj.decrypt('nczwvusx'))
+        m4_obj.set_state(original_state)        
+        print(m4_obj.step(5))
+        print(m4_obj.get_description())
+        m4_obj.set_state(csp2900_state)
+        print(m4_obj.get_description())
+        print(m4_obj.sigaba_setup(1, 3))
+        m4_obj.set_state(sg39_state)
+        print(m4_obj.get_rotor_positions())
+        print(m4_obj.get_permutations(10))
+        
 def time_trial(num_iterations, test_data):    
     with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:    
         print(m4_obj.decrypt('nczwvusx'))            

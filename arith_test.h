@@ -84,6 +84,13 @@ public:
     rotor_machine_proxy(rotor_machine *m);
     virtual unsigned int encrypt_processor(tlv_entry& params, tlv_stream *out_stream);
     virtual unsigned int decrypt_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int get_state_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int set_state_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int step_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int get_description_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int sigaba_setup_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int get_positions_processor(tlv_entry& params, tlv_stream *out_stream);
+    virtual unsigned int get_permutations_processor(tlv_entry& params, tlv_stream *out_stream);        
     
     virtual void set_new_machine(rotor_machine *new_machine);
     
@@ -91,6 +98,7 @@ public:
     
 protected:
     virtual unsigned int encdec_processor(tlv_entry& params, tlv_stream *out_stream, bool do_enc);
+    virtual void perm_to_byte_array(vector<unsigned int>& perm, tlv_entry& byte_array);
 
     rotor_machine *machine;
     

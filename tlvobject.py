@@ -43,6 +43,7 @@ TAG_BYTE_ARRAY = 2
 TAG_SEQUENCE = 3
 TAG_DOUBLE = 4
 TAG_NULL = 5
+TAG_RESULT_CODE = 6
 
 class TlvException(Exception):
     def __init__(self, error_message):
@@ -66,6 +67,12 @@ class TlvEntry:
     def to_int(self, int_val):
         self.tag = TAG_INT
         self.value = TlvEntry.int_to_bytes(int_val)
+        return self
+
+    def to_result(self, result_val):
+        self.tag = TAG_RESULT_CODE
+        result_val = result_val & 0xFFFFFFFF
+        self.value = result_val.to_bytes(4, byteorder='big')
         return self
     
     def to_string(self, str_val):
@@ -103,6 +110,11 @@ class TlvEntry:
                     result = result ^ 0xFFFFFFFF
                     result = result + 1
                     result = -result
+            else:
+                raise TlvException('Format Error')
+        elif self.tag == TAG_RESULT_CODE:
+            if len(self.value) == 4:
+                result = int.from_bytes(self.value, byteorder='big')
             else:
                 raise TlvException('Format Error')
         elif self.tag == TAG_STRING:
@@ -162,25 +174,18 @@ class TlvStream:
             if err_code.err_code != ERR_OK:
                 raise TlvException("Error receiving result data " + str(err_code.err_code))
             
-            if err_code.data.tag != TAG_NULL:           
+            if err_code.data.tag != TAG_RESULT_CODE:           
                 result_values.append(err_code.data)
             else:
                 end_reached = True
-        
-        if len(result_values) == 0:
-            raise TlvException("No result data ")
-            
-        call_result_tlv = result_values[-1]
                     
-        if call_result_tlv.tag != TAG_INT:
-            raise TlvException("Wrong return type for protocol result")
-            
+        call_result_tlv = err_code.data                                
         rc = call_result_tlv.tlv_convert()
         
         if rc != ERR_OK:
             raise TlvException("Method call failed. Protocol error: " + str(rc))        
             
-        return TlvStream.convert_all(result_values[:-1])
+        return TlvStream.convert_all(result_values)
     
     @staticmethod
     def _read_defined(sock, bytes_to_read):
@@ -422,10 +427,11 @@ def get_test_sequence():
     string_test = TlvEntry().to_string('hollaraedulioe')
     int_test = TlvEntry().to_int(-123456)
     non_empty_byte_array = TlvEntry().to_byte_array(b'\x00\x01\x02\x03\x04\x05\x06')
+    uint = TlvEntry().to_result(0xFFFFFFFF)
     string_1_in_seq = TlvEntry().to_string('komp1')
     string_2_in_seq = TlvEntry().to_string('komp2')
     test_seq = TlvEntry().to_sequence([string_1_in_seq, string_2_in_seq])
-    return [double_test, null_test, string_test, int_test, non_empty_byte_array, test_seq]
+    return [double_test, null_test, string_test, int_test, non_empty_byte_array, uint, test_seq]
 
 def with_test(left_summand, right_summand, echo_arg = TlvEntry().to_sequence(get_test_sequence())):
     with TlvServer('./tlv_object', 'sock_tmpjffdfkdfgj') as s:

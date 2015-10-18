@@ -22,7 +22,6 @@
 #include<iostream>
 #include<algorithm>
 #include<boost/lexical_cast.hpp>
-
 #include<tlv_stream.h>
 
 const unsigned int LEN_MAX = 65536;
@@ -76,6 +75,18 @@ void tlv_entry::to_int(int val)
     value.push_back((unsigned char)(conv_help & 0x000000FF));        
 }
 
+
+void tlv_entry::to_result_code(unsigned int val)
+{
+    tag = TAG_RESULT_CODE;
+    value.clear();
+    
+    value.push_back((unsigned char)((val & (0xFF000000)) >> 24));
+    value.push_back((unsigned char)((val & (0x00FF0000)) >> 16));    
+    value.push_back((unsigned char)((val & (0x0000FF00)) >> 8));    
+    value.push_back((unsigned char)(val & 0x000000FF));        
+}
+
 void tlv_entry::to_string(const string& str)
 {
     tag = TAG_STRING;
@@ -107,6 +118,7 @@ void tlv_entry::print_rec(unsigned int indent)
 {
     basic_string<unsigned char>::iterator iter;
     int res_int = 0;
+    unsigned int res_result = 0;
     string res_string = "";
     double res_double = 0.0;
     string indent_string(indent, ' ');
@@ -117,6 +129,10 @@ void tlv_entry::print_rec(unsigned int indent)
         case TAG_INT:
             (void)tlv_convert(res_int);
             cout << indent_string << res_int << endl;
+            break;
+        case TAG_RESULT_CODE:
+            (void)tlv_convert(res_result);
+            cout << indent_string << "Result: " << res_result << endl;
             break;
         case TAG_STRING:
             (void)tlv_convert(res_string);
@@ -205,6 +221,29 @@ bool tlv_entry::tlv_convert(int& result)
     
     return conv_success;
 }
+
+bool tlv_entry::tlv_convert(unsigned int& result)
+{
+    bool conv_success = true;
+        
+    if ((value.length() != 4) and (tag != TAG_RESULT_CODE))
+    {
+        conv_success = false;
+    }
+    else
+    {                
+        result = value[0];
+        result <<= 8;
+        result |= value[1];
+        result <<= 8;
+        result |= value[2];
+        result <<= 8;
+        result |= value[3];
+    }
+    
+    return conv_success;
+}
+
 
 bool tlv_entry::tlv_convert(string& result)
 {
@@ -369,7 +408,7 @@ unsigned int tlv_stream::write_success_tlv(tlv_entry& output_value)
     unsigned int result = ERR_OK;
     tlv_entry success_code;
     
-    success_code.to_int(0);
+    success_code.to_result_code(0);
     
     if ((result = write_tlv(output_value)) == ERR_OK)
     {
@@ -379,12 +418,12 @@ unsigned int tlv_stream::write_success_tlv(tlv_entry& output_value)
     return result;
 }
 
-unsigned int tlv_stream::write_error_tlv(int error_code)
+unsigned int tlv_stream::write_error_tlv(unsigned int error_code)
 {
     unsigned int result = ERR_OK;
     tlv_entry err_code;
     
-    err_code.to_int(error_code);
+    err_code.to_result_code(error_code);
     result = write_tlv(err_code);
     
     return result;

@@ -28,6 +28,7 @@ const unsigned int ERR_CLASS_NOT_FOUND = 101;
 const unsigned int ERR_NOT_IMPLEMENTED = 102;
 const unsigned int ERR_SYNTAX_INPUT = 103;
 const unsigned int ERR_OBJECT_CREATE = 104;
+const unsigned int ERR_SEMANTICS_INPUT = 105;
 
 using namespace std;
 

@@ -40,6 +40,7 @@ const unsigned char TAG_BYTE_ARRAY = 2;
 const unsigned char TAG_SEQUENCE = 3;
 const unsigned char TAG_DOUBLE = 4;
 const unsigned char TAG_NULL = 5;
+const unsigned char TAG_RESULT_CODE = 6;
 
 using namespace std;
 
@@ -52,6 +53,7 @@ public:
     vector<tlv_entry> children;
     
     void to_int(int val);
+    void to_result_code(unsigned int val);    
     void to_null();
     void to_string(const string& str);
     void to_byte_array(const basic_string<unsigned char>& str);    
@@ -59,6 +61,7 @@ public:
     void to_sequence(vector<tlv_entry>& components);
 
     bool tlv_convert(int& result);
+    bool tlv_convert(unsigned int& result);    
     bool tlv_convert(string& result);
     bool tlv_convert(basic_string<unsigned char>&);
     bool tlv_convert(double& result);
@@ -76,7 +79,7 @@ public:
     virtual unsigned int read_tlv(tlv_entry& entry);
     virtual unsigned int write_tlv(tlv_entry& entry);
     virtual unsigned int write_success_tlv(tlv_entry& output_value);
-    virtual unsigned int write_error_tlv(int error_code);
+    virtual unsigned int write_error_tlv(unsigned int error_code);
     static void make_header(basic_string<unsigned char>& header, unsigned char tag, unsigned short value_len);    
     static unsigned int parse_bytes(basic_string<unsigned char>& encoded_bytes, vector<tlv_entry>& entries);
     static void to_bytes(vector<tlv_entry>& entries, basic_string<unsigned char>& encoded_bytes);
