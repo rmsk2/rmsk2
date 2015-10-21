@@ -53,7 +53,7 @@ public:
     test_case(const char *n) { name = string(n); }
     
     /*! \brief The method that actually executes the test. Has to be reimplemented in the children
-     *         of this class. 
+     *         of this class. The expected semantic is to return true if the test was successfull.
      */    
     virtual bool test() { my_notes.clear(); return true; }
 

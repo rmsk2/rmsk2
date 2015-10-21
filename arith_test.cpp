@@ -119,12 +119,10 @@ unsigned int echo::echo_processor(tlv_entry& params, tlv_stream *out_stream)
     
     if (!params.parse_all())
     {
-        result = out_stream->write_error_tlv((int)ERR_SYNTAX_INPUT);
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
     }
     else
-    {        
-        params.print();
-        
+    {                
         if (params.tag == TAG_SEQUENCE)
         {
             seq_return.to_sequence(params.children);

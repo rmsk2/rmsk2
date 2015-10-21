@@ -27,6 +27,7 @@ import enigrotorset as es
 import os
 import datetime
 import tlvobject
+import simpletest
 
 RESULT_OK = 0
 RESULT_ERROR = 42
@@ -580,33 +581,127 @@ m4_state = load_machine_state('Enigma M4 Test 1.ini')
 csp2900_state = load_machine_state('CSP 2900 Test.ini')
 sg39_state = load_machine_state('SG39 Test.ini')
 
-def tester():
-    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
-        original_state = m4_obj.get_state()
-        print(original_state.decode())
-        print(m4_obj.decrypt('nczwvusx'))
-        print(m4_obj.decrypt('nczwvusx'))
-        m4_obj.set_state(original_state)
-        print(m4_obj.decrypt('nczwvusx'))
-        m4_obj.set_state(original_state)        
-        print(m4_obj.step(5))
-        print(m4_obj.get_description())
-        m4_obj.set_state(csp2900_state)
-        print(m4_obj.get_description())
-        print(m4_obj.sigaba_setup(1, 3))
-        m4_obj.set_state(sg39_state)
-        print(m4_obj.get_rotor_positions())
-        print(m4_obj.get_permutations(10))
+class RotorMachineFuncTests(simpletest.SimpleTest):
+    def __init__(self, name):
+        super().__init__(name)
         
-def time_trial(num_iterations, test_data):    
-    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:    
-        print(m4_obj.decrypt('nczwvusx'))            
-        jetzt = datetime.datetime.now()
-        
-        for i in range(num_iterations):
-            m4_obj.decrypt(test_data)
-        
-        spaeter = datetime.datetime.now()
-        print(spaeter - jetzt)        
-    
+    def test(self):
+        result = super().test()
+            
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
+            try:
+                original_state = m4_obj.get_state()
+                
+                dec_result = m4_obj.decrypt('nczwvusx')
+                last_result = (dec_result == 'vonvonjl')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected M4 decryption result: " + dec_result)
+                
+                dec_result = m4_obj.decrypt('nczwvusx')
+                last_result = (dec_result != 'vonvonjl')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected M4 decryption result: " + dec_result)
+                
+                m4_obj.set_state(original_state)
+                
+                dec_result = m4_obj.decrypt('nczwvusx')                
+                last_result = (dec_result == 'vonvonjl')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected M4 decryption result: " + dec_result)
+                                
+                m4_obj.set_state(original_state)                        
 
+                step_result = m4_obj.step(5)                
+                last_result = ((len(step_result) == 5) and (step_result[4] == 'vjnf'))
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected rotor positon: " + str(step_result))
+              
+                description = m4_obj.get_description()
+                last_result = (description == 'M4Enigma')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected machine description: " + description)
+                                
+                m4_obj.set_state(csp2900_state)
+                
+                description = m4_obj.get_description()
+                last_result = (description == 'CSP2900')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected machine description: " + description)
+                
+                setup_step_result = m4_obj.sigaba_setup(1, 3)
+                last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000llplofvsvd'))
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected rotor position: " + str(setup_step_result))
+               
+                m4_obj.set_state(sg39_state)
+                
+                rotor_pos = m4_obj.get_rotor_positions()
+                last_result = (rotor_pos == 'frqdaph')
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected rotor positions: " + rotor_pos)
+                    
+                perms = m4_obj.get_permutations(10)
+                last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected permutation result: " + str(perms))                
+                
+            except:
+                self.append_note("EXCEPTON!!!!")
+                result = False
+        
+        return result                
+
+        
+class RotorMachinePerfTest(simpletest.SimpleTest):
+    def __init__(self, name, test_data, num_iterations = 22000):
+        super().__init__(name)
+        self._iterations = num_iterations
+        self._test_data = test_data
+            
+    def test(self):
+        result = super().test()
+
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
+            try:  
+                dec_result = m4_obj.decrypt('nczwvusx')  
+                result = result and (dec_result == 'vonvonjl')
+                
+                if not result:
+                    self.append_note("M4 message not properly decrypted: {}".format())
+                else:                    
+                    jetzt = datetime.datetime.now()
+                    
+                    for i in range(self._iterations):
+                        m4_obj.decrypt(self._test_data)
+                    
+                    spaeter = datetime.datetime.now()
+                    self.append_note("Time needed for {} decryptions: {}".format(self._iterations, str(spaeter - jetzt)))
+            except:
+                self.append_note("EXCEPTON!!!!")
+                result = False
+        
+        return result
+
+    
+def get_module_test(test_data, num_iterations = 1000):
+    performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
+    functional_test = RotorMachineFuncTests("rotorsim functional test")
+    all_tests = simpletest.CompositeTest('All rotorsim tests')    
+    all_tests.add(functional_test)
+    all_tests.add(performance_test)
+    
+    return all_tests
+
+def execute_tests(test_data, num_iterations = 1000):
+    tests = get_module_test(test_data, num_iterations)
+    test_result = tests.test()
+    tests.print_notes()
