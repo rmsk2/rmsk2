@@ -577,9 +577,6 @@ def test():
     else:
         print('Unable to load rotor set data')
 
-m4_state = load_machine_state('reference/Enigma M4 Test 1.ini')
-csp2900_state = load_machine_state('reference/CSP 2900 Test.ini')
-sg39_state = load_machine_state('reference/SG39 Test.ini')
 
 class RotorMachineFuncTests(simpletest.SimpleTest):
     def __init__(self, name):
@@ -587,6 +584,10 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
         
     def test(self):
         result = super().test()
+        
+        m4_state = load_machine_state('reference/Enigma M4 Test 1.ini')
+        csp2900_state = load_machine_state('reference/CSP 2900 Test.ini')
+        sg39_state = load_machine_state('reference/SG39 Test.ini')        
             
         with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
             try:
@@ -669,6 +670,8 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
             
     def test(self):
         result = super().test()
+
+        m4_state = load_machine_state('reference/Enigma M4 Test 1.ini')
 
         with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
             try:  
