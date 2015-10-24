@@ -27,7 +27,6 @@ import enigrotorset as es
 import os
 import datetime
 import tlvobject
-import simpletest
 
 RESULT_OK = 0
 RESULT_ERROR = 42
@@ -151,6 +150,9 @@ class RotorSet:
         result = True
     
         try:
+            self.ids = []
+            self.data = {}
+            self.__key_file = GLib.KeyFile()
             result = self.__key_file.load_from_file(file_name, 0)
             
             # read rotor ids
@@ -443,6 +445,14 @@ class RotorMachine(tlvobject.TlvProxy):
         param = tlvobject.TlvEntry().to_byte_array(machine_state)
         res = self.do_method_call('new', 'rotorproxy', param)        
         self._handle = res[0]
+
+    @staticmethod
+    def load_machine_state(file_name):
+        f = open(file_name, 'rb')
+        s = f.read()
+        f.close()
+        
+        return s
     
     def encrypt(self, data_to_encrypt):
         param = tlvobject.TlvEntry().to_string(data_to_encrypt)    
@@ -492,219 +502,3 @@ class RotorMachine(tlvobject.TlvProxy):
         
         return res
 
-
-def load_machine_state(file_name):
-    f = open(file_name, 'rb')
-    s = f.read()
-    f.close()
-    
-    return s
-    
-def test():
-    s = load_machine_state("Enigma M4 Test 1.ini")
-        
-    help = Permutation()    
-    r_set = EnigmaRotorSet()
-    
-    if r_set.load('enigma_rotor_set.ini'):        
-        with tlvobject.TlvServer(server_address = 'sock_hsdkfjhskdjhfksjdhf') as server:
-            with RotorMachine(s, server.address) as machine:
-                jetzt = datetime.datetime.now()
-                print(machine.decrypt('nczwvusx'))
-
-                enigma_t_state = UnsteckeredEnigmaState('TirpitzEnigma', r_set, es.WALZE_T_ETW)
-                enigma_t_state.insert_rotor('fast', es.WALZE_T_V, es.WALZE_T_V, help.from_val('b'), help.from_val('m'))
-                enigma_t_state.insert_rotor('middle', es.WALZE_T_VIII, es.WALZE_T_VIII, help.from_val('r'), help.from_val('f'))        
-                enigma_t_state.insert_rotor('slow', es.WALZE_T_VII, es.WALZE_T_VII, help.from_val('q'), help.from_val('c'))  
-                enigma_t_state.insert_rotor('umkehrwalze', es.UKW_T, es.UKW_T, help.from_val('k'), help.from_val('a'))                      
-                        
-                machine.set_state(enigma_t_state.render_state())
-                print(machine.decrypt('rhmbwnbzgmmnkperufvnyjfkyqg'))                
-                
-                enigma_I_state = ServicesEnigmaState('M3', r_set)
-                enigma_I_state.insert_rotor('fast', es.WALZE_III, es.WALZE_III, help.from_val('h'), help.from_val('z'))
-                enigma_I_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('z'), help.from_val('t'))        
-                enigma_I_state.insert_rotor('slow', es.WALZE_I, es.WALZE_I, help.from_val('p'), help.from_val('r'))  
-                enigma_I_state.insert_rotor('umkehrwalze', es.UKW_B, es.UKW_B, 0, 0)
-                enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)                      
-                        
-                machine.set_state(enigma_I_state.render_state())
-                print(machine.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx'))
-
-                r_set.change_ukw_d('azbpcxdqetfogshvirjyknlmuw')
-                enigma_kd_state = UnsteckeredEnigmaState('KDEnigma', r_set, es.WALZE_KD_ETW)
-                enigma_kd_state.insert_rotor('fast', es.WALZE_KD_V, es.WALZE_KD_V, help.from_val('b'), help.from_val('m'))
-                enigma_kd_state.insert_rotor('middle', es.WALZE_KD_VI, es.WALZE_KD_VI, help.from_val('r'), help.from_val('f'))        
-                enigma_kd_state.insert_rotor('slow', es.WALZE_KD_II, es.WALZE_KD_II, help.from_val('q'), help.from_val('c'))  
-                enigma_kd_state.insert_rotor('umkehrwalze', es.UKW_D, es.UKW_D, 0, 0)                      
-                        
-                machine.set_state(enigma_kd_state.render_state())
-                print(machine.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr'))    
-                
-                enigma_M4_state = M4EnigmaState(r_set)
-                enigma_M4_state.insert_rotor('fast', es.WALZE_I, es.WALZE_I, help.from_val('v'), help.from_val('a'))
-                enigma_M4_state.insert_rotor('middle', es.WALZE_IV, es.WALZE_IV, help.from_val('a'), help.from_val('n'))        
-                enigma_M4_state.insert_rotor('slow', es.WALZE_II, es.WALZE_II, help.from_val('a'), help.from_val('j'))  
-                enigma_M4_state.insert_rotor('griechenwalze', es.WALZE_BETA, es.WALZE_BETA, help.from_val('a'), help.from_val('v'))          
-                enigma_M4_state.insert_rotor('umkehrwalze', es.UKW_B_DN, es.UKW_B_DN, 0, 0)
-                enigma_M4_state.set_stecker_brett('atbldfgjhmnwopqyrzvx')                      
-                        
-                machine.set_state(enigma_M4_state.render_state())
-                print(machine.decrypt('nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez'))
-                
-                if not enigma_M4_state.save('egal.ini'):
-                    print('Error saving M4 state')
-
-                enigma_abw_state = UnsteckeredEnigmaState('AbwehrEnigma', r_set, es.WALZE_ABW_ETW)
-                enigma_abw_state.insert_rotor('slow', es.WALZE_ABW_III, es.WALZE_ABW_III, 0, 0)
-                enigma_abw_state.insert_rotor('middle', es.WALZE_ABW_II, es.WALZE_ABW_II, 0, 0)        
-                enigma_abw_state.insert_rotor('fast', es.WALZE_ABW_I, es.WALZE_ABW_I, 0, 0)  
-                enigma_abw_state.insert_rotor('umkehrwalze', es.UKW_ABW, es.UKW_ABW, 0, 0)                      
-
-                machine.set_state(enigma_abw_state.render_state())
-                print(machine.decrypt('gjuiycmdguvttffqpzmxkvctzusobzldzumhqmjxwtzwmqnnuwidyeqpgvfzetolb'))
-
-                enigma_rb_state = UnsteckeredEnigmaState('RailwayEnigma', r_set, es.WALZE_RB_ETW)
-                enigma_rb_state.insert_rotor('fast', es.WALZE_RB_III, es.WALZE_RB_III, 0, 0)
-                enigma_rb_state.insert_rotor('middle', es.WALZE_RB_II, es.WALZE_RB_II, 0, 0)        
-                enigma_rb_state.insert_rotor('slow', es.WALZE_RB_I, es.WALZE_RB_I, 0, 0)  
-                enigma_rb_state.insert_rotor('umkehrwalze', es.UKW_RB, es.UKW_RB, 0, 0)                      
-
-                machine.set_state(enigma_rb_state.render_state())
-                print(machine.decrypt('zbijbjetellsdidqbyocxeohngdsxnwlifuuvdqlzsyrbtbwlwlxpgujbhurbikgtkdztgtexjxhulfkiuqnjbeqgccryitomeyirckuji'))  
-                spaeter = datetime.datetime.now()
-                print(spaeter - jetzt)                              
-    else:
-        print('Unable to load rotor set data')
-
-
-class RotorMachineFuncTests(simpletest.SimpleTest):
-    def __init__(self, name):
-        super().__init__(name)
-        
-    def test(self):
-        result = super().test()
-        
-        m4_state = load_machine_state('reference/Enigma M4 Test 1.ini')
-        csp2900_state = load_machine_state('reference/CSP 2900 Test.ini')
-        sg39_state = load_machine_state('reference/SG39 Test.ini')        
-            
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
-            try:
-                original_state = m4_obj.get_state()
-                
-                dec_result = m4_obj.decrypt('nczwvusx')
-                last_result = (dec_result == 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                
-                dec_result = m4_obj.decrypt('nczwvusx')
-                last_result = (dec_result != 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                
-                m4_obj.set_state(original_state)
-                
-                dec_result = m4_obj.decrypt('nczwvusx')                
-                last_result = (dec_result == 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                                
-                m4_obj.set_state(original_state)                        
-
-                step_result = m4_obj.step(5)                
-                last_result = ((len(step_result) == 5) and (step_result[4] == 'vjnf'))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor positon: " + str(step_result))
-              
-                description = m4_obj.get_description()
-                last_result = (description == 'M4Enigma')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected machine description: " + description)
-                                
-                m4_obj.set_state(csp2900_state)
-                
-                description = m4_obj.get_description()
-                last_result = (description == 'CSP2900')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected machine description: " + description)
-                
-                setup_step_result = m4_obj.sigaba_setup(1, 3)
-                last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000llplofvsvd'))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor position: " + str(setup_step_result))
-               
-                m4_obj.set_state(sg39_state)
-                
-                rotor_pos = m4_obj.get_rotor_positions()
-                last_result = (rotor_pos == 'frqdaph')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor positions: " + rotor_pos)
-                    
-                perms = m4_obj.get_permutations(10)
-                last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected permutation result: " + str(perms))                
-                
-            except:
-                self.append_note("EXCEPTON!!!!")
-                result = False
-        
-        return result                
-
-        
-class RotorMachinePerfTest(simpletest.SimpleTest):
-    def __init__(self, name, test_data, num_iterations = 22000):
-        super().__init__(name)
-        self._iterations = num_iterations
-        self._test_data = test_data
-            
-    def test(self):
-        result = super().test()
-
-        m4_state = load_machine_state('reference/Enigma M4 Test 1.ini')
-
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
-            try:  
-                dec_result = m4_obj.decrypt('nczwvusx')  
-                result = result and (dec_result == 'vonvonjl')
-                
-                if not result:
-                    self.append_note("M4 message not properly decrypted: {}".format())
-                else:                    
-                    jetzt = datetime.datetime.now()
-                    
-                    for i in range(self._iterations):
-                        m4_obj.decrypt(self._test_data)
-                    
-                    spaeter = datetime.datetime.now()
-                    self.append_note("Time needed for {} decryptions: {}".format(self._iterations, str(spaeter - jetzt)))
-            except:
-                self.append_note("EXCEPTON!!!!")
-                result = False
-        
-        return result
-
-    
-def get_module_test(test_data, num_iterations = 1000):
-    performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
-    functional_test = RotorMachineFuncTests("rotorsim functional test")
-    all_tests = simpletest.CompositeTest('All rotorsim tests')    
-    all_tests.add(functional_test)
-    all_tests.add(performance_test)
-    
-    return all_tests
-
-def execute_tests(test_data, num_iterations = 1000):
-    tests = get_module_test(test_data, num_iterations)
-    test_result = tests.test()
-    tests.print_notes()
