@@ -14,24 +14,63 @@
 # limitations under the License.
 ################################################################################
 
+## @package rotorsimtest contains tests for the python3 to C++ interface.
+#   
+# \file rotorsimtest.py
+# \brief This file contains classes that implement tests which can be used to verify that
+#        the python3 to C++ interface based on the program tlv_rotorsim is functional and correct.
+
 import simpletest
 from rotorsim import *
 
+## \brief This class serves as a base class for the verification of all the Enigma variants.
+#
 class EnigmaFuncTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It has to specifiy a textual description for the test.
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, name, enig_rotor_set, proc):
         super().__init__(name)
         self._proc = proc
         self._rotor_set = enig_rotor_set
         self._help = Permutation()
-        
+
+    ## \brief Sets the object that is used to perform decrytpion operations.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
+    #  \returns Nothing.
+    #        
     def set_processor(self, proc):
         self._proc = proc
 
 
+## \brief This class implements a verification test for the M4 Enigma.
+#
 class M4EnigmaTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("M4 Verification Test", enig_rotor_set, proc)
-        
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
     def test(self):
         result = super().test()
         enigma_M4_state = M4EnigmaState(self._rotor_set)
@@ -49,11 +88,24 @@ class M4EnigmaTest(EnigmaFuncTest):
         
         return result
 
-
+## \brief This class implements a verification test for the M3 or Services Enigma with Uhr.
+#
 class M3UhrTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("M3 Uhr Test", enig_rotor_set, proc)
-        
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
     def test(self):
         result = super().test()
         enigma_I_state = ServicesEnigmaState('M3', self._rotor_set)
@@ -70,11 +122,24 @@ class M3UhrTest(EnigmaFuncTest):
         
         return result
 
-
+## \brief This class implements a verification test for the KD Enigma.
+#
 class KDTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("KD Test", enig_rotor_set, proc)
-        
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
     def test(self):
         result = super().test()
         self._rotor_set.change_ukw_d('azbpcxdqetfogshvirjyknlmuw')
@@ -91,11 +156,24 @@ class KDTest(EnigmaFuncTest):
         
         return result
 
-
+## \brief This class implements a verification test for the Tirpitz Enigma.
+#
 class TirpitzTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("Tirpitz Test", enig_rotor_set, proc)
-        
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #                
     def test(self):
         result = super().test()
         enigma_t_state = UnsteckeredEnigmaState('TirpitzEnigma', self._rotor_set, es.WALZE_T_ETW)
@@ -111,11 +189,24 @@ class TirpitzTest(EnigmaFuncTest):
         
         return result
 
-
+## \brief This class implements a verification test for the Abwehr Enigma.
+#
 class AbwehrTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("Abwehr Test", enig_rotor_set, proc)
-        
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #                        
     def test(self):
         result = super().test()
         enigma_abw_state = UnsteckeredEnigmaState('AbwehrEnigma', self._rotor_set, es.WALZE_ABW_ETW)
@@ -131,11 +222,24 @@ class AbwehrTest(EnigmaFuncTest):
         
         return result
 
-
+## \brief This class implements a verification test for the Railway Enigma.
+#
 class RailwayTest(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
     def __init__(self, enig_rotor_set, proc = None):
         super().__init__("Railway Test", enig_rotor_set, proc)
-        
+    
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
     def test(self):
         result = super().test()
         enigma_rb_state = UnsteckeredEnigmaState('RailwayEnigma', self._rotor_set, es.WALZE_RB_ETW)
@@ -151,8 +255,15 @@ class RailwayTest(EnigmaFuncTest):
         
         return result
 
-
-class AllEnigmaTests(simpletest.CompositeTest):
+## \brief This class bundles all verification tests for the individual Enigma variants. It serves as the base
+#         class for verification tests using the TLV and the command line program.
+#
+class AllEnigmaTestsBase(simpletest.CompositeTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.      
+    #
     def __init__(self, name):
         super().__init__(name)
         self._r_set = EnigmaRotorSet()
@@ -162,11 +273,35 @@ class AllEnigmaTests(simpletest.CompositeTest):
         self.add(TirpitzTest(self._r_set))
         self.add(AbwehrTest(self._r_set))
         self.add(RailwayTest(self._r_set))
-    
+
+    ## \brief Sets the object that is used to perform decrytpion operations in all subordinate test cases.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #        the decryption operations during the verification tests.
+    #
+    #  \returns Nothing.
+    #            
     def set_processor(self, proc):
         for i in self._test_cases:
             i.set_processor(proc)
-    
+
+
+## \brief This class performs verification tests of all Enigma variants using the TLV interface as a cryptographic
+#         backend.
+#
+class AllEnigmaTests(AllEnigmaTestsBase):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.      
+    #
+    def __init__(self, name):
+        super().__init__(name)
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #    
     def test(self):
         result = True
         m4_state = RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
@@ -186,10 +321,22 @@ class AllEnigmaTests(simpletest.CompositeTest):
         return result                
         
 
+## \brief This class performs verification tests for the proper implementation of the rotorsim.RotorMachine class
+#         which uses the TLV backend to provide rotor machine functionality.
+#
 class RotorMachineFuncTests(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.      
+    #
     def __init__(self, name):
         super().__init__(name)
-        
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #            
     def test(self):
         result = super().test()
         
@@ -201,20 +348,24 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
             try:
                 original_state = m4_obj.get_state()
                 
+                # Do a simple test decryptions
                 dec_result = m4_obj.decrypt('nczwvusx')
                 last_result = (dec_result == 'vonvonjl')
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected M4 decryption result: " + dec_result)
                 
+                # Verfiy that the machine's state has changed by the preceeding decryptions
                 dec_result = m4_obj.decrypt('nczwvusx')
                 last_result = (dec_result != 'vonvonjl')
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected M4 decryption result: " + dec_result)
                 
+                # Restore original state
                 m4_obj.set_state(original_state)
                 
+                # Verify that the original state has been restored by performing the same test decryption again
                 dec_result = m4_obj.decrypt('nczwvusx')                
                 last_result = (dec_result == 'vonvonjl')
                 result = result and last_result
@@ -222,13 +373,15 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
                     self.append_note("Unexpected M4 decryption result: " + dec_result)
                                 
                 m4_obj.set_state(original_state)                        
-
+                
+                # Verify step() method
                 step_result = m4_obj.step(5)                
                 last_result = ((len(step_result) == 5) and (step_result[4] == 'vjnf'))
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected rotor positon: " + str(step_result))
-              
+                
+                # Test get_description() method
                 description = m4_obj.get_description()
                 last_result = (description == 'M4Enigma')
                 result = result and last_result
@@ -236,13 +389,15 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
                     self.append_note("Unexpected machine description: " + description)
                                 
                 m4_obj.set_state(csp2900_state)
-                
+                                
+                # Verify that returned description changed to new machine type
                 description = m4_obj.get_description()
                 last_result = (description == 'CSP2900')
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected machine description: " + description)
                 
+                # Test sigaba_setup() method                
                 setup_step_result = m4_obj.sigaba_setup(1, 3)
                 last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000llplofvsvd'))
                 result = result and last_result
@@ -251,12 +406,14 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
                
                 m4_obj.set_state(sg39_state)
                 
+                # Test get_rotor_positions() method                                
                 rotor_pos = m4_obj.get_rotor_positions()
                 last_result = (rotor_pos == 'frqdaph')
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected rotor positions: " + rotor_pos)
                     
+                # Test get_permutations() method                                
                 perms = m4_obj.get_permutations(10)
                 last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
                 result = result and last_result
@@ -269,13 +426,28 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
         
         return result                
 
-        
+
+## \brief This class performs a performance test of the TLV rotor machine interface.
+#        
 class RotorMachinePerfTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    # \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.   
+    #   
+    # \param [test_data] Is a string. It specifies the sample text that is used to measure the decryption speed.
+    #
+    # \param [num_iterations] Is an integer. It specifies how many test decryptions are to be performed.         
+    #
     def __init__(self, name, test_data, num_iterations = 22000):
         super().__init__(name)
         self._iterations = num_iterations
         self._test_data = test_data
-            
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #            
     def test(self):
         result = super().test()
 
@@ -302,7 +474,15 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
         
         return result
 
-    
+
+## \brief Returns a simpletest.SimpleTest object that allows to perform all the tests defined in this module.
+#
+#  \param [test_data] Is a string. It specifies the sample text that is used to measure the decryption speed.
+#
+#  \param [num_iterations] Is an integer. It specifies how many test decryptions are to be performed.
+#         
+#  \returns A simpletest.SimpleTest object.
+#                
 def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_iterations = 2500):
     performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
     functional_test = RotorMachineFuncTests("rotorsim functional test")
@@ -314,6 +494,14 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     
     return all_tests
 
+## \brief Performs all the tests defined in this module.
+#
+#  \param [test_data] Is a string. It specifies the sample text that is used to measure the decryption speed.
+#
+#  \param [num_iterations] Is an integer. It specifies how many test decryptions are to be performed.
+#         
+#  \returns Nothing.
+#                
 def execute_tests(test_data, num_iterations):
     tests = get_module_test(test_data, num_iterations)
     test_result = tests.test()

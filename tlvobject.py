@@ -23,7 +23,7 @@ import tempfile
 import simpletest
 
 SERVER_ADDRESS = './sock_tlvstream'
-SERVER_BINARY = './tlv_object'
+SERVER_BINARY = './tlv_rotorsim'
 BUF_SIZE = 4096
 LEN_MAX = 65536
 

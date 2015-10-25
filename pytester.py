@@ -14,11 +14,21 @@
 # limitations under the License.
 ################################################################################
 
+## @package pytester implments a program that performs all tests defined for the python3 interface.
+#   
+# \file pytester.py
+# \brief This file contains a function that aggregates and subsequently performs all the tests defined
+#        for the modules that make up the python3 interface.
+
 import tlvtest
 import rotorsimtest
 import cmdlinetest
 import simpletest
 
+## \brief Performs all the tests defined for the python3 interface.
+#         
+#  \returns Nothing.
+#                
 def perform_all_tests():
     all_tests = simpletest.CompositeTest("All Tests")
     all_tests.add(tlvtest.get_module_test())

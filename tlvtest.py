@@ -14,6 +14,12 @@
 # limitations under the License.
 ################################################################################
 
+## @package The module tlvtest contains tests for the python3 side of the generic TLV interface.
+#   
+# \file tlvtest.py
+# \brief This file contains classes the implement tests for the python3 side of the generic TLV interface.
+#
+
 import simpletest
 from tlvobject import *
 
@@ -38,7 +44,7 @@ class TlvFuncTest(simpletest.SimpleTest):
 
     def test(self):
         result = super().test()
-        with TlvServer('./tlv_object', 'sock_tmpjffdfkdfgj') as s:
+        with TlvServer('./tlv_rotorsim', 'sock_tmpjffdfkdfgj') as s:
             with TestArithmetic(s.address) as a, TestEcho(s.address) as e:
                 try:
                     add_result = a.add(self._left_summand, self._right_summand)
@@ -83,7 +89,7 @@ class TlvPerfTest(simpletest.SimpleTest):
     def test(self):
         result = super().test()
 
-        with TlvServer('./tlv_object', 'sock_tmpjffdfkdfgj') as s, TestArithmetic(s.address) as a:
+        with TlvServer('./tlv_rotorsim', 'sock_tmpjffdfkdfgj') as s, TestArithmetic(s.address) as a:
             try:
                 jetzt = datetime.datetime.now()
                 

@@ -18,7 +18,7 @@
 #           
 # \file rotorsim.py
 # \brief This file provides some Python3 classes that allow to en/decipher texts using the
-#        C++ program rotorsim. On top of that these classes provide the functionality to
+#        C++ program tlv_object. On top of that these classes provide the functionality to
 #        create rotor machine state files which then can be used with the rotorsim program.
 
 import sys

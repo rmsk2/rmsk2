@@ -14,6 +14,12 @@
 # limitations under the License.
 ################################################################################
 
+## @package cmdlinetest contains tests for the rotorsim command line simulator implemented in python3.
+#   
+# \file cmdlinetest.py
+# \brief This file contains classes that implement tests which can be used to verify that
+#        the command line simulator implemented by the program rotorsim is functional and correct.
+
 import subprocess
 import os
 import rotorsimtest
@@ -194,22 +200,22 @@ class Processor:
         result = result.replace('\n', "','")
         return eval(result)
 
-
-class AllEnigmaCLITests(simpletest.CompositeTest):
+## \brief This class performs verification tests of all Enigma variants using the rotorsim command line simulator
+#         as a cryptographic backend.
+#
+class AllEnigmaCLITests(rotorsimtest.AllEnigmaTestsBase):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.      
+    #
     def __init__(self, name):
         super().__init__(name)
-        self._r_set = rotorsimtest.EnigmaRotorSet()
-        self.add(rotorsimtest.M4EnigmaTest(self._r_set))
-        self.add(rotorsimtest.M3UhrTest(self._r_set))
-        self.add(rotorsimtest.KDTest(self._r_set))
-        self.add(rotorsimtest.TirpitzTest(self._r_set))
-        self.add(rotorsimtest.AbwehrTest(self._r_set))
-        self.add(rotorsimtest.RailwayTest(self._r_set))
-    
-    def set_processor(self, proc):
-        for i in self._test_cases:
-            i.set_processor(proc)
-    
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
     def test(self):
         result = True
         m4_state = rotorsim.RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
@@ -229,10 +235,18 @@ class AllEnigmaCLITests(simpletest.CompositeTest):
         return result
 
 
+## \brief Returns a simpletest.SimpleTest object that allows to perform all the tests defined in this module.
+#
+#  \returns A simpletest.SimpleTest object.
+#                
 def get_module_test():
     verification_test = AllEnigmaCLITests("CLI Enigma verification test")    
     return verification_test
 
+## \brief Performs all the tests defined in this module.
+#
+#  \returns Nothing.
+#                
 def execute_tests(num_iterations):
     tests = get_module_test()
     test_result = tests.test()

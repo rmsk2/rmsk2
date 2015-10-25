@@ -68,7 +68,7 @@ enigma_prog = rmsk.Program('enigma', enigma_files, LIBS = rmsk_libs, LIBPATH = r
 rand_perm_prog = rmsk.Program('rand_perm', perm_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 rotorvis_prog = rmsk.Program('rotorvis', rotor_vis_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes)
 rotor_sim_prog = rmsk.Program('rotorsim', rotor_sim_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
-tlv_object_server = rmsk.Program('tlv_object', tlv_object_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
+tlv_object_server = rmsk.Program('tlv_rotorsim', tlv_object_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path)
 
 rmsk.Install('dist', rotorvis_prog)
 rmsk.Install('dist', enigma_prog)
