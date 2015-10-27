@@ -39,11 +39,11 @@ const int ERR_IO_FAILURE = 42;
 
 /*! \brief A class which implements the generic command line simulator called rotorsim.
  */
-class rotorsim {
+class rotor_sim {
 public:
     /*! \brief Constructor.
      */
-    rotorsim();
+    rotor_sim();
 
     /*! \brief This method parses the command line and processes the input data using the appropriate rotor machine.
      */
@@ -184,7 +184,7 @@ protected:
 
 };
 
-rotorsim::rotorsim()
+rotor_sim::rotor_sim()
     :   desc("Allowed options")
 {
     p.add("command", 1);    
@@ -205,7 +205,7 @@ rotorsim::rotorsim()
     state_progression = false;
 }
 
-istream *rotorsim::determine_input_stream(string& file_name, ifstream& file_in)
+istream *rotor_sim::determine_input_stream(string& file_name, ifstream& file_in)
 {
     istream *result = NULL;
 
@@ -226,7 +226,7 @@ istream *rotorsim::determine_input_stream(string& file_name, ifstream& file_in)
     return result;
 }
 
-ostream *rotorsim::determine_output_stream(string& file_name, ofstream& file_out)
+ostream *rotor_sim::determine_output_stream(string& file_name, ofstream& file_out)
 {
     ostream *result = NULL;
     
@@ -247,7 +247,7 @@ ostream *rotorsim::determine_output_stream(string& file_name, ofstream& file_out
     return result;
 }
 
-rotor_machine *rotorsim::determine_machine(string& config_file)
+rotor_machine *rotor_sim::determine_machine(string& config_file)
 {
     rotor_machine *machine = NULL;
     string config_data;
@@ -268,7 +268,7 @@ rotor_machine *rotorsim::determine_machine(string& config_file)
     return machine;
 }
 
-int rotorsim::save_machine_state(string& file_name, rotor_machine *machine)
+int rotor_sim::save_machine_state(string& file_name, rotor_machine *machine)
 {
     Glib::KeyFile ini_file;
     int result = RETVAL_OK;
@@ -297,7 +297,7 @@ int rotorsim::save_machine_state(string& file_name, rotor_machine *machine)
     return result;
 }
 
-void rotorsim::execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine)
+void rotor_sim::execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine)
 {
     // perm command
     vector<unsigned int> current_perm;
@@ -333,7 +333,7 @@ void rotorsim::execute_perm_command(int num_iterations, ostream *out, rotor_mach
     }                
 }
 
-void rotorsim::execute_pos_command(ostream *out, rotor_machine *machine)
+void rotor_sim::execute_pos_command(ostream *out, rotor_machine *machine)
 {        
     string help = machine->visualize_all_positions();
 
@@ -341,7 +341,7 @@ void rotorsim::execute_pos_command(ostream *out, rotor_machine *machine)
 }
 
 
-void rotorsim::execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine)
+void rotor_sim::execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine)
 {
     const char *rotor_names[5] = {STATOR_L, S_SLOW, S_FAST, S_MIDDLE, STATOR_R};
     
@@ -361,7 +361,7 @@ void rotorsim::execute_sigabasetup_command(int num_iterations, int setup_step_ro
     }                                
 }
 
-void rotorsim::execute_step_command(int num_iterations, ostream *out, rotor_machine *machine)
+void rotor_sim::execute_step_command(int num_iterations, ostream *out, rotor_machine *machine)
 {
 
     for (int count = 0; count < num_iterations; count++)
@@ -378,7 +378,7 @@ void rotorsim::execute_step_command(int num_iterations, ostream *out, rotor_mach
 }
 
 
-int rotorsim::execute_command()
+int rotor_sim::execute_command()
 {
     int result = RETVAL_OK;
     istream *in = NULL;
@@ -482,7 +482,7 @@ int rotorsim::execute_command()
     return result;
 }
 
-int rotorsim::read_delimited_stream(istream *in, string& data_read, int delimiter)
+int rotor_sim::read_delimited_stream(istream *in, string& data_read, int delimiter)
 {
     int result = RETVAL_OK;
     int char_read = 0;
@@ -520,7 +520,7 @@ int rotorsim::read_delimited_stream(istream *in, string& data_read, int delimite
     return result;
 }
 
-int rotorsim::process_stream(istream *in, ostream *out, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok)
+int rotor_sim::process_stream(istream *in, ostream *out, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok)
 {
     int result = RETVAL_OK;
     int char_read;
@@ -594,7 +594,7 @@ int rotorsim::process_stream(istream *in, ostream *out, int output_grouping, sig
     return result;
 }
 
-void rotorsim::print_help_message(po::options_description *desc)
+void rotor_sim::print_help_message(po::options_description *desc)
 {
     cout << (*desc) << endl;
     cout << "Examples:" << endl;
@@ -608,7 +608,7 @@ void rotorsim::print_help_message(po::options_description *desc)
     cout << endl;
 }
 
-int rotorsim::parse(int argc, char **argv)
+int rotor_sim::parse(int argc, char **argv)
 {
     int return_code = RETVAL_OK;
 
@@ -700,7 +700,7 @@ int rotorsim::parse(int argc, char **argv)
  */
 int main(int argc, char **argv)
 {
-    rotorsim sim;   
+    rotor_sim sim;   
     int ret_val = sim.parse(argc, argv);
  
     if (ret_val == RETVAL_OK)

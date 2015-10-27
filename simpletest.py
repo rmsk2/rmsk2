@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-## @package simpletest contains classes that together make up a primitive python3 unit testing facility.
+## @package simpletest Contains classes that together make up a primitive python3 unit testing facility.
 #   
 # \file simpletest.py
 # \brief simpletest contains classes that together make up a primitive unit test facility.
@@ -95,6 +95,10 @@ class SimpleTest:
 #         have been added to a CompositeTest instance.
 #
 class CompositeTest(SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It has to specifiy a textual description for the test.
+    #
     def __init__(self, name):
         super().__init__(name)
         self._test_cases = []

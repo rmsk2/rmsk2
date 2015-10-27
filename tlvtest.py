@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-## @package The module tlvtest contains tests for the python3 side of the generic TLV interface.
+## @package tlvtest Contains tests for the python3 side of the generic TLV interface.
 #   
 # \file tlvtest.py
 # \brief This file contains classes the implement tests for the python3 side of the generic TLV interface.
@@ -23,12 +23,29 @@
 import simpletest
 from tlvobject import *
 
+## \brief This class implements tests for the TLV infrastructure by calling the add method of test arithmetic 
+#         provider and the echo method of the echo provider.
+#
 class TlvFuncTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It has to specifiy a textual description for the test.
+    #
+    #  \param [left_argument] Is an integer. It specifies the left argument of the add operation that is part
+    #         of the test.
+    #
+    #  \param [right_argument] Is an integer. It specifies the right argument of the add operation that is part
+    #         of the test.    
+    #
     def __init__(self, name, left_argument, right_argument):
         super().__init__(name)
         self._left_summand = left_argument
         self._right_summand = right_argument
-
+        
+    ## \brief Returns a structure of TlvEntry objects which are to be used in the echo test.
+    #
+    #  \returns A sequence of TlvEntry objects. 
+    #
     @staticmethod
     def get_test_sequence():
         double_test = TlvEntry().to_double(1254.6553)
@@ -42,11 +59,16 @@ class TlvFuncTest(simpletest.SimpleTest):
         test_seq = TlvEntry().to_sequence([string_1_in_seq, string_2_in_seq])
         return [double_test, null_test, string_test, int_test, non_empty_byte_array, uint, test_seq]                
 
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. True is returned in case of a successfull test. 
+    #
     def test(self):
         result = super().test()
         with TlvServer('./tlv_rotorsim', 'sock_tmpjffdfkdfgj') as s:
             with TestArithmetic(s.address) as a, TestEcho(s.address) as e:
                 try:
+                    # Perform add operation
                     add_result = a.add(self._left_summand, self._right_summand)
                     self.append_note("Arithmetic add test {} + {} = {}".format(self._left_summand, self._right_summand, add_result))
                     last_result = (add_result == (self._left_summand + self._right_summand))
@@ -54,10 +76,12 @@ class TlvFuncTest(simpletest.SimpleTest):
                     
                     if not last_result:
                         self.append_note("Add test FAILED")
-                                        
-                    echo_result = e.echo(TlvEntry().to_sequence(self.get_test_sequence()))
-                    echo_result = echo_result[0]
                     
+                    # Call echo method
+                    echo_result = e.echo(TlvEntry().to_sequence(self.get_test_sequence()))
+
+                    # Test structure which was returned by the echo method
+                    echo_result = echo_result[0]                    
                     last_result = (echo_result[0] == 1254.6553) and (echo_result[2] == 'hollaraedulioe') and (echo_result[3] == -123456) and (echo_result[6][0] == 'komp1')                    
                     result = result and last_result
                     self.append_note("Echo result: " + str(echo_result))
@@ -65,14 +89,17 @@ class TlvFuncTest(simpletest.SimpleTest):
                     if not last_result:
                         self.append_note("Echo test FAILED")                                        
                     
+                    # Ask server for list of known objects
                     obj_list = s.list_objects()                    
                     self.append_note("Objects returned by server: " + str(obj_list))
+                    # There have to be two of these objects
                     last_result = (len(obj_list) == 2)
                     result = result and last_result
                     
                     if not last_result:
                         self.append_note("Unexpected number of objects returned")
-
+                    
+                    # Retrieve the list of providers known to the server and append it to the notes of this test
                     self.append_note("Providers known to server: " + str(s.list_providers()))
                 except:
                     self.append_note("EXCEPTON!!!!")
@@ -81,11 +108,26 @@ class TlvFuncTest(simpletest.SimpleTest):
         return result
 
 
+## \brief This class has the purpose to measure the performance of the TLV infrastructure by repeating an add operation
+#         a given number of times.
+#
 class TlvPerfTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It has to specifiy a textual description for the test.
+    #
+    #  \param [num_iterations] Is an integer. It specifies how many add operations should be performed in the context
+    #         of this test.
+    #
     def __init__(self, name, num_iterations = 22000):
         super().__init__(name)
         self._iterations = num_iterations
-            
+
+    ## \brief Performs the test. This test should never fail. Its purpose is to add a note that specifies how long
+    #         it took to perform the desired number of additions.
+    #
+    #  \returns A boolean. True is returned in case of a successfull test. 
+    #            
     def test(self):
         result = super().test()
 
@@ -97,13 +139,22 @@ class TlvPerfTest(simpletest.SimpleTest):
                     res = a.add(1, 1)
 
                 spaeter = datetime.datetime.now()
-                self.append_note("Time needed for {} iterations: {}".format(self._iterations, str(spaeter - jetzt)))
+                self.append_note("Time needed for {} iterations: {}".format(self._iterations, spaeter - jetzt))
             except:
                 self.append_note("EXCEPTON!!!!")
                 result = False        
         
         return result
+        
 
+## \brief This function returns a test case which aggregates the tests that were designed to verify the functionality
+#         implemented in the tlvobject module.
+#
+#  \param [num_iterations] Is an integer. It has to specifiy the number of additions that are to be performed for the
+#         performance measurement.
+#
+#  \returns A simpletest.CompositeTest object. It contains all defined test cases.
+#
 def get_module_test(num_iterations = 22000):
     functional_test = TlvFuncTest('TLV functional test', 17, 4)
     performance_test = TlvPerfTest('TLV performance test', num_iterations)
@@ -113,6 +164,13 @@ def get_module_test(num_iterations = 22000):
     
     return all_tests
 
+## \brief This function executes the test cases returned by the get_module_test() function. 
+#
+#  \param [num_iterations] Is an integer. It has to specifiy the number of additions that are to be performed for the
+#         performance measurement.
+#
+#  \returns Nothing.
+#
 def execute_tests(num_iterations):
     tests = get_module_test(num_iterations)
     test_result = tests.test()
