@@ -448,6 +448,9 @@ class M4EnigmaState(SteckeredEnigmaState):
 ## \brief This class allows access to objects provided by the rotor_machine_provider and thereby makes
 #         rotor machine functionality available to the python3 side of the TLV infrastructure.
 #
+#  We say that the rotorsim.RotorMachine instance proxies the rotor machine object on the C++ side of the
+#  TLV infrastructure.
+#
 class RotorMachine(tlvobject.TlvProxy):
     ## \brief Constructor. 
     #
@@ -537,8 +540,7 @@ class RotorMachine(tlvobject.TlvProxy):
         
         return res
 
-    ## \brief Returns the current state of the TLV rotor machine object which is proxied by this 
-    #         rotorsim.RotorMachine instance.
+    ## \brief Returns a description (i.e. the machine type) of the proxied rotor machine object.
     #
     #  \returns A string. It contains a description of the rotor machine which is proxied by this
     #           rotorsim.RotorMachine instance.
