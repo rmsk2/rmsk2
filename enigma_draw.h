@@ -170,12 +170,15 @@ simulators and cryptographic primitives that are needed to implement them. Here 
 On top of that sits the GUI subsystem. This system implements the visualization of the rotor machines. I.e. it deals
 mostly with drawing all the elements like the keyboard, the lamp board, the rotor windows and so on.
 
-Finally whe have the application subsystem that implements all the functionality that is needed to embed the GUI simulator
+We also have the application subsystem that implements all the functionality that is needed to embed the GUI simulator
 in a full fledged gtkmm (http://www.gtkmm.org) application. It provides the user interface that allows the user to
 configure the underlying rotor machines, saving and restoring the state of the simlator and so on.
 
+Finally there is the TLV subsystem which provides a simple remote procedure call facility which is used to provide
+a python3 interface for part of the functionality implemented in the crypto subsystem.
+
 In the source documentation that can be exctracted by doxygen (http://www.stack.nl/~dimitri/doxygen/) classes belonging
-to the GUI and application subsystems are marked accordingly "... a GUI/application class ...". Classes that are not
+to the GUI, application and TLV subsystems are marked accordingly "... a GUI/application/TLV class ...". Classes that are not
 specially marked belong to the crypto subsystem.
 
 \section missing_sec Stuff that remains to be done

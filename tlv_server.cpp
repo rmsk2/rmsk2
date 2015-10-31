@@ -14,6 +14,10 @@
  * limitations under the License.
  ***************************************************************************/
 
+/*! \file tlv_server.cpp
+ *  \brief Contains the implementation of the tlv_server and uxdomain_socket_server classes.
+ */ 
+
 #include<tlv_server.h>
 #include<sys/types.h>
 #include<sys/socket.h>
@@ -53,7 +57,8 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
     reg_help = registry;
 
     do
-    {       
+    { 
+        // Boiler plate code for a socket based server ....
         if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
         {
             result = ERR_SOCK_CREATE;
@@ -80,9 +85,11 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
 
         listen(sock_fd, 5);
         client_address_len = sizeof(client_address);
-       
+
+        // Main loop       
         while(keep_running and (result == ERR_OK))
         {
+            // Wait for client to connect
             new_sock_fd = accept(sock_fd, (struct sockaddr *)&client_address, &client_address_len);
            
             if (new_sock_fd < 0) 
@@ -91,8 +98,11 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
                 continue;
             }
             
+            // When reading data from the client wait only for the specified time period until the read operation
+            // fails.
             setsockopt(new_sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
             tlv_stream = new socket_tlv_stream(new_sock_fd);            
+            // Handle request
             result = processor(tlv_stream, registry);            
             delete tlv_stream;
         }
@@ -125,6 +135,7 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
     
     do
     {
+        // Read object name from tlv_stream
         if ((result = client_stream->read_tlv(object_name_read)) != ERR_OK)
         {
             break;
@@ -136,6 +147,7 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
             break;
         }
         
+        // Read method name from tlv_stream        
         if ((result = client_stream->read_tlv(method_name_read)) != ERR_OK)
         {
             break;
@@ -147,36 +159,41 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
             break;
         }
 
+        // Read parameters from tlv_stream
         if ((result = client_stream->read_tlv(parameters_read)) != ERR_OK)
         {
             break;
         }        
 
+        // Special case: root.close() stops the server.
         if ((object_name == "root") and (method_name == "close"))
         {
             (void)stop();
-            result = client_stream->write_error_tlv(0);
+            result = client_stream->write_error_tlv(ERR_OK);
             break;
         }
 
+        // Special case: object_name.delete() deletes the named object.
         if (method_name == "delete")
         {
             registry->delete_object(object_name);
-            result = client_stream->write_error_tlv(0);
+            result = client_stream->write_error_tlv(ERR_OK);
             break;
         }
-        
+
+        // Determine processor which is to handle the request.
         unique_ptr<sigc::slot<unsigned int, tlv_entry&, tlv_stream *> > processor(registry->get_processor(object_name, method_name));
-            
+        
+        // Check if a processor could be successfully determined.    
         if (processor.get() == NULL)
         {
             result = client_stream->write_error_tlv(ERR_DETERMINE_PROCESSOR);
             break;
         }        
         
+        // Finally handle request.
         if ((result = (*processor)(parameters_read, client_stream)) != ERR_OK)
-        {         
-            //(void)client_stream->write_error_tlv(result);
+        {
             break;        
         }
                     

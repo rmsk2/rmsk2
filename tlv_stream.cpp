@@ -14,6 +14,10 @@
  * limitations under the License.
  ***************************************************************************/
 
+/*! \file tlv_stream.cpp
+ *  \brief Contains the implementation of the tlv_entry, tlv_stream and socket_tlv_stream classes.
+ */ 
+
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<unistd.h>
@@ -60,6 +64,7 @@ void tlv_entry::to_null()
 {
     tag = TAG_NULL;
     value.clear();
+    children.clear();
 }
 
 void tlv_entry::to_int(int val)
@@ -68,6 +73,7 @@ void tlv_entry::to_int(int val)
 
     tag = TAG_INT;
     value.clear();
+    children.clear();    
     
     value.push_back((unsigned char)((conv_help & (0xFF000000)) >> 24));
     value.push_back((unsigned char)((conv_help & (0x00FF0000)) >> 16));    
@@ -80,6 +86,7 @@ void tlv_entry::to_result_code(unsigned int val)
 {
     tag = TAG_RESULT_CODE;
     value.clear();
+    children.clear();    
     
     value.push_back((unsigned char)((val & (0xFF000000)) >> 24));
     value.push_back((unsigned char)((val & (0x00FF0000)) >> 16));    
@@ -90,13 +97,15 @@ void tlv_entry::to_result_code(unsigned int val)
 void tlv_entry::to_string(const string& str)
 {
     tag = TAG_STRING;
-    value = basic_string<unsigned char>((unsigned char*)str.data(), str.length());    
+    children.clear();        
+    value = basic_string<unsigned char>((unsigned char*)str.data(), str.length());
 }
 
 void tlv_entry::to_byte_array(const basic_string<unsigned char>& str)
 {
     tag = TAG_STRING;
-    value = basic_string<unsigned char>(str.data(), str.length());    
+    children.clear();        
+    value = basic_string<unsigned char>(str.data(), str.length());
 }
 
 void tlv_entry::to_double(double val)
@@ -105,12 +114,14 @@ void tlv_entry::to_double(double val)
     string help;
     
     help = boost::lexical_cast<string>(val);
-    value = basic_string<unsigned char>((unsigned char *)help.data(), help.length());    
+    children.clear();        
+    value = basic_string<unsigned char>((unsigned char *)help.data(), help.length());
 }
 
 void tlv_entry::to_sequence(vector<tlv_entry>& components)
 {
     tag = TAG_SEQUENCE;
+    children.clear();
     tlv_stream::to_bytes(components, value);
 }
 
@@ -157,12 +168,16 @@ void tlv_entry::print_rec(unsigned int indent)
             break;
         default:
             cout << indent_string;
+            // Print contents bytes as hex string
+            
             ios_base::fmtflags stream_flags = cout.flags();
+            // Save stream properties
             int s_width = cout.width();
             char fill_char = cout.fill();
             cout.fill('0');
             cout.setf(ios::hex, ios::dec|ios::hex|ios::oct);
             
+            // Print individual bytes
             for (iter = value.begin(); iter != value.end(); ++iter)
             {
                 cout.width(2);
@@ -170,7 +185,8 @@ void tlv_entry::print_rec(unsigned int indent)
             }
             
             cout << endl;
-
+            
+            // Restore stream properties
             cout.flags(stream_flags);
             cout.width(s_width);
             cout.fill(fill_char);
@@ -326,12 +342,14 @@ unsigned int tlv_stream::parse_bytes(basic_string<unsigned char>& encoded_bytes,
     {
         if ((end_position - read_position) >= 3)
         {
+            // Read header
             entry.tag = encoded_bytes[read_position];
             entry_length = (encoded_bytes[read_position + 1] << 8) | encoded_bytes[read_position + 2];
             read_position += 3;
             
             if ((end_position - read_position) >= entry_length)
             {
+                // Read contents bytes
                 entry.value = basic_string<unsigned char>(encoded_bytes.data() + read_position, entry_length);
                 entries.push_back(entry);
                 read_position += entry_length;

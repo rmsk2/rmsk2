@@ -14,6 +14,10 @@
  * limitations under the License.
  ***************************************************************************/
 
+/*! \file object_registry.cpp
+ *  \brief Contains the implementation for the service_provider, registry_manager and object_registry classes.
+ */ 
+
 #include<boost/lexical_cast.hpp>
 #include<object_registry.h>
 
@@ -36,6 +40,9 @@ void object_registry::delete_object(string& object_name)
     }
 }
 
+/*! If object_name specifies an existing handle, the object currently represented by that handle
+ *  is deleted and replaced by the newly created object.
+ */
 void object_registry::add_object(string& object_name, pair<void *, service_provider *>& new_object)
 {
     if (objects.count(object_name) > 0)
@@ -67,8 +74,10 @@ object_registry::~object_registry()
 {
     map<string, service_provider *>::iterator iter;
 
+    // Delete all objects
     clear();
     
+    // Delete all service providers
     for (iter = func_factory.begin(); iter != func_factory.end(); ++iter)
     {
         delete iter->second;
@@ -87,21 +96,26 @@ void object_registry::delete_service_provider(string& class_name)
     if (func_factory.count(class_name) > 0)
     {
         provider = func_factory[class_name];
-    
+        
+        // Delete objects managed by the provider which is to be deleted
         for (iter = objects.begin(); iter != objects.end(); ++iter)
         {
             if ((iter->second).second == provider)
             {
                 provider->delete_object((iter->second).first);
+                // Do not remove the current entry while iterating the data structure
+                // that contains it.
                 objs_to_erase.push_back(iter->first);
             }
         }
         
+        // Now remove the marked entries from the objects map.
         for (name_iter = objs_to_erase.begin(); name_iter != objs_to_erase.end(); ++name_iter)
         {
             objects.erase(*name_iter);
         }
         
+        // Finally delete the service provider object and remove it from the func_factory map.
         func_factory.erase(class_name);
         delete provider;
     }
@@ -111,23 +125,28 @@ tlv_callback *object_registry::get_processor(string& object_name, string& method
 {   
     sigc::slot<unsigned int, tlv_entry&, tlv_stream *> *result = NULL;
     
+    // Call to a "real" object.
     if (objects.count(object_name) > 0)
     {
         result = (objects[object_name].second)->make_functor(method, objects[object_name].first);
     }
     else
     {
+        // Call to the "new" pseudo object.
         if (object_name == "new")
         {
             if (func_factory.count(method) > 0)
             {
+                // Forward the call to new appropriate service_provider.
                 result = func_factory[method]->make_new_handler();
             }
         }
         else
         {
+            // Call to the "root" pseudo object.
             if (object_name == "root")
             {
+                // Forward the call to the regsitry manager.
                 result = manager.get_handler(method);
             }
         }                
@@ -161,12 +180,11 @@ tlv_callback *registry_manager::get_handler(string& method_name)
 unsigned int registry_manager::clear_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
-    tlv_entry success_code;
     
-    success_code.to_int(0);    
     registry->clear();
     
-    result = out_stream->write_tlv(success_code);
+    // Write end of result stream marker, i.e. the result code
+    result = out_stream->write_error_tlv(ERR_OK);
     
     return result;
 }
@@ -183,7 +201,8 @@ unsigned int registry_manager::list_objects_processor(tlv_entry& params, tlv_str
         object_handle.to_string(iter->first);
         result = out_stream->write_tlv(object_handle);
     }
-    
+
+    // Write end of result stream marker, i.e. the result code    
     (void)out_stream->write_error_tlv(result);
     
     return result;
@@ -202,6 +221,7 @@ unsigned int registry_manager::list_providers_processor(tlv_entry& params, tlv_s
         result = out_stream->write_tlv(object_handle);
     }
     
+    // Write end of result stream marker, i.e. the result code    
     (void)out_stream->write_error_tlv(result);
     
     return result;

@@ -387,6 +387,8 @@ def write_constants(out_file_name):
     fd.write(bytes('\n\n', 'ascii'))    
     fd.close()
     
+if __name__ == "__main__":
+    # execute only if run as a script
+    write_rotor_set("enigma_rotor_set.cpp")
+    write_constants("enigma_rotor_set.h")
 
-write_rotor_set("enigma_rotor_set.cpp")
-write_constants("enigma_rotor_set.h")
