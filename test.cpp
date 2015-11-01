@@ -171,7 +171,9 @@ bool alles_andere::test()
  */
 int main()
 {
-    composite_test_case all_tests("All tests");
+    int ret_val = 0;
+
+    composite_test_case all_tests("rmsk tests");
     alles_andere rest;
     
     test_stepping::register_tests(&all_tests);
@@ -185,8 +187,14 @@ int main()
     test_kl7::register_tests(&all_tests);
     all_tests.add(&rest);
     
-    all_tests.test();
+    if (!all_tests.test())
+    {
+        ret_val = 42;
+    }
+    
     all_tests.print_notes(); 
     rmsk::clean_up();       
+    
+    return ret_val;
 }
 

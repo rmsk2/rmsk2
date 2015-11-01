@@ -282,7 +282,7 @@ class AllEnigmaTestsBase(simpletest.CompositeTest):
     #  \returns Nothing.
     #            
     def set_processor(self, proc):
-        for i in self._test_cases:
+        for i in self.test_cases:
             i.set_processor(proc)
 
 
@@ -487,7 +487,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
     functional_test = RotorMachineFuncTests("rotorsim functional test")
     enigma_verification_test = AllEnigmaTests("Enigma verification test")
-    all_tests = simpletest.CompositeTest('All rotorsim tests')    
+    all_tests = simpletest.CompositeTest('rotorsim')    
     all_tests.add(functional_test)
     all_tests.add(performance_test)
     all_tests.add(enigma_verification_test)

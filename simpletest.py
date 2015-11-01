@@ -103,6 +103,14 @@ class CompositeTest(SimpleTest):
         super().__init__(name)
         self._test_cases = []
 
+    ## \brief Returns the sequence of test cases. 
+    #
+    #  \returns A sequence of objects which implement the interface defined by SimpleTest
+    #    
+    @property    
+    def test_cases(self):
+        return self._test_cases
+
     ## \brief Add a subordinate test case to this CompositeTest instance. 
     #
     #  \param [test_case] An object implementing the interface defined in SimpleTest.
@@ -110,7 +118,7 @@ class CompositeTest(SimpleTest):
     #  \returns Nothing.
     #            
     def add(self, test_case):
-        self._test_cases.append(test_case)
+        self.test_cases.append(test_case)
 
     ## \brief Performs all subordinate test cases that have been added to this CompositeTest instance. 
     #
@@ -119,7 +127,7 @@ class CompositeTest(SimpleTest):
     def test(self):
         result = super().test()
         
-        for i in self._test_cases:
+        for i in self.test_cases:
             self.append_note(self.name + " -> " + i.name + " start")
             result_of_last_test = i.test()
             notes_of_last_test = i.notes

@@ -169,8 +169,8 @@ protected:
     void print_rec(unsigned int indent);
 };
 
-/*! \brief An abstract TLV class which knows how to read/write byte strings and tlv_entry objects from/to an unspecified
- *         I/O stream.
+/*! \brief An abstract TLV class which defines an interface for reading/writing byte strings and tlv_entry objects from/to
+ *          an unspecified I/O stream.
  */
 class tlv_stream {
 public:

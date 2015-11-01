@@ -240,7 +240,7 @@ class AllEnigmaCLITests(rotorsimtest.AllEnigmaTestsBase):
 #  \returns A simpletest.SimpleTest object.
 #                
 def get_module_test():
-    verification_test = AllEnigmaCLITests("CLI Enigma verification test")    
+    verification_test = AllEnigmaCLITests('CLIEnigma')    
     return verification_test
 
 ## \brief Performs all the tests defined in this module.

@@ -158,7 +158,7 @@ class TlvPerfTest(simpletest.SimpleTest):
 def get_module_test(num_iterations = 22000):
     functional_test = TlvFuncTest('TLV functional test', 17, 4)
     performance_test = TlvPerfTest('TLV performance test', num_iterations)
-    all_tests = simpletest.CompositeTest('All TLV tests')
+    all_tests = simpletest.CompositeTest('TLV')
     all_tests.add(functional_test)
     all_tests.add(performance_test)
     

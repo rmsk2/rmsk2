@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-## @package pytester implments a program that performs all tests defined for the python3 interface.
+## @package pytester implements a program that performs all tests defined for the python3 interface.
 #   
 # \file pytester.py
 # \brief This file contains a function that aggregates and subsequently performs all the tests defined
@@ -24,19 +24,97 @@ import tlvtest
 import rotorsimtest
 import cmdlinetest
 import simpletest
+import subprocess
+import shlex
+import os
+import sys
 
-## \brief Performs all the tests defined for the python3 interface.
+## \brief This class wraps calling any test program (for instance rmsk) in a test case derived from 
+#         simpletest.SimpleTest.
+#
+class RmskCmdLineTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    # \param [name] Is a string. Has to specifiy a human readable description of the test.
+    #
+    # \param [command_line] Is a string. Has to contain the command line of the test program that is to
+    #        be called. The test program's exit code has to be set to 0 in case of a scuccessfull test.
+    #
+    def __init__(self, name, command_line):
+        super().__init__(name)
+        self._args = shlex.split(command_line)
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A value of True indicates a successfull test.
+    #    
+    def test(self):
+        result = super().test()        
+        
+        try:
+            p = subprocess.Popen(self._args, cwd=os.getcwd(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+            comm_result = p.communicate()        
+            result = (p.returncode == 0)
+            output = comm_result[0].decode('UTF-8')
+            lines = output.split('\n')
+            
+            for i in lines:
+                message = i.strip()            
+                if message != '':
+                    self.append_note(i)
+        except:
+            self.append_note("EXCEPTION!!")
+            result = False
+        
+        return result
+        
+
+## \brief Gathers all defined test cases.
 #         
-#  \returns Nothing.
+#  \returns A simpletest.CompositeTest object. This object represents all defined tests.
 #                
-def perform_all_tests():
-    all_tests = simpletest.CompositeTest("All Tests")
+def get_all_tests():
+    all_tests = simpletest.CompositeTest('Module tests')
+    all_tests.add(RmskCmdLineTest('rmsk', './rmsk'))
     all_tests.add(tlvtest.get_module_test())
     all_tests.add(rotorsimtest.get_module_test())    
     all_tests.add(cmdlinetest.get_module_test())    
-    all_tests.execute()
+    return all_tests
+
+## \brief Performs all the tests named in parameter test_names.
+#
+#  \param [test_names] Is a sequence of strings. Specifies the names of the tests that are
+#         to be performed.
+#         
+#  \returns Nothing.
+#                
+def perform_some_tests(test_names):
+    all_tests_ok = True
+    all_cases = map(lambda x: [x.name, x], get_all_tests().test_cases)
+    test_dict = {}
+    
+    for i in all_cases:
+        test_dict[i[0]] = i[1]
+    
+    for i in test_names:
+        if i in test_dict.keys():
+            all_tests_ok = all_tests_ok and test_dict[i].test()
+            test_dict[i].print_notes()
+    
+    if not all_tests_ok:
+        print('Some tests FAILED!!')
 
 
-perform_all_tests()
+if __name__ == "__main__":
 
+    if len(sys.argv) == 1:
+        for i in get_all_tests().test_cases:
+            print(i.name)
+    elif len(sys.argv) == 2:
+        if sys.argv[1] == 'all':
+            get_all_tests().execute()
+        else:
+            perform_some_tests(sys.argv[1:])
+    else:
+        perform_some_tests(sys.argv[1:])
 
