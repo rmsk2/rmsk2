@@ -108,8 +108,12 @@ def perform_some_tests(test_names):
 if __name__ == "__main__":
 
     if len(sys.argv) == 1:
+        print('usage: ./unittest all | test1 test2 ...\n')
+        print('Known tests:')
+        print('============')        
         for i in get_all_tests().test_cases:
             print(i.name)
+        print()
     elif len(sys.argv) == 2:
         if sys.argv[1] == 'all':
             get_all_tests().execute()
