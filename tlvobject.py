@@ -21,12 +21,8 @@
 #
 
 import socket
-import datetime
 import subprocess
-import time
 import os
-import tempfile
-import simpletest
 
 ## \brief Default address for the TLV server
 SERVER_ADDRESS = './sock_tlvstream'

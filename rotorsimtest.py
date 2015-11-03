@@ -459,7 +459,7 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
                 result = result and (dec_result == 'vonvonjl')
                 
                 if not result:
-                    self.append_note("M4 message not properly decrypted: {}".format())
+                    self.append_note("M4 message not properly decrypted: {}".format(dec_result))
                 else:                    
                     jetzt = datetime.datetime.now()
                     

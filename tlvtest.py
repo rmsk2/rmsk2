@@ -20,6 +20,7 @@
 # \brief This file contains classes the implement tests for the python3 side of the generic TLV interface.
 #
 
+import datetime
 import simpletest
 from tlvobject import *
 
