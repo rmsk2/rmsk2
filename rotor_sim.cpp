@@ -502,8 +502,8 @@ int rotor_sim::read_delimited_stream(istream *in, string& data_read, int delimit
             }
         }
         
-        // Check if input and output streams are still ok. If the failbit is set on either 
-        // of the streams then flag an error. If the failbit is set but the corresponding
+        // Check if input stream is still ok. If the failbit is set on 
+        // the stream then flag an error. If the failbit is set but the
         // stream has also reached EOF, then everything is still OK.
         if (in->fail() and !in->eof())
         {

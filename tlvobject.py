@@ -580,11 +580,26 @@ class TlvServer:
             if os.path.exists(self.address):
                 raise TlvException("Socket " + self.address + " already exists")
             
-            self._server_process = subprocess.Popen([self.binary_name, self.address])
-            self.is_running = True
+            self._server_process = subprocess.Popen([self.binary_name, self.address])            
             
+            # Wait for socket file to appear
             while not stop:
                 stop = os.path.exists(self.address)
+            
+            # Wait until we actually can talk to the server
+            exception_count = 0
+            stop = False
+            while not stop:
+                try:
+                    self.list_objects()
+                    stop = True
+                    self.is_running = True
+                except:
+                    exception_count += 1
+                    
+                    # Too many exceptions. Something is really wrong ...
+                    if exception_count >= 500: 
+                        stop = True
 
     ## \brief This method stops the TLV server process which this object represents.
     #

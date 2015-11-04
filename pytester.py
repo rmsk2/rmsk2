@@ -90,11 +90,10 @@ def get_all_tests():
 #                
 def perform_some_tests(test_names):
     all_tests_ok = True
-    all_cases = map(lambda x: [x.name, x], get_all_tests().test_cases)
     test_dict = {}
     
-    for i in all_cases:
-        test_dict[i[0]] = i[1]
+    for i in get_all_tests().test_cases:
+        test_dict[i.name] = i
     
     for i in test_names:
         if i in test_dict.keys():
