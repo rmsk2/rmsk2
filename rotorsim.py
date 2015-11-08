@@ -16,7 +16,7 @@
 
 ## @package rotorsim A Python3 interface to the C++ rotor machines implemented by rmsk2.
 #           
-# \file rotorsim.py
+# \file rmsk2/rotorsim.py
 # \brief This file provides some Python3 classes that allow to en/decipher texts using the
 #        C++ program tlv_object. On top of that these classes provide the functionality to
 #        create rotor machine state files which then can be used with the rotorsim program.
@@ -116,6 +116,9 @@ NEMA_DRIVE_WHEEL_21 = 111
 NEMA_DRIVE_WHEEL_22 = 112
 NEMA_DRIVE_WHEEL_23 = 113
 
+INSERT_NORMAL = 0
+INSERT_INVERSE = 1
+INSERT_REVERSE = 2
 
 ## \brief This class serves as the generic something went wrong exception.
 #
@@ -189,6 +192,20 @@ class RotorSet:
     #    
     def change_perm(self, rotor_id, new_perm):
         self.data[rotor_id]['permutation'] = new_perm
+    
+    ## \brief Changes to permutation of the specified rotor to an involution specified by letter pairs.
+    #
+    #  \param [reflector_id] Is a integer holding the id of the rotor the permutation of which is to be changed.
+    #
+    #  \param [new_perm] Is a string. Each two consecutive letters speify a cycle of the involution.
+    #
+    #  \returns Nothing
+    #        
+    def change_reflector(self, reflector_id, new_perm):
+        help = Permutation()
+        help.involution_from_pairs(new_perm)
+        self.change_perm(reflector_id, help.to_int_vector())
+    
 
 
 ## \brief This class implements a set of transformations for permutations. 
@@ -316,6 +333,7 @@ class GenericRotorMachineState:
         self._rotor_set = rotor_set
         self._slot_names = slot_names
         self._config = {}
+        self._default_alpha = 'abcdefghijklmnopqrstuvwxyz'
         
         for slot in self._slot_names:
             self.insert_rotor(slot, rotor_set.ids[0], rotor_set.ids[0], 0, 0)
@@ -329,11 +347,11 @@ class GenericRotorMachineState:
     def _save_additional_data(self, ini_file):
         pass
 
-    def insert_rotor(self, slot_name, rotor_id, ring_id, ring_offset, rotor_pos, use_inverse = False):
-        self._config[slot_name] = {'rid': rotor_id, 'ringid':ring_id, 'ringoffset':ring_offset, 'rotorpos':rotor_pos, 'inverse':use_inverse}
-        
-    def render_state(self):
-        result = GLib.KeyFile()
+    def insert_rotor(self, slot_name, rotor_id, ring_id, ring_offset, rotor_pos, insert_type = INSERT_NORMAL):
+        self._config[slot_name] = {'rid': rotor_id, 'ringid':ring_id, 'ringoffset':ring_offset, 'rotorpos':rotor_pos, 'inserttype':insert_type}
+
+    def fill_ini(self, ini_file_object):
+        result = ini_file_object
         
         result.set_string('machine', 'name', self._name)
         result.set_string('machine', 'rotorsetname', 'defaultset')
@@ -341,18 +359,20 @@ class GenericRotorMachineState:
         for i in self._slot_names:
             section_name = 'rotor_' + i
             conf = self._config[i]
-            p = Permutation()
+            p = Permutation(self._default_alpha)
             p.from_int_vector(self._rotor_set.data[conf['rid']]['permutation'])
             
-            if conf['inverse']:
+            if conf['inserttype'] == INSERT_INVERSE:
                 result.set_integer_list(section_name, 'permutation', p.to_inverse())
+            elif conf['inserttype'] == INSERT_REVERSE:
+                result.set_integer_list(section_name, 'permutation', p.to_reverse())
             else:
                 result.set_integer_list(section_name, 'permutation', p.to_int_vector())
             
             result.set_integer_list(section_name, 'ringdata', self._rotor_set.data[conf['ringid']]['ringdata'])
             result.set_integer(section_name, 'rid', conf['rid'])
             result.set_integer(section_name, 'ringid', conf['ringid'])            
-            result.set_boolean(section_name, 'insertinverse', False)
+            result.set_boolean(section_name, 'insertinverse', conf['inserttype'] == INSERT_REVERSE)
             result.set_integer(section_name, 'ringoffset', conf['ringoffset'])
             result.set_integer(section_name, 'rotordisplacement', (conf['rotorpos'] + p.neg(conf['ringoffset'])) % p.get_len()) 
             
@@ -360,6 +380,12 @@ class GenericRotorMachineState:
         
         self._save_additional_data(result)
         
+        return result
+        
+    def render_state(self):
+        result = GLib.KeyFile()        
+        result = self.fill_ini(result)
+                
         return result.to_data()[0].encode()
     
     def save(self, file_name):
@@ -375,6 +401,127 @@ class GenericRotorMachineState:
         return result
 
 
+class SigabaSubMachineState(GenericRotorMachineState):
+    def __init__(self, slot_names, rotor_set, default_alpha = 'abcdefghijklmnopqrstuvwxyz'):
+        super().__init__('SIGABA', slot_names, rotor_set)
+        self._default_alpha = default_alpha
+        
+    def insert_sigaba_rotor(self, slot_name, rotor_id, rotor_pos_as_char, insert_type = INSERT_NORMAL):
+        self.insert_rotor(slot_name, rotor_id, rotor_id, 0, 0, insert_type)
+        self._config[slot_name]['rotorpos'] = self.get_rotor_pos(slot_name, rotor_pos_as_char)
+    
+    def get_rotor_pos(self, slot_name, pos_as_char):
+        result = 0
+        perm_help = Permutation(self._default_alpha)
+        
+        result = perm_help.from_val(pos_as_char)
+        if self._config[slot_name]['inserttype'] == INSERT_REVERSE:
+            result = perm_help.neg(result)
+            
+        return result
+
+            
+class SigabaMachineState:
+    def __init__(self, normal_rotor_set, index_rotor_set):
+        self._driver_machine = SigabaSubMachineState(['stator_l', 'slow', 'fast', 'middle', 'stator_r'], normal_rotor_set)
+        self._crypt_machine = SigabaSubMachineState(['r_zero', 'r_one', 'r_two', 'r_three', 'r_four'], normal_rotor_set)
+        self._index_machine = SigabaSubMachineState(['i_zero', 'i_one', 'i_two', 'i_three', 'i_four'], index_rotor_set, '0123456789')
+        self._is_csp_2900 = False
+    
+    @property
+    def driver(self):
+        return self._driver_machine
+
+    @property
+    def crypt(self):
+        return self._crypt_machine
+
+    @property
+    def index(self):
+        return self._index_machine
+    
+    @property
+    def csp_2900_flag(self):
+        return self._is_csp_2900
+    
+    @csp_2900_flag.setter
+    def csp_2900_flag(self, new_value):
+        self._is_csp_2900 = new_value
+    
+    def render_state(self):
+        result = GLib.KeyFile() 
+        result = self.driver.fill_ini(result)
+        result = self.crypt.fill_ini(result)
+        result = self.index.fill_ini(result)        
+        result.set_boolean('stepper', 'is_csp_2900', self.csp_2900_flag)
+        return result.to_data()[0].encode()
+        
+    def save(self, file_name):
+        result = True
+        try:
+            data_to_save = self.render_state()
+            f = open(file_name, 'wb')
+            f.write(data_to_save)
+            f.close()
+        except:
+            result = False
+        
+        return result
+
+
+class NemaState(GenericRotorMachineState):
+    def __init__(self, rotor_set):
+        slot_names = ['etw', 'drive1', 'contact2', 'drive3', 'contact4', 'drive5', 'contact6', 'drive7', 'contact8', 'drive9', 'contact10']
+        super().__init__('Nema', slot_names, rotor_set)
+        self.is_war_machine = True
+        self._default_alpha = 'ijklmnopqrstuvwxyzabcdefgh'
+        self.insert_rotor('etw', NEMA_ETW, NEMA_ETW, 0, 0, INSERT_INVERSE)
+    
+    @property
+    def is_war_machine(self):
+        return self._is_war_machine
+    
+    @is_war_machine.setter
+    def is_war_machine(self, new_val):
+        self._is_war_machine = new_val
+                
+        if new_val:
+            red_wheel_data = self.make_red_wheel(NEMA_DRIVE_WHEEL_22, NEMA_DRIVE_WHEEL_1)
+        else:
+            red_wheel_data = self.make_red_wheel(NEMA_DRIVE_WHEEL_23, NEMA_DRIVE_WHEEL_2)
+        
+        self._config['redwheeldata'] = red_wheel_data
+
+    def _save_additional_rotor_data(self, slot_name, ini_file):
+        if slot_name == 'drive1':
+            ini_file.set_integer_list('rotor_drive1', 'ringdata', self._config['redwheeldata'])
+    
+    def make_red_wheel(self, id_left, id_right):
+        left_notches = self._rotor_set.data[id_left]['ringdata']
+        right_notches = self._rotor_set.data[id_right]['ringdata']
+        
+        result = []
+        for i in range(len(left_notches)):
+            result.append((left_notches[i] << 1) | right_notches[i])
+            
+        return result
+        
+    def insert_nema_rotor(self, slot_name, rotor_id, rotor_pos_as_char):
+        if slot_name != 'drive1':
+            self.insert_rotor(slot_name, rotor_id, rotor_id, 2, self.get_pos_as_int(rotor_pos_as_char))
+        else:
+            red_id = NEMA_DRIVE_WHEEL_23            
+            if self.is_war_machine:
+                red_id = NEMA_DRIVE_WHEEL_22
+            
+            self.insert_rotor(slot_name, red_id, red_id, 2, self.get_pos_as_int(rotor_pos_as_char))
+        
+    def get_pos_as_int(self, rotor_pos_as_char):
+        p = Permutation(self._default_alpha)
+        result = p.from_val(rotor_pos_as_char)
+        return result
+
+
 class EnigmaRotorSet(RotorSet):
     def __init__(self):
         super().__init__()
@@ -382,7 +529,14 @@ class EnigmaRotorSet(RotorSet):
     def change_ukw_d(self, new_perm):
         help = Permutation('yzxwvutsrqponjmlkihgfedcba')
         help.involution_from_pairs(new_perm)
-        self.change_perm(es.UKW_D, help.to_int_vector())
+        self.change_perm(es.UKW_D, help.to_int_vector())    
+
+
+class TypexState(GenericRotorMachineState):
+    def __init__(self, enigma_rotor_set):
+        slots = ['eintrittswalze', 'stator1', 'stator2', 'fast', 'middle', 'slow', 'umkehrwalze']
+        super().__init__('Typex', slots, enigma_rotor_set)
+        self.insert_rotor('eintrittswalze', es.TYPEX_ETW, es.TYPEX_ETW, 0, 0, INSERT_INVERSE)
 
 
 class BasicEnigmaState(GenericRotorMachineState):
@@ -407,7 +561,7 @@ class UnsteckeredEnigmaState(BasicEnigmaState):
         type_helper['KDEnigma'] = 'KD'        
         super().__init__(machine_name, type_helper[machine_name], slots, rotor_set)
         
-        self.insert_rotor('eintrittswalze', etw_id, etw_id, 0, 0, True)
+        self.insert_rotor('eintrittswalze', etw_id, etw_id, 0, 0, INSERT_INVERSE)
 
 
 class SteckeredEnigmaState(BasicEnigmaState):

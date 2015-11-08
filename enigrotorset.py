@@ -21,7 +21,7 @@
 #  implementation of the enigma variants, including the Typex.
 #  New rotors can be included by adding entries to the known_wheels data structure.
 #
-# \file enigrotorset.py
+# \file rmsk2/enigrotorset.py
 # \brief Code generator that creates the files enigma_rotor_set.h and enigma_rotor_set.cpp from an
 #        abstract definition of all permutations and ring data (notches) that are used in the
 #        implementation of the enigma variants, including the Typex.
