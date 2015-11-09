@@ -480,6 +480,47 @@ class NemaTest(RotorMachineFuncTest):
         return result
 
 
+## \brief This class implements a verification test for the KL7.
+#
+class KL7Test(RotorMachineFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
+    #         which contains information about the rotors and rings used by the KL7
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
+    def __init__(self, normal_rotor_set, proc = None):
+        super().__init__('KL7 Test', proc)
+        self._rotor_set = normal_rotor_set
+    
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #         
+    def test(self):
+        result = super().test()
+        kl7_state = KL7State(self._rotor_set)
+        kl7_state.insert_kl7_rotor('kl7_rotor_1', KL7_ROTOR_A, KL7_RING_1, 'k', 26, 'f')
+        kl7_state.insert_kl7_rotor('kl7_rotor_2', KL7_ROTOR_B, KL7_RING_2, 'a', 0, 'a')        
+        kl7_state.insert_kl7_rotor('kl7_rotor_3', KL7_ROTOR_C, KL7_RING_3, 'a', 0, 'a')                
+        kl7_state.insert_stationary_rotor(KL7_ROTOR_L, 16)
+        kl7_state.insert_kl7_rotor('kl7_rotor_5', KL7_ROTOR_D, KL7_RING_4, 'a', 0, 'a')
+        kl7_state.insert_kl7_rotor('kl7_rotor_6', KL7_ROTOR_E, KL7_RING_5, 'a', 0, 'a')
+        kl7_state.insert_kl7_rotor('kl7_rotor_7', KL7_ROTOR_F, KL7_RING_6, 'a', 0, 'a')
+        kl7_state.insert_kl7_rotor('kl7_rotor_8', KL7_ROTOR_G, KL7_RING_7, 'a', 0, 'a')        
+        
+        self._proc.set_state(kl7_state.render_state())      
+        self._proc.step()        
+                                          
+        decryption_result = self._proc.decrypt('lpzocrfybrjmwhzrtsiygtxhuodgyyiuogpamxkfcjpplqkhss')
+        self.append_note("Decryption result: " + decryption_result)
+        result = (decryption_result.lower() == 'hallo dies ist wieder ein test vvv 1234567890 aaa')
+        
+        return result
+
+
 ## \brief This class serves the purpose to bundle tests for indivudual rotor machines into a composite test.
 #         Using the appropriate context object it can be used for verification tests based on the TLV interface 
 #         and the command line program.
@@ -765,6 +806,9 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
 
     nema_verification_test = VerificationTests("Nema verification test", 'reference/nema_rotor_set.ini', None, tlv_context)
     nema_verification_test.add(NemaTest(nema_verification_test.rotor_set))
+
+    kl7_verification_test = VerificationTests("KL7 verification test", 'reference/kl7_rotor_set.ini', None, tlv_context)
+    kl7_verification_test.add(KL7Test(kl7_verification_test.rotor_set))
     
     all_tests = simpletest.CompositeTest('rotorsim')    
     all_tests.add(functional_test)
@@ -772,6 +816,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     all_tests.add(enigma_verification_test)
     all_tests.add(sigaba_verification_test)
     all_tests.add(nema_verification_test)
+    all_tests.add(kl7_verification_test)    
     
     return all_tests
 

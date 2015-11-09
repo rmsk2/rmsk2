@@ -522,6 +522,29 @@ class NemaState(GenericRotorMachineState):
         return result
 
 
+class KL7State(GenericRotorMachineState):
+    def __init__(self, rotor_set):
+        slot_names = ['kl7_rotor_1', 'kl7_rotor_2', 'kl7_rotor_3', 'kl7_rotor_4', 'kl7_rotor_5', 'kl7_rotor_6', 'kl7_rotor_7', 'kl7_rotor_8']
+        super().__init__('KL7', slot_names, rotor_set)
+        self._default_alpha = 'ab1cde2fg3hij4klm5no6pqr7st8uvw9xyz0'
+    
+    def insert_kl7_rotor(self, slot_name, rotor_id, ring_id, ring_offset_as_char, letter_ring_offset, rotor_pos_as_char):
+        p = Permutation(self._default_alpha)
+        self.insert_rotor(slot_name, rotor_id, ring_id, p.from_val(ring_offset_as_char), p.from_val(rotor_pos_as_char))
+        self._config[slot_name]['letterring'] = letter_ring_offset
+    
+    def insert_stationary_rotor(self, rotor_id, letter_ring_offset):
+        self.insert_kl7_rotor('kl7_rotor_4', rotor_id, KL7_RING_WIDE, 'a', 0, self._default_alpha[letter_ring_offset])
+        self._config['kl7_rotor_4']['letterring'] = 0
+    
+    def _save_additional_rotor_data(self, slot_name, ini_file):
+        section_name = 'rotor_' + slot_name
+        ini_file.set_integer(section_name, 'letterring', self._config[slot_name]['letterring'])
+        
+        if slot_name != 'kl7_rotor_4':
+            ini_file.set_integer(section_name, 'rotordisplacement', (self._config[slot_name]['letterring'] + self._config[slot_name]['rotorpos']) % len(self._default_alpha))
+
+
 class EnigmaRotorSet(RotorSet):
     def __init__(self):
         super().__init__()
