@@ -33,7 +33,6 @@
 #define KL7_ROT_6 "kl7_rotor_6"
 #define KL7_ROT_7 "kl7_rotor_7"
 #define KL7_ROT_8 "kl7_rotor_8"
-#define NOTCH_RING_POS "notch"
 #define LETTER_RING_POS "letter"
 
 // Rotor identifiers

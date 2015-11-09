@@ -192,16 +192,14 @@ void kl7_stepping_gear::reset()
         get_descriptor(count).ring->set_offset(0);        
         // Set letter and notch ring offest to zero
         get_descriptor(count).mod_int_vals[LETTER_RING_POS] = simple_mod_int(KL7_ROTOR_SIZE);
-        get_descriptor(count).mod_int_vals[NOTCH_RING_POS] = simple_mod_int(KL7_ROTOR_SIZE);
     } 
 }
 
 void kl7_stepping_gear::set_kl7_rings(const char *identifier, unsigned int letter_ring_offset, unsigned int notch_ring_offset)
 {    
     get_descriptor(identifier).mod_int_vals[LETTER_RING_POS] = letter_ring_offset;
-    get_descriptor(identifier).mod_int_vals[NOTCH_RING_POS] = notch_ring_offset;
-    // Notch ring offest determines the "real" offset
-    get_descriptor(identifier).ring->set_offset(get_descriptor(identifier).mod_int_vals[NOTCH_RING_POS]);    
+    simple_mod_int h(notch_ring_offset, KL7_ROTOR_SIZE);
+    get_descriptor(identifier).ring->set_offset(h);    
 }
 
 void kl7_stepping_gear::set_kl7_rings_and_pos(const char *identifier, unsigned int letter_ring_offset, unsigned int notch_ring_offset, unsigned int new_pos)
@@ -213,7 +211,7 @@ void kl7_stepping_gear::set_kl7_rings_and_pos(const char *identifier, unsigned i
 
 unsigned int kl7_stepping_gear::get_notch_offset(const char *identifier)
 {
-    return get_descriptor(identifier).mod_int_vals[NOTCH_RING_POS];
+    return get_descriptor(identifier).ring->get_offset();
 }
 
 unsigned int kl7_stepping_gear::get_letter_offset(const char *identifier)
@@ -245,9 +243,8 @@ void kl7_stepping_gear::save_additional_components(string& identifier, Glib::Key
 {
     string section_name = "rotor_" + identifier;
     
-    // Save letter and notch ring offsets in ini_file
+    // Save letter ring offset in ini_file
     ini_file.set_integer(section_name, "letterring", (int)get_letter_offset(identifier.c_str()));
-    ini_file.set_integer(section_name, "notchring", (int)get_notch_offset(identifier.c_str()));
 }
     
 bool kl7_stepping_gear::load_additional_components(string& identifier, Glib::KeyFile& ini_file)
@@ -267,12 +264,12 @@ bool kl7_stepping_gear::load_additional_components(string& identifier, Glib::Key
         letter_ring_pos = (unsigned int)ini_file.get_integer(section_name, "letterring");       
 
         // Read notch ring position from ini_file
-        if ((result = !ini_file.has_key(section_name, "notchring")))
+        if ((result = !ini_file.has_key(section_name, "ringoffset")))
         {
             break;
         }
         
-        notch_ring_pos = (unsigned int)ini_file.get_integer(section_name, "notchring");
+        notch_ring_pos = (unsigned int)ini_file.get_integer(section_name, "ringoffset");
         
         // Set the offsets as read from the ini_file
         set_kl7_rings(identifier.c_str(), letter_ring_pos, notch_ring_pos);
