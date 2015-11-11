@@ -591,12 +591,20 @@ class TypexState(GenericRotorMachineState):
         slots = ['eintrittswalze', 'stator1', 'stator2', 'fast', 'middle', 'slow', 'umkehrwalze']
         super().__init__('Typex', slots, enigma_rotor_set)
         self.insert_rotor('eintrittswalze', es.TYPEX_ETW, es.TYPEX_ETW, 0, 0, INSERT_INVERSE)
+        
+    def insert_typex_rotor(self, slot_name, rotor_id, ring_offset_as_char, rotor_pos_as_char, insert_type = INSERT_NORMAL):
+        p = Permutation()
+        self.insert_rotor(slot_name, rotor_id, rotor_id, p.from_val(ring_offset_as_char), p.from_val(rotor_pos_as_char), insert_type)
 
 
 class BasicEnigmaState(GenericRotorMachineState):
     def __init__(self, machine_name, machine_type, slots, rotor_set):
         super().__init__(machine_name, slots, rotor_set)
         self._machine_type = machine_type
+        
+    def insert_enigma_rotor(self, slot_name, rotor_id, ring_offset_as_char, rotor_pos_as_char):
+        p = Permutation()
+        self.insert_rotor(slot_name, rotor_id, rotor_id, p.from_val(ring_offset_as_char), p.from_val(rotor_pos_as_char))
 
     def _save_additional_data(self, ini_file):  
         super()._save_additional_data(ini_file)      
