@@ -545,6 +545,37 @@ class KL7State(GenericRotorMachineState):
             ini_file.set_integer(section_name, 'rotordisplacement', (self._config[slot_name]['letterring'] + self._config[slot_name]['rotorpos']) % len(self._default_alpha))
 
 
+class SG39State(GenericRotorMachineState):
+    def __init__(self, rotor_set):
+        slot_names = ['rotor_1', 'rotor_2', 'rotor_3', 'rotor_4', 'umkehrwalze']
+        super().__init__('SG39', slot_names, rotor_set)
+    
+    def insert_sg39_rotor(self, slot_name, rotor_id, rotor_pos_as_char, ring_data):
+        p = Permutation(self._default_alpha)
+        self.insert_rotor(slot_name, rotor_id, rotor_id, 0, p.from_val(rotor_pos_as_char))
+        self._config[slot_name]['ringdata'] = ring_data
+    
+    def configure_sg39_drive_wheel(self, slot_name, wheelpos_as_char, ring_data):
+        p = Permutation(self._default_alpha)
+        self._config[slot_name]['drivewheel'] = {'wheelpos':p.from_val(wheelpos_as_char), 'ringdata':ring_data}
+        
+    def set_plugboard(self, plugboard_permutation):
+        p = Permutation()
+        p.from_string(plugboard_permutation)
+        self._config['plugboard'] = p.to_int_vector()
+    
+    def _save_additional_rotor_data(self, slot_name, ini_file):
+        section_name = 'rotor_' + slot_name
+        
+        if slot_name in ['rotor_1', 'rotor_2', 'rotor_3']:        
+            ini_file.set_integer_list(section_name, 'ringdata', self._config[slot_name]['ringdata'])
+            ini_file.set_integer_list(section_name, 'wheeldata', self._config[slot_name]['drivewheel']['ringdata'])
+            ini_file.set_integer(section_name, 'wheelpos', self._config[slot_name]['drivewheel']['wheelpos'])
+    
+    def _save_additional_data(self, ini_file):
+        ini_file.set_integer_list('plugboard', 'entry', self._config['plugboard'])
+
+
 class EnigmaRotorSet(RotorSet):
     def __init__(self):
         super().__init__()

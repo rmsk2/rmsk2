@@ -521,6 +521,46 @@ class KL7Test(RotorMachineFuncTest):
         return result
 
 
+## \brief This class implements a verification test for the SG39.
+#
+class SG39Test(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
+    #         which contains information about SG39 rotors.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
+    def __init__(self, rotor_set, proc = None):
+        super().__init__("SG39 Test", rotor_set, proc)
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
+    def test(self):
+        result = super().test()
+        self._rotor_set.change_reflector(ID_SG39_UKW, 'awbicvdketfmgnhzjulopqrysx')
+        sg39_state = SG39State(self._rotor_set)
+        sg39_state.set_plugboard('ldtrmihoncpwjkbyevsaxgfzuq')
+        sg39_state.insert_sg39_rotor('rotor_1', SG39_ROTOR_5, 'd', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        sg39_state.insert_sg39_rotor('rotor_2', SG39_ROTOR_1, 'q', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])        
+        sg39_state.insert_sg39_rotor('rotor_3', SG39_ROTOR_4, 'r', [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0])  
+        sg39_state.insert_sg39_rotor('rotor_4', SG39_ROTOR_3, 'f', [])  
+        sg39_state.configure_sg39_drive_wheel('rotor_1', 'h', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        sg39_state.configure_sg39_drive_wheel('rotor_2', 'p', [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])        
+        sg39_state.configure_sg39_drive_wheel('rotor_3', 'a', [0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0])                
+        sg39_state.insert_rotor('umkehrwalze', ID_SG39_UKW, ID_SG39_UKW, 0, 0)                     
+                
+        self._proc.set_state(sg39_state.render_state())
+        decryption_result = self._proc.decrypt('obkjdynovmmlwecxvyqstbepogmdskbengespfrpkrjkfivhgugknhclgzlgdqjrkwwvoprwszturkjfioyfbudxsytietcyppnyocoufqxvgozqpskhkmprdzyzcjgcszepfuppqmcitghyvpoo')
+        self.append_note("Decryption result: " + decryption_result)
+        result = (decryption_result.lower() == 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+        
+        return result
+
+
 ## \brief This class serves the purpose to bundle tests for indivudual rotor machines into a composite test.
 #         Using the appropriate context object it can be used for verification tests based on the TLV interface 
 #         and the command line program.
@@ -809,6 +849,9 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
 
     kl7_verification_test = VerificationTests("KL7 verification test", 'reference/kl7_rotor_set.ini', None, tlv_context)
     kl7_verification_test.add(KL7Test(kl7_verification_test.rotor_set))
+
+    sg39_verification_test = VerificationTests("SG39 verification test", 'reference/sg39_rotor_set.ini', None, tlv_context)
+    sg39_verification_test.add(SG39Test(sg39_verification_test.rotor_set))
     
     all_tests = simpletest.CompositeTest('rotorsim')    
     all_tests.add(functional_test)
@@ -817,6 +860,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     all_tests.add(sigaba_verification_test)
     all_tests.add(nema_verification_test)
     all_tests.add(kl7_verification_test)    
+    all_tests.add(sg39_verification_test)
     
     return all_tests
 
