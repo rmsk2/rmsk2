@@ -216,36 +216,8 @@ def cli_context(inner_test):
 #  \returns A simpletest.CompositeTest object.
 #                
 def get_module_test():
-    all_tests = simpletest.CompositeTest('CLI')
-    
-    enigma_verification_test = rotorsimtest.VerificationTests('CLIEnigma', 'reference/enigma_rotor_set.ini', None, cli_context)
-    enigma_verification_test.rotor_set = rotorsim.EnigmaRotorSet()
-    enigma_verification_test.add(rotorsimtest.M4EnigmaTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(rotorsimtest.M3UhrTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(rotorsimtest.KDTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(rotorsimtest.TirpitzTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(rotorsimtest.AbwehrTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(rotorsimtest.RailwayTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(rotorsimtest.TypexTest(enigma_verification_test.rotor_set))
-    
-    sigaba_verification_test = rotorsimtest.VerificationTests('CLISIGABA', 'reference/sigaba_rotor_set.ini', 'reference/sigaba_rotor_set_index.ini', cli_context)
-    sigaba_verification_test.add(rotorsimtest.CSP889Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))
-    sigaba_verification_test.add(rotorsimtest.CSP2900Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))
-    
-    nema_verification_test = rotorsimtest.VerificationTests("CLINema", 'reference/nema_rotor_set.ini', None, cli_context)
-    nema_verification_test.add(rotorsimtest.NemaTest(nema_verification_test.rotor_set))
-    
-    kl7_verification_test = rotorsimtest.VerificationTests("CLIKL7", 'reference/kl7_rotor_set.ini', None, cli_context)
-    kl7_verification_test.add(rotorsimtest.KL7Test(kl7_verification_test.rotor_set)) 
-    
-    sg39_verification_test = rotorsimtest.VerificationTests("CLISG39", 'reference/sg39_rotor_set.ini', None, cli_context)
-    sg39_verification_test.add(rotorsimtest.SG39Test(sg39_verification_test.rotor_set))       
-    
-    all_tests.add(enigma_verification_test)
-    all_tests.add(sigaba_verification_test)
-    all_tests.add(nema_verification_test)    
-    all_tests.add(kl7_verification_test)
-    all_tests.add(sg39_verification_test)
+    all_tests = rotorsimtest.get_module_test(context=cli_context, verification_only=True)        
+    all_tests.name = 'CLI'
     
     return all_tests
 

@@ -42,6 +42,16 @@ class SimpleTest:
     def name(self):
         return self._name
 
+    ## \brief Changes the name of this SimpleTest instance. 
+    #
+    #  \param [new_value] A string. Contains the new name.
+    #
+    #  \returns Nothing.
+    #    
+    @name.setter
+    def name(self, new_value):
+        self._name = new_value
+
     ## \brief Performs the test defined for this instance of SimpleTest 
     #
     #  \returns A boolean. Return value True means that the test were successfull.
