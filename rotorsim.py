@@ -1395,6 +1395,49 @@ class RotorMachine(tlvobject.TlvProxy):
         res = self.do_method_call('new', 'rotorproxy', param)        
         self._handle = res[0]
 
+    ## \brief Groups and formats an input text
+    #
+    #  \param [text_in] A string. The text to format.
+    #
+    #  \param [uppercase] A boolean. If True the output string is in upperase. Otherwise it is in lowercase.
+    #
+    #  \param [group_size] An integer. It has to contain the number of characters in a group.
+    #
+    #  \param [groups_per_line] An integer. It has to contain the number of groups per line
+    #
+    #  \returns A string formatted according to the parameters.
+    #
+    @staticmethod
+    def group_text(text_in, uppercase = False, group_size = 5, groups_per_line = 10):
+        result = ''
+        current_groups = []
+        current_group = ' '
+        
+        for i in text_in:
+            if uppercase:
+                i = i.upper()
+            else:
+                i = i.lower()
+            
+            current_group = current_group + i
+            
+            if len(current_group) == (group_size + 1):
+                current_groups.append(current_group)
+                current_group = ' '
+                
+                if len(current_groups) == groups_per_line:
+                    result = result + '\n' + (''.join(current_groups)).strip()
+                    current_groups = []
+                
+        last_line = (''.join(current_groups) + current_group).strip()
+        
+        if last_line != '':        
+            result = result + '\n' + last_line
+        
+        result = result.strip()
+            
+        return result
+
     ## \brief Loads and returns a machine state saved in a file.
     #
     #  \param [file_name] A string. It contains name of a file which is used to store a machine state and is to be read.
