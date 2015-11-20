@@ -528,7 +528,7 @@ public:
 
      /*! \brief Changes the element's position to the coordinates specified by the parameters new_x and new_y.
      */
-    virtual void set_elem_pos(int new_x, int new_y) { input_printer->set_elem_pos(new_x, new_y); output_printer->set_elem_pos(new_x, new_y + 90); }
+    virtual void set_elem_pos(int new_x, int new_y) { printer_base::set_elem_pos(new_x, new_y); input_printer->set_elem_pos(new_x, new_y); output_printer->set_elem_pos(new_x, new_y + 90); }
 
     /*! \brief Clears both paper strips and redraws the simulator's GUI.
      */                    
