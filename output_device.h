@@ -526,6 +526,10 @@ public:
      */                
     virtual unsigned int get_grouping_width() { return output_printer->get_grouping_width(); }
 
+     /*! \brief Changes the element's position to the coordinates specified by the parameters new_x and new_y.
+     */
+    virtual void set_elem_pos(int new_x, int new_y) { input_printer->set_elem_pos(new_x, new_y); output_printer->set_elem_pos(new_x, new_y + 90); }
+
     /*! \brief Clears both paper strips and redraws the simulator's GUI.
      */                    
     virtual void reset() { input_printer->reset(); output_printer->reset(); }
