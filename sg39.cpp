@@ -22,6 +22,18 @@
 #include<alphabet.h>
 #include<sg39.h>
 
+#ifdef SG39_ASYMMETRIC
+
+/*! \brief Output characters when doing decryptions and input characters for encryptions.
+ */
+static ustring str_plain_chars_ger =  "abcdefghijklmnop rstuvwxyz";
+
+/*! \brief Output characters when doing encryptions and input characters when doing decryptions.
+ */
+static ustring str_cipher_chars_ger = "abcdefghijklmnopqrstuvwxyz";
+
+#endif
+
 rotor_set sg39_rotor_factory::sg39_set(rmsk::std_alpha()->get_size());
 
 /*! The document describing the Schlüsselgerät 39 contained no info about the wiring of the rotors or
@@ -250,7 +262,33 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     // Place rotor 4 and reflector in machine. There is no wheel controlling the 4th rotor or the reflector
     prepare_rotor(rotor_4_id, ROTOR_4);             
     prepare_rotor(ID_SG39_UKW, UKW_SG39);
+
+#ifdef SG39_ASYMMETRIC
+    vector<gunichar> plain_alph, cipher_alph;
+
+    // Set up cipher and plaintext alphabets
+    printing_device::ustr_to_vec(str_plain_chars_ger, plain_alph);
+    printing_device::ustr_to_vec(str_cipher_chars_ger, cipher_alph);        
+    boost::shared_ptr<alphabet<gunichar> > plain_alpha(new alphabet<gunichar>(plain_alph));
+    boost::shared_ptr<alphabet<gunichar> > cipher_alpha(new alphabet<gunichar>(cipher_alph));
     
+    // Set up printing_device
+    asymmetric_printing_device *sg39_printer = new asymmetric_printing_device();
+    
+    sg39_printer->set_plain_alphabet(plain_alpha); 
+    sg39_printer->set_cipher_alphabet(cipher_alpha);
+    
+    set_printer(boost::shared_ptr<printing_device>(sg39_printer));    
+    
+    // Set up keyboard
+    boost::shared_ptr<asymmetric_keyboard> sg39_keyboard(new asymmetric_keyboard());
+    sg39_keyboard->set_plain_alphabet(plain_alpha);
+    sg39_keyboard->set_cipher_alphabet(cipher_alpha);
+    
+    set_keyboard(sg39_keyboard);
+    
+#else    
+
     // Use standard printing device
     boost::shared_ptr<printing_device> prt(new symmetric_printing_device(ustring("abcdefghijklmnopqrstuvwxyz")));
     set_printer(prt);                   
@@ -258,6 +296,8 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     // Use standard keyboard
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("abcdefghijklmnopqrstuvwxyz")));
     set_keyboard(kbd);        
+
+#endif
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

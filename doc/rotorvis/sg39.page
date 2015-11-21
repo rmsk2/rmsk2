@@ -20,7 +20,7 @@ The SG39 used four rotors, a rewirable reflector, a plugboard and three pinwheel
 length the pinwheels had different sizes (21, 23 and 25 pins) which had no common factors.
 </p>
 <p> 
-According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters.
+According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters. The document also shows that the SG39 had a space bar. This simulator is implemented under the assumption that during encryptions the Q character was used as a blank character.
 </p>
 </section>
 
