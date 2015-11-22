@@ -131,8 +131,8 @@ class RotorSimException(Exception):
     def __init__(self, error_code):
         Exception.__init__(self, 'RotorSim: ' + str(error_code))
 
-## \brief This class allows to read a rotor set file that can be obtained by selecting
-#         the 'Save rotor set data ...' in the Help menu of rotorvis or enigma.
+## \brief This class allows to read, modify and save a rotor set file that otherwise can be obtained 
+#         by selecting the 'Save rotor set data ...' in the Help menu of rotorvis or enigma.
 #
 class RotorSet:
     ## \brief Constructor.
@@ -146,7 +146,61 @@ class RotorSet:
         #         permutation and ringdata.
         #    
         self.data = {}
-        self.__key_file = GLib.KeyFile()
+
+    ## \brief Saves the rotor set data of this object into a file the name of which is specified in parameter file_name.
+    #
+    #  \param [file_name] Is a string holding the name of the rotor set file to save data to.
+    #
+    #  \returns A boolean that is either False when saving was unsuccessful and True otherwise 
+    #    
+    def save(self, file_name):        
+        result = True
+        key_file = GLib.KeyFile()
+        try:        
+            key_file.set_integer_list('general', 'ids', self.ids)
+        
+            for i in self.ids:
+                section_name = 'rotorid_' + str(i)
+                key_file.set_integer_list(section_name, 'permutation', self.data[i]['permutation'])
+                key_file.set_integer_list(section_name, 'ringdata', self.data[i]['ringdata'])
+            
+            data_to_save = key_file.to_data()[0].encode()
+            with open(file_name, 'wb') as f:
+                f.write(data_to_save)
+                f.close()                        
+        except:
+            result = False
+        
+        return result        
+
+    ## \brief Adds or replaces the permutation and ring data for a rotor
+    #
+    #  \param [new_id] An integer. Has to specify the id of the rotor which is to add/the data of which is to be replaced
+    #
+    #  \param [new_perm] An integer sequence. Specifies the permutation data for the rotor.
+    #
+    #  \param [new_ring_data] An integer sequence. Specifies the ring data for the rotor.
+    #
+    #  \returns Nothing
+    #                
+    def add_rotor(self, new_id, new_perm, new_ring_data):
+        self.data[new_id] = {}
+        self.data[new_id]['permutation'] =  new_perm
+        self.data[new_id]['ringdata'] =  new_ring_data
+        
+        self.ids = list(self.data.keys())
+
+    ## \brief Deletes a rotor from this rotor set
+    #
+    #  \param [rotor_id] Is an integer which holds the id of the rotor which is to be deleted. If rotor_id does not specify
+    #         a valid id this method does nothing
+    #
+    #  \returns Nothing.
+    #    
+    def delete_rotor(self, rotor_id):
+        if rotor_id in self.data.keys():
+            del self.data[rotor_id]
+            self.ids = list(self.data.keys())
 
     ## \brief Loads the rotor set from the file which is specified in parameter file_name.
     #
@@ -160,29 +214,28 @@ class RotorSet:
         try:
             self.ids = []
             self.data = {}
-            self.__key_file = GLib.KeyFile()
-            result = self.__key_file.load_from_file(file_name, 0)
+            key_file = GLib.KeyFile()
+            result = key_file.load_from_file(file_name, 0)
             
             # read rotor ids
-            self.ids = self.__key_file.get_integer_list('general', 'ids')
+            self.ids = key_file.get_integer_list('general', 'ids')
             
             # read permutation and ring data for each of the ids
             for i in self.ids:
                 section_name = 'rotorid_' + str(i)
                 
-                perm = self.__key_file.get_integer_list(section_name, 'permutation')
-                ring_data = self.__key_file.get_integer_list(section_name, 'ringdata')
+                perm = key_file.get_integer_list(section_name, 'permutation')
+                ring_data = key_file.get_integer_list(section_name, 'ringdata')
                 
                 self.data[i] = {'permutation': perm, 'ringdata':ring_data}            
         except:
-            self.__key_file = GLib.KeyFile()
             self.ids = []
             self.data = {}
             result = False
                 
         return result
 
-    ## \brief Changes to permutation of the specified rotor.
+    ## \brief Changes the permutation of the specified rotor.
     #
     #  \param [rotor_id] Is a integer holding the id of the rotor the permutation of which is to be changed.
     #
@@ -191,7 +244,20 @@ class RotorSet:
     #  \returns Nothing
     #    
     def change_perm(self, rotor_id, new_perm):
-        self.data[rotor_id]['permutation'] = new_perm
+        if rotor_id in self.data.keys():
+            self.data[rotor_id]['permutation'] = new_perm
+
+    ## \brief Changes the ring data of the specified rotor.
+    #
+    #  \param [rotor_id] Is a integer holding the id of the rotor the ring data of which is to be changed.
+    #
+    #  \param [new_ring_data] Is an integer list specifying the new ring data.
+    #
+    #  \returns Nothing
+    #    
+    def change_ring_data(self, rotor_id, new_ring_data):
+        if rotor_id in self.data.keys():
+            self.data[rotor_id]['ringdata'] = new_ring_data
     
     ## \brief Changes to permutation of the specified rotor to an involution specified by letter pairs.
     #
@@ -487,9 +553,9 @@ class GenericRotorMachineState:
         result = True
         try:
             data_to_save = self.render_state()
-            f = open(file_name, 'wb')
-            f.write(data_to_save)
-            f.close()
+            with open(file_name, 'wb') as f:
+                f.write(data_to_save)
+                f.close()
         except:
             result = False
         
