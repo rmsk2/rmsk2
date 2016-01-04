@@ -475,23 +475,20 @@ class VerificationTests(simpletest.CompositeTest):
     #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
     #        be performed.      
     #
-    #  \param [rotor_set_file] Is a string. It specifies the name of the file which contains the relevant rotor set
-    #         information.
-    #
-    #  \param [index_rotor_set_file] Is a string or None. It specifies the name of the file which contains the index rotor set
-    #         information. This is only relevant for tests which make use of a SIGABA
+    #  \param [rotor_set] Is a RotorSet object. It represents the relevant rotor set.
+    #         
+    #  \param [index_rotor_set] Is a RotorSet object. It represents the index rotor set. This is only relevant for
+    #         tests which make use of a SIGABA.
     #
     #  \param [context] Is a callable object or function that takes a function f as an argument. That function f has to have the
     #         same signature as the method inner_test. The context object is responsible for creating the machine object with
     #         which f can be called and after that uses this machine object to call the function f that it was given as
     #         a parameter.
     #
-    def __init__(self, name, rotor_set_file, index_rotor_set_file, context):
+    def __init__(self, name, rotor_set, index_rotor_set, context):
         super().__init__(name)
-        self._rotor_set_file = rotor_set_file
-        self._index_rotor_set_file = index_rotor_set_file
-        self._r_set = RotorSet()
-        self._index_r_set = RotorSet()
+        self._r_set = rotor_set
+        self._index_r_set = index_rotor_set
         self._context = context
 
     ## \brief Returns the rotor set that is used for the cipher and driver submachines.
@@ -550,20 +547,12 @@ class VerificationTests(simpletest.CompositeTest):
     #    
     def inner_test(self, machine):
         result = True
-        try:
-            result = self._r_set.load(self._rotor_set_file)
-            
-            if self._index_rotor_set_file != None:
-                result = result and self._index_r_set.load(self._index_rotor_set_file)
-            
-            if not result:
-                self.append_note('Unable to load rotor set data')
-            else:                    
-                self.set_processor(machine)
-                result = super().test()
-        except:
-            self.append_note("EXCEPTION!!!!")
-            result = False
+        #try:            
+        self.set_processor(machine)
+        result = super().test()
+        #except:
+        #    self.append_note("EXCEPTION!!!!")
+        #    result = False
         
         return result                
 
@@ -757,8 +746,7 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
 #  \returns A simpletest.CompositeTest object.
 #                
 def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_iterations = 2500, context = tlv_context, verification_only = False):
-    enigma_verification_test = VerificationTests("Enigma verification test", 'reference/enigma_rotor_set.ini', None, context)
-    enigma_verification_test.rotor_set = EnigmaRotorSet()
+    enigma_verification_test = VerificationTests("Enigma verification test", RotorSet.get_std_set('enigma'), None, context)
     enigma_verification_test.add(M4EnigmaTest(enigma_verification_test.rotor_set))
     enigma_verification_test.add(M3UhrTest(enigma_verification_test.rotor_set))    
     enigma_verification_test.add(KDTest(enigma_verification_test.rotor_set))
@@ -767,17 +755,17 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     enigma_verification_test.add(RailwayTest(enigma_verification_test.rotor_set))    
     enigma_verification_test.add(TypexTest(enigma_verification_test.rotor_set))
 
-    sigaba_verification_test = VerificationTests("SIGABA verification test", 'reference/sigaba_rotor_set.ini', 'reference/sigaba_rotor_set_index.ini', context)
+    sigaba_verification_test = VerificationTests("SIGABA verification test", RotorSet.get_std_set('sigaba'), RotorSet.get_std_set('sigaba_index'), context)
     sigaba_verification_test.add(CSP889Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))
     sigaba_verification_test.add(CSP2900Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))    
 
-    nema_verification_test = VerificationTests("Nema verification test", 'reference/nema_rotor_set.ini', None, context)
+    nema_verification_test = VerificationTests("Nema verification test", RotorSet.get_std_set('nema'), None, context)
     nema_verification_test.add(NemaTest(nema_verification_test.rotor_set))
 
-    kl7_verification_test = VerificationTests("KL7 verification test", 'reference/kl7_rotor_set.ini', None, context)
+    kl7_verification_test = VerificationTests("KL7 verification test", RotorSet.get_std_set('kl7'), None, context)
     kl7_verification_test.add(KL7Test(kl7_verification_test.rotor_set))
 
-    sg39_verification_test = VerificationTests("SG39 verification test", 'reference/sg39_rotor_set.ini', None, context)
+    sg39_verification_test = VerificationTests("SG39 verification test", RotorSet.get_std_set('sg39'), None, context)
     sg39_verification_test.add(SG39Test(sg39_verification_test.rotor_set))
     
     all_tests = simpletest.CompositeTest('rotorsim')    

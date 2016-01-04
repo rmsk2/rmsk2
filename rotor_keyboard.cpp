@@ -39,7 +39,10 @@ void rotor_keyboard::symbols_typed_encrypt(ustring& in, ustring& out)
     
     for(iter = in.begin(); iter != in.end(); ++iter)
     {
-        out += symbol_typed_encrypt(*iter);
+        if (is_valid_input_encrypt(*iter))
+        {
+            out += symbol_typed_encrypt(*iter);
+        }
     }    
 }
 
@@ -64,7 +67,10 @@ void rotor_keyboard::symbols_typed_decrypt(ustring& in, ustring& out)
     
     for(iter = in.begin(); iter != in.end(); ++iter)
     {
-        out += symbol_typed_decrypt(*iter);
+        if (is_valid_input_decrypt(*iter))
+        {
+            out += symbol_typed_decrypt(*iter);
+        }
     }
 }
 
