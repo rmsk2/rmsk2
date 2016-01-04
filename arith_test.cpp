@@ -239,7 +239,7 @@ unsigned int rotor_machine_proxy::encdec_processor(tlv_entry& params, tlv_stream
     }
     else
     {
-        Glib::ustring in((char *)params.value.data(), params.value.length());
+        Glib::ustring in((char *)params.value.c_str());
                    
         if (do_enc)
         {

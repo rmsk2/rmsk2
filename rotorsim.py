@@ -717,15 +717,23 @@ class SigabaMachineState:
     ## \brief This static method returns the default machine state for the SIGABA
     #
     #  \param [normal_rotor_set] Is an object with the same interface as RotorSet. It has to specify the SIGABA rotor
-    #         set which is to be used to determine rotor permutations for the cipher and driver rotors.
+    #         set which is to be used to determine rotor permutations for the cipher and driver rotors. If normal_rotor_set
+    #          is None then the default SIGABA rotor set is used.
     #
     #  \param [index_rotor_set] Is an object with the same interface as RotorSet. It has to specify the SIGABA rotor
-    #         set which is to be used to determine rotor permutations for the index rotors.
+    #         set which is to be used to determine rotor permutations for the index rotors. If index_rotor_set
+    #          is None then the default SIGABA index rotor set is used. 
     #
     #  \returns A SigabaMachineState object. 
     #
     @staticmethod
-    def get_default_state(normal_rotor_set, index_rotor_set):
+    def get_default_state(normal_rotor_set = None, index_rotor_set = None):        
+        if normal_rotor_set == None:
+            normal_rotor_set = RotorSet.get_std_set('sigaba')
+            
+        if index_rotor_set == None:
+            index_rotor_set = RotorSet.get_std_set('sigaba_index')        
+    
         csp889_state = SigabaMachineState(normal_rotor_set, index_rotor_set)
         csp889_state.crypt.insert_sigaba_rotor('r_zero', SIGABA_ROTOR_0, 'o')
         csp889_state.crypt.insert_sigaba_rotor('r_one', SIGABA_ROTOR_1, 'o')        
@@ -849,12 +857,16 @@ class NemaState(GenericRotorMachineState):
     ## \brief This static method returns the default machine state for the Nema
     #
     #  \param [rotor_set] Is an object with the same interface as RotorSet. It has to specify the Nema rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default Nema rotor set is used.
     #
     #  \returns A NemaState object. 
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):    
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('nema')
+    
         nema_state = NemaState(rotor_set)
         nema_state.insert_nema_rotor('drive1', NEMA_DRIVE_WHEEL_22, 'v')
         nema_state.insert_nema_rotor('contact2', NEMA_ROTOR_D, 'e')        
@@ -983,12 +995,16 @@ class KL7State(GenericRotorMachineState):
     ## \brief This static method returns the default machine state for the KL7
     #
     #  \param [rotor_set] Is an object with the same interface as RotorSet. It has to specify the KL7 rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default KL7 rotor set is used.
     #
     #  \returns A KL7State object. 
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('kl7')
+    
         kl7_state = KL7State(rotor_set)
         kl7_state.insert_kl7_rotor('kl7_rotor_1', KL7_ROTOR_A, KL7_RING_1, 'k', 26, 'f')
         kl7_state.insert_kl7_rotor('kl7_rotor_2', KL7_ROTOR_B, KL7_RING_2, 'a', 0, 'a')        
@@ -1081,12 +1097,16 @@ class SG39State(GenericRotorMachineState):
     ## \brief This static method returns the default machine state for the SG39
     #
     #  \param [rotor_set] Is an object with the same interface as RotorSet. It has to specify the SG39 rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default SG39 rotor set is used.
     #
     #  \returns A SG39State object. 
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):        
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('sg39')
+    
         rotor_set.change_reflector(ID_SG39_UKW, 'awbicvdketfmgnhzjulopqrysx')
         sg39_state = SG39State(rotor_set)
         sg39_state.set_plugboard('ldtrmihoncpwjkbyevsaxgfzuq')
@@ -1219,12 +1239,16 @@ class TypexState(GenericRotorMachineState):
     ## \brief This static method returns the default machine state for the Typex
     #
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the Typex rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default Enigma rotor set is used.
     #
     #  \returns A TypexState object. 
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('enigma')
+    
         rotor_set.change_reflector(es.TYPEX_SP_02390_UKW, 'arbycudheqfsglixjpknmotwvz')
         typex_state = TypexState(rotor_set)
         typex_state.insert_typex_rotor('stator1', es.TYPEX_SP_02390_E, 'a', 'a')
@@ -1353,13 +1377,17 @@ class UnsteckeredEnigmaState(BasicEnigmaState):
     #         'AbwehrEnigma' and 'KDEnigma'
     #    
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default Enigma rotor set is used.
     #
     #  \returns An UnsteckeredEnigmaState object. 
     #
     @staticmethod
-    def get_default_state(machine_name, rotor_set):
+    def get_default_state(machine_name, rotor_set = None):
         result = None
+        
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('enigma')
         
         if machine_name == 'TirpitzEnigma':
             enigma_t_state = UnsteckeredEnigmaState(machine_name, rotor_set, es.WALZE_T_ETW)
@@ -1471,12 +1499,16 @@ class ServicesEnigmaState(SteckeredEnigmaState):
     ## \brief This static method returns the default machine state for an M4 Enigma
     #
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default Enigma rotor set is used.
     #
     #  \returns A ServicesEnigmaState object. The returned machine state makes use of the Uhr.
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('enigma')
+        
         enigma_I_state = ServicesEnigmaState('M3', rotor_set)
         enigma_I_state.insert_enigma_rotor('fast', es.WALZE_III, 'h', 'z')
         enigma_I_state.insert_enigma_rotor('middle', es.WALZE_IV, 'z', 't')        
@@ -1502,12 +1534,16 @@ class M4EnigmaState(SteckeredEnigmaState):
     ## \brief This static method returns the default machine state for an M4 Enigma
     #
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the rotor
-    #         set which is to be used to determine rotor permutations and ring data.
+    #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
+    #         the default Enigma rotor set is used.
     #
     #  \returns A M4EnigmaState object. 
     #
     @staticmethod
-    def get_default_state(rotor_set):
+    def get_default_state(rotor_set = None):
+        if rotor_set == None:
+            rotor_set = RotorSet.get_std_set('enigma')
+    
         enigma_M4_state = M4EnigmaState(rotor_set)
         enigma_M4_state.insert_enigma_rotor('fast', es.WALZE_I, 'v', 'a')
         enigma_M4_state.insert_enigma_rotor('middle', es.WALZE_IV, 'a', 'n')        

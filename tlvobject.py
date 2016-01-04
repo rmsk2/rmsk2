@@ -575,6 +575,7 @@ class TlvServer:
     #                
     def start(self):
         stop = False
+        MAX_TRIES = 500
         if not self.is_running:
             
             if os.path.exists(self.address):
@@ -598,8 +599,12 @@ class TlvServer:
                     exception_count += 1
                     
                     # Too many exceptions. Something is really wrong ...
-                    if exception_count >= 500: 
+                    if exception_count >= MAX_TRIES: 
                         stop = True
+            
+            if exception_count >= MAX_TRIES:
+                raise TlvException("Unable to connect to server")
+            
 
     ## \brief This method stops the TLV server process which this object represents.
     #
