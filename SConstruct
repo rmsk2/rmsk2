@@ -84,5 +84,6 @@ rmsk.Install('dist/doc/rotorvis', Glob('doc/rotorvis/*.png'))
 rmsk.Install('dist', Glob('rotorsim.py'))
 rmsk.Install('dist', Glob('tlvobject.py'))
 rmsk.Install('dist', Glob('enigrotorset.py'))
+rmsk.Install('dist', Glob('rotorsetdata.py'))
 Alias('install', 'dist')
 

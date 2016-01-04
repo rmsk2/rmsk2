@@ -594,9 +594,9 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
     def test(self):
         result = super().test()
         
-        m4_state = RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
+        m4_state = M4EnigmaState.get_default_state().render_state()
         csp2900_state = RotorMachine.load_machine_state('reference/CSP 2900 Test.ini')
-        sg39_state = RotorMachine.load_machine_state('reference/SG39 Test.ini')        
+        sg39_state = SG39State.get_default_state().render_state()        
             
         with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
             try:
