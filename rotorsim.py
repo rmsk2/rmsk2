@@ -801,6 +801,16 @@ class SigabaMachineState:
         result = self.index.fill_ini(result)        
         result.set_boolean('stepper', 'is_csp_2900', self.csp_2900_flag)
         return result.to_data()[0].encode()
+        
+    ## \brief Returns a RotorMachine object that has been initialized with this machine state
+    #
+    #  \param [server_obj] An object of type tlvobject.TlvServer. This object is used to create the RotorMachine object.
+    #
+    #  \returns A RotorMachine object.
+    #                                                                    
+    def as_rotor_machine(self, server_obj):
+        state = self.render_state()        
+        return RotorMachine(state, server_obj.address)        
 
     ## \brief This method saves the machine state as returned by self.render_state() in a file which is named by parameter file_name.    
     #
