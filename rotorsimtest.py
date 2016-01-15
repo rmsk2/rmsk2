@@ -568,7 +568,7 @@ class VerificationTests(simpletest.CompositeTest):
 #
 def tlv_context(inner_test):
     result = True
-    m4_state = RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
+    m4_state = M4EnigmaState.get_default_state().render_state()
     with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as machine:
         result = inner_test(machine)        
     
@@ -595,14 +595,14 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
         result = super().test()
         
         m4_state = M4EnigmaState.get_default_state().render_state()
-        csp2900_state = RotorMachine.load_machine_state('reference/CSP 2900 Test.ini')
+        csp889_state = SigabaMachineState.get_default_state().render_state()
         sg39_state = SG39State.get_default_state().render_state()        
             
         with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
             try:
                 original_state = m4_obj.get_state()
                 
-                # Do a simple test decryptions
+                # Do a simple test decryption
                 dec_result = m4_obj.decrypt('nczwvusx')
                 last_result = (dec_result == 'vonvonjl')
                 result = result and last_result
@@ -642,18 +642,18 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
                 if not last_result:
                     self.append_note("Unexpected machine description: " + description)
                                 
-                m4_obj.set_state(csp2900_state)
+                m4_obj.set_state(csp889_state)
                                 
                 # Verify that returned description changed to new machine type
                 description = m4_obj.get_description()
-                last_result = (description == 'CSP2900')
+                last_result = (description == 'CSP889')
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected machine description: " + description)
                 
                 # Test sigaba_setup() method                
                 setup_step_result = m4_obj.sigaba_setup(1, 3)
-                last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000llplofvsvd'))
+                last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000lomooolonm'))
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected rotor position: " + str(setup_step_result))
@@ -681,7 +681,7 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
         return result                
 
 
-## \brief This class performs a performance test of the TLV rotor machine interface.
+## \brief This class provides a performance test of the TLV rotor machine interface.
 #        
 class RotorMachinePerfTest(simpletest.SimpleTest):
     ## \brief Constructor. 
@@ -704,8 +704,8 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
     #            
     def test(self):
         result = super().test()
-
-        m4_state = RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
+        
+        m4_state = M4EnigmaState.get_default_state().render_state()
 
         with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
             try:  

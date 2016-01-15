@@ -204,7 +204,7 @@ class Processor:
 ## \brief This function serves as the context "object" for verification tests using the command line program.
 #
 def cli_context(inner_test):
-    m4_state = rotorsim.RotorMachine.load_machine_state('reference/Enigma M4 Test 1.ini')
+    m4_state = rotorsim.M4EnigmaState.get_default_state().render_state()
     machine = Processor(m4_state)
     result = inner_test(machine)
     
