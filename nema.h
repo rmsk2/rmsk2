@@ -222,6 +222,13 @@ public:
      *         nema_stepper.
      */    
     nema_stepper *get_nema_stepper() { return dynamic_cast<nema_stepper *>(stepper); }
+    
+    /*! \brief This method randomizes the state of this nema object. If this method returns true an error occurred and the
+     *         object's state is unchanged.
+     *
+     *  The parameter param is ignored.
+     */
+    virtual bool randomize(string& param);        
 
     /*! \brief Destructor.
      */  

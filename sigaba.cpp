@@ -19,10 +19,12 @@
  */ 
 
 #include<stdexcept>
+#include<boost/scoped_ptr.hpp>
 
 #include<rmsk_globals.h>
 #include<alphabet.h>
 #include<sigaba.h>
+#include<configurator.h>
 
 /*! \brief Position of character O when rotor is *not* inserted in reverse.
  */
@@ -554,6 +556,63 @@ string sigaba::get_description()
     
     return result;
 }
+
+bool sigaba::randomize(string& param)
+{
+    bool result = false;
+    random_bit_source reverse_rotors(15);
+    urandom_generator rand;    
+    map<string, string> machine_conf;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));    
+    string cipher_rotors, control_rotors, index_rotors;
+    vector<unsigned int> cipher_displacements, control_displacements, index_displacements;
+    
+    try
+    {
+        permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
+        permutation index_selection_perm = permutation::get_random_permutation(rand, 5);            
+            
+        for(unsigned int count = 0; count < 5; count++)
+        {
+            cipher_rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
+            cipher_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
+        }
+
+        for(unsigned int count = 5; count < 10; count++)
+        {
+            control_rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
+            control_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
+        }
+
+        for(unsigned int count = 0; count < 5; count++)
+        {
+            index_rotors += '0' + (char)(index_selection_perm.encrypt(count));
+            index_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
+        }
+        
+        machine_conf[KW_CIPHER_ROTORS] = cipher_rotors;
+        machine_conf[KW_CONTROL_ROTORS] = control_rotors;
+        machine_conf[KW_INDEX_ROTORS] = index_rotors;
+        machine_conf[KW_CSP_2900_FLAG] = (get_sigaba_stepper()->is_2900() ? CONF_TRUE : CONF_FALSE);
+
+        c->configure_machine(machine_conf, this); 
+        
+        cipher_displacements = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(5));
+        control_displacements = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(5));        
+        index_displacements = index_alphabet.to_vector(index_alphabet.get_random_string(5));
+        
+        get_sigaba_stepper()->set_all_displacements(cipher_displacements);
+        get_sigaba_stepper()->get_driver_machine()->get_stepping_gear()->set_all_displacements(control_displacements);
+        get_sigaba_stepper()->get_index_bank()->get_stepping_gear()->set_all_displacements(index_displacements);
+    }
+    catch(...)
+    {
+        result = true;
+    }    
+    
+    return result;
+}
+
 
 sigaba::sigaba(vector<rotor_id>& r_ids, bool csp_2900_flag)
     : sigaba_base_machine()

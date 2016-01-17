@@ -20,9 +20,11 @@
 
 #include<stdexcept>
 #include<set>
+#include<boost/scoped_ptr.hpp>
 #include<rmsk_globals.h>
 
 #include<typex.h>
+#include<configurator.h>
 
 #define ETW "eintrittswalze"
 
@@ -53,6 +55,48 @@ void typex::set_reflector(vector<pair<char, char> >& data)
     boost::shared_ptr<permutation> new_reflector(rmsk::std_alpha()->make_involution_ptr(data));
     
     get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);
+}
+
+bool typex::randomize(string& param)
+{
+    bool result = false;
+    random_bit_source reverse_rotors(5);
+    urandom_generator rand;    
+    string known_rotors("abcdefg");
+    string ring_positions, rotor_positions, selected_rotors;
+    map<string, string> machine_conf;
+    
+    try
+    {
+        permutation rotor_selection_perm = permutation::get_random_permutation(rand, known_rotors.length());
+        permutation reflector_perm = permutation::get_random_permutation(rand, 26);        
+        ring_positions = rmsk::std_alpha()->get_random_string(5);
+        rotor_positions = rmsk::std_alpha()->get_random_string(5);        
+        
+        for(unsigned int count = 0; count < 5; count++)
+        {
+            selected_rotors += known_rotors[rotor_selection_perm.encrypt(count)];
+            selected_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
+        }
+        
+        machine_conf[KW_TYPEX_ROTORS] = selected_rotors;
+        machine_conf[KW_TYPEX_RINGS] = ring_positions;
+        machine_conf[KW_TYPEX_REFLECTOR] = rmsk::std_alpha()->perm_as_string(reflector_perm);
+        boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
+        c->configure_machine(machine_conf, this);
+        
+        get_enigma_stepper()->set_rotor_pos(STATOR1, rotor_positions[0]);
+        get_enigma_stepper()->set_rotor_pos(STATOR2, rotor_positions[1]);
+        get_enigma_stepper()->set_rotor_pos(FAST, rotor_positions[2]);
+        get_enigma_stepper()->set_rotor_pos(MIDDLE, rotor_positions[3]);
+        get_enigma_stepper()->set_rotor_pos(SLOW, rotor_positions[4]);        
+    }
+    catch(...)
+    {
+        result = true;
+    }    
+    
+    return result;
 }
 
 typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id fast_id, rotor_id stat2_id, rotor_id stat1_id) 

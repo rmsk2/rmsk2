@@ -19,8 +19,11 @@
  */ 
 
 #include<stdexcept>
+#include<boost/scoped_ptr.hpp>
+#include<boost/lexical_cast.hpp>
 #include<rmsk_globals.h>
 #include<nema.h>
+#include<configurator.h>
 
 #define PERM_ID  "ijklmnopqrstuvwxyzabcdefgh"
 #define ETW         "etw"
@@ -272,6 +275,59 @@ void nema::prepare_red_wheel(unsigned int left_red_drive_wheel, unsigned int rig
     s->get_descriptor(DRIVE_RED_1).id.r_id = left_red_drive_wheel;
     s->get_descriptor(DRIVE_RED_1).id.ring_id = left_red_drive_wheel;    
     s->get_descriptor(DRIVE_RED_1).id.insert_inverse = false;    
+}
+
+bool nema::randomize(string& param)
+{
+    bool result = false;
+    urandom_generator rand;    
+    map<string, string> machine_conf;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));    
+    bool is_war_machine = get_nema_stepper()->get_descriptor(DRIVE_RED_1).id.r_id == NEMA_DRIVE_WHEEL_22;
+    unsigned int num_rotors = 6;
+    vector<unsigned int> rings;
+    string rotors, selected_rings, positions;
+    
+    rings.push_back(12); rings.push_back(13); rings.push_back(14); rings.push_back(15);
+    rings.push_back(17); rings.push_back(18);
+    
+    if (!is_war_machine)
+    {
+        rings.clear();
+        rings.push_back(16); rings.push_back(19); rings.push_back(20); rings.push_back(21);
+        num_rotors = 4;
+    }
+    
+    try
+    {
+        permutation rotor_selection_perm = permutation::get_random_permutation(rand, num_rotors);
+        permutation ring_selection_perm = permutation::get_random_permutation(rand, rings.size());            
+            
+        for(unsigned int count = 0; count < 4; count++)
+        {
+            rotors += 'a' + (char)(rotor_selection_perm.encrypt(count));
+        }
+
+        for(unsigned int count = 0; count < 4; count++)
+        {
+            selected_rings += (boost::lexical_cast<string>(rings[ring_selection_perm.encrypt(count)]) + " ");
+        }        
+
+        machine_conf[KW_NEMA_ROTORS] = rotors;
+        machine_conf[KW_NEMA_RINGS] = selected_rings;
+        machine_conf[KW_NEMA_WAR_MACHINE] = (is_war_machine ? CONF_TRUE : CONF_FALSE);
+
+        c->configure_machine(machine_conf, this);   
+
+        positions = nema_alpha.get_random_string(10);
+        get_nema_stepper()->set_all_positions(positions);      
+    }
+    catch(...)
+    {
+        result = true;
+    }    
+    
+    return result;
 }
 
 nema::nema(vector<rotor_assembly>& rotor_settings, unsigned int left_red_drive_wheel, unsigned int right_red_drive_wheel) 

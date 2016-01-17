@@ -207,6 +207,12 @@ public:
      */
     virtual ustring visualize_all_positions();    
     
+    /*! \brief This method randomizes the state of this kl7 object. If this method returns true an error occurred and the
+     *         object's state is unchanged.
+     *
+     *  The parameter param is ignored.
+     */
+    virtual bool randomize(string& param);
 
     /*! \brief Destructor.
      */          

@@ -149,14 +149,6 @@ protected:
     random_generator *rand_gen;
 };
 
-//class null_source : public rotor_ring_random_source {
-//public:
-//    null_source(unsigned int size) : rotor_ring_random_source(size) { ; }
-//    
-//    virtual unsigned int get_next_val() { return 0; }
-
-//    virtual ~null_source() { ; }
-//};
 
 /*! \brief A class that allows to retrieve random ring data for rotor_ring objects which consists of zeros and ones.
  */

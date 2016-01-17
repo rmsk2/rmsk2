@@ -176,7 +176,7 @@ public:
      */                  
     virtual void set_description(string new_decription) { ; }    
 
-    /*! \brief This method instruct the rotor machine object to randomize its state. It returns false if the randomization was
+    /*! \brief This method instructs the rotor machine object to randomize its state. It returns false if the randomization was
      *         successfull. If this method returns true an error occurred and the object's state is unchanged.
      *
      *  The parameter param can be used to influence the randomization. How this is done depends on the implementation of

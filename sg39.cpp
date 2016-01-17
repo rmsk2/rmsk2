@@ -18,9 +18,11 @@
  *  \brief This file contains the implementation of a simulator for the Schluesselgeraet 39
  */ 
 
+#include<boost/scoped_ptr.hpp>
 #include<rmsk_globals.h>
 #include<alphabet.h>
 #include<sg39.h>
+#include<configurator.h>
 
 #ifdef SG39_ASYMMETRIC
 
@@ -218,6 +220,62 @@ void sg39_stepping_gear::save_additional_components(string& identifier, Glib::Ke
         ini_file.set_integer_list(section_name, "wheeldata", temp_wheel_data);
     }
 }
+
+bool schluesselgeraet39::randomize(string& param)
+{
+    bool result = false;
+    urandom_generator rand;    
+    map<string, string> machine_conf;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
+    string rotors; 
+    vector<unsigned int> rotor_pos, wheel_pos;
+    const char *help = "abcdefghijklmnopqrstuvwxy";  
+    alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
+    
+    try
+    {
+        permutation plugboard_perm = permutation::get_random_permutation(rand, 26);
+        permutation reflector_perm = permutation::get_random_permutation(rand, 26);          
+        permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
+
+        for(unsigned int count = 0; count < 4; count++)
+        {
+            rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
+        }
+        
+        c->get_config(machine_conf, this);
+        
+        machine_conf[KW_SG39_ROTORS] = rotors;
+        machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
+        machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
+        /*machine_conf[KW_SG39_PINS_WHEEL_1] = "000000000000000000000";
+        machine_conf[KW_SG39_PINS_WHEEL_2] = "11111111111111111111111";            
+        machine_conf[KW_SG39_PINS_WHEEL_3] = "0010010010010010010010010";  
+        machine_conf[KW_SG39_PINS_ROTOR_1] = "00000000000000000000000000";
+        machine_conf[KW_SG39_PINS_ROTOR_2] = "00000000000000000000000000";            
+        machine_conf[KW_SG39_PINS_ROTOR_3] = "10001000100010001000100010";*/                      
+
+        c->configure_machine(machine_conf, this);    
+        
+        rotor_pos = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(4));
+        rotor_pos.push_back(0);
+        get_sg39_stepper()->set_all_displacements(rotor_pos);
+        
+        wheel_pos = wheel1_alpha.to_vector(wheel1_alpha.get_random_string(2));
+        get_sg39_stepper()->set_wheel_pos(ROTOR_1, wheel_pos[0]);
+        wheel_pos = wheel2_alpha.to_vector(wheel2_alpha.get_random_string(2));
+        get_sg39_stepper()->set_wheel_pos(ROTOR_2, wheel_pos[0]);
+        wheel_pos = wheel3_alpha.to_vector(wheel3_alpha.get_random_string(2));
+        get_sg39_stepper()->set_wheel_pos(ROTOR_3, wheel_pos[0]);
+    }
+    catch(...)
+    {
+        result = true;
+    }    
+    
+    return result;
+}
+
 
 /*! The wheels are implemented by storing the wheeldata as well as the wheelpos in key/value pairs of the corresponding 
  *  ::rotor_descriptor object.

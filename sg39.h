@@ -184,6 +184,15 @@ public:
      */
     virtual ustring visualize_all_positions();
     
+    /*! \brief This method randomizes the state of this schluesselgeraet39 object. If this method returns true an error
+     *         occurred and the object's state is unchanged.
+     *
+     *  The parameter param is ignored. The pins on the pin wheels and rotors are not changed by this method. Using random
+     *  pin patterns would probably result in all three stepping rotors stepping all the time and/or all rotors not stepping
+     *  for extended periods of key presses.
+     */
+    virtual bool randomize(string& param);
+    
     /*! \brief Destructor.
      */             
     virtual ~schluesselgeraet39() { delete stepper; }

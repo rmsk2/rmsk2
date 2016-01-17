@@ -475,6 +475,13 @@ public:
      */                
     virtual rotor_machine *make_machine(map<string, string>& config_data);
 
+    /*! \brief The notch ring position is specified through the the letters 'a'-'z' and '+'. Because KL7 rotors have
+     *         36 contacts some positions are named by a single letter between 'a' and 'z' and 10 others are named
+     *         by a letter followed by a '+' sign. This method transforms the position specified in parameter pos
+     *         into such a string representation.
+     */             
+    static string transform_notch_ring_pos(unsigned int pos);
+
     /*! \brief Destructor.
      */         
     virtual ~kl7_configurator() { ; }
@@ -513,13 +520,6 @@ protected:
      */         
     vector<unsigned int> notch_rings;
     
-    /*! \brief The notch ring position is specified through the the letters 'a'-'z' and '+'. Because KL7 rotors have
-     *         36 contacts some positions are named by a single letter between 'a' and 'z' and 10 others are named
-     *         by a letter followed by a '+' sign. This method transforms the position specified in parameter pos
-     *         into such a string representation.
-     */             
-    string transform_notch_ring_pos(unsigned int pos);
-
     /*! \brief Returns CONFIGURATOR_OK if parsing and verifying the configuration referenced through config_data
      *         succeded.  
      *

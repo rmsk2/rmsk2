@@ -1695,7 +1695,7 @@ class RotorMachine(tlvobject.TlvProxy):
     #
     #  \returns Nothing. Exception is thwrown upon error.
     #                
-    def randomize_state(self, randomize_param):
+    def randomize_state(self, randomize_param = ''):
         param = tlvobject.TlvEntry().to_string(randomize_param)    
         res = self.do_method_call(self._handle, 'randomizestate', param)
 

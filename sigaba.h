@@ -365,7 +365,14 @@ public:
      *  This overloaded version includes the position of the driver and index rotors and additionally reverses their
      *  character sequence.
      */
-    virtual ustring visualize_all_positions();    
+    virtual ustring visualize_all_positions();
+    
+    /*! \brief This method randomizes the state of this sigaba object. If this method returns true an error occurred and the
+     *         object's state is unchanged.
+     *
+     *  The parameter param is ignored.
+     */
+    virtual bool randomize(string& param);    
 
     /*! \brief Returns a description that differentiates between CSP 2900 and CSP 889 mode.
      */    

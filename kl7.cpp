@@ -18,8 +18,11 @@
  *  \brief This file contains the implmentation of a simulator for the KL7.
  */ 
 
+#include<boost/scoped_ptr.hpp>
+#include<boost/lexical_cast.hpp>
 #include<kl7.h>
 #include<rmsk_globals.h>
+#include<configurator.h>
 
 // Notches on the rings. Information created by kl7prep.py
 #define KL7RING_1  "100010000100011010100011001100110001"
@@ -322,6 +325,73 @@ ustring kl7::visualize_all_positions()
         
     return result;
 }
+
+bool kl7::randomize(string& param)
+{
+    bool result = false;
+    urandom_generator rand;    
+    map<string, string> machine_conf;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
+    string rotors, selected_rings, alpha_pos, notch_pos; 
+    vector<unsigned int> alpha_ring_pos, notch_ring_pos, rotor_pos;   
+    
+    try
+    {
+        permutation rotor_selection_perm = permutation::get_random_permutation(rand, 13);
+        permutation ring_selection_perm = permutation::get_random_permutation(rand, 11);                
+
+        for(unsigned int count = 0; count < 8; count++)
+        {
+            rotors += 'a' + (char)(rotor_selection_perm.encrypt(count));
+        }
+        
+        for(unsigned int count = 0; count < 7; count++)
+        {
+            selected_rings += (boost::lexical_cast<string>(ring_selection_perm.encrypt(count) + 1) + " ");
+        }        
+
+        alpha_ring_pos = kl7_ring_alpha.to_vector(kl7_ring_alpha.get_random_string(8));
+
+        for(unsigned int count = 0; count < 8; count++)
+        {
+            alpha_pos += (boost::lexical_cast<string>(alpha_ring_pos[count] + 1) + " ");
+        }        
+
+        notch_ring_pos = kl7_ring_alpha.to_vector(kl7_ring_alpha.get_random_string(7));
+
+        for(unsigned int count = 0; count < 7; count++)
+        {
+            notch_pos += kl7_configurator::transform_notch_ring_pos(notch_ring_pos[count]);
+        }        
+
+        machine_conf[KW_KL7_ROTORS] = rotors;
+        machine_conf[KW_KL7_ALPHA_POS] = alpha_pos;
+        machine_conf[KW_KL7_NOTCH_RINGS] = selected_rings;
+        machine_conf[KW_KL7_NOTCH_POS] = notch_pos;
+
+        c->configure_machine(machine_conf, this); 
+        
+        // Key lists contained only letters for the rotor positions. In order to exhaust the full
+        // number of rotor positions the rotors are stepped once before the first en/decryption. This
+        // moves some rotors pseudorandomly to a non letter/empty position.
+        rotor_pos = kl7_ring_alpha.to_vector(rmsk::std_alpha()->get_random_string(7));
+        
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_1, rotor_pos[0]);                                             
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_2, rotor_pos[1]);
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_3, rotor_pos[2]);                        
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_5, rotor_pos[3]);
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_6, rotor_pos[4]);                        
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_7, rotor_pos[5]);            
+        get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_8, rotor_pos[6]);            
+    }
+    catch(...)
+    {
+        result = true;
+    }    
+    
+    return result;
+}
+
 
 kl7::kl7(vector<rotor_id>& r_ids)
     : rotor_machine()
