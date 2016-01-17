@@ -221,39 +221,99 @@ void sg39_stepping_gear::save_additional_components(string& identifier, Glib::Ke
     }
 }
 
+unsigned int schluesselgeraet39::count_ones_in_wheel_spec(string *wheel_spec)
+{
+    unsigned int result = 0;
+    string::iterator iter;
+    
+    for(iter = wheel_spec->begin(); iter != wheel_spec->end(); ++iter)
+    {
+        if (*iter == '1')
+        {
+            result++;
+        }
+    }
+    
+    return result;
+}
+
+void schluesselgeraet39::fill_wheel_spec(string *wheel_spec, unsigned int num_ones)
+{
+    urandom_generator rand; 
+    permutation start_pos_perm = permutation::get_random_permutation(rand, wheel_spec->length()); 
+    unsigned int current_pos = start_pos_perm.encrypt(0);
+    random_bit_source wheel_pin_source(25);   
+        
+    while(count_ones_in_wheel_spec(wheel_spec) < num_ones)
+    {
+        (*wheel_spec)[current_pos] = ((wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val()) ? '1' : '0');
+        current_pos++;
+        current_pos = current_pos % wheel_spec->length();
+    }
+}
+
 bool schluesselgeraet39::randomize(string& param)
 {
     bool result = false;
     urandom_generator rand;    
     map<string, string> machine_conf;
+    random_bit_source wheel_pin_source(15);    
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
-    string rotors; 
-    vector<unsigned int> rotor_pos, wheel_pos;
+    string rotors, pins_wheel_1(21, '0'), pins_wheel_2(23, '0'), pins_wheel_3(25, '0'); 
+    vector<unsigned int> rotor_pos, wheel_pos, start_pos;
     const char *help = "abcdefghijklmnopqrstuvwxy";  
     alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
+    vector<unsigned int> num_pins_slow, num_pins_middle;
+    vector<string *> wheel_specifier;
+    
+    wheel_specifier.push_back(&pins_wheel_1);
+    wheel_specifier.push_back(&pins_wheel_2);    
+    wheel_specifier.push_back(&pins_wheel_3);
+    
+    // Slow rotor has 3 or 5 random pins    
+    num_pins_slow.push_back(3);
+    num_pins_slow.push_back(5);    
+    
+    // Middle rotor has 5 or 7 random pins        
+    num_pins_middle.push_back(5);    
+    num_pins_middle.push_back(7);        
+    
     
     try
     {
         permutation plugboard_perm = permutation::get_random_permutation(rand, 26);
         permutation reflector_perm = permutation::get_random_permutation(rand, 26);          
         permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
+        // Determine which stepping rotor is the slow (index 0), middle (index 1) or fast (index 2) one
+        permutation stepping_perm = permutation::get_random_permutation(rand, 3);
 
         for(unsigned int count = 0; count < 4; count++)
         {
             rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
         }
+                
+        // Set pins on fast rotor
+        string all_ones(wheel_specifier[stepping_perm.encrypt(2)]->length(), '1');
+        (*wheel_specifier[stepping_perm.encrypt(2)]) = all_ones;
         
-        c->get_config(machine_conf, this);
+        // Set pins on slow rotor
+        fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(0)], num_pins_slow[wheel_pin_source.get_next_val()]);        
+
+        // Set pins on middle rotor
+        fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(1)], num_pins_middle[wheel_pin_source.get_next_val()]);        
         
         machine_conf[KW_SG39_ROTORS] = rotors;
         machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
         machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
-        /*machine_conf[KW_SG39_PINS_WHEEL_1] = "000000000000000000000";
-        machine_conf[KW_SG39_PINS_WHEEL_2] = "11111111111111111111111";            
-        machine_conf[KW_SG39_PINS_WHEEL_3] = "0010010010010010010010010";  
+        machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;
+        machine_conf[KW_SG39_PINS_WHEEL_2] = pins_wheel_2;            
+        machine_conf[KW_SG39_PINS_WHEEL_3] = pins_wheel_3;
+        // Do not set any pins on the rotors themselves. This limits the number of possible settings but
+        // at the moment I am not creative enough to include them in a generalized way such that a half
+        // way sensible rotor movement is ensured. 
         machine_conf[KW_SG39_PINS_ROTOR_1] = "00000000000000000000000000";
         machine_conf[KW_SG39_PINS_ROTOR_2] = "00000000000000000000000000";            
-        machine_conf[KW_SG39_PINS_ROTOR_3] = "10001000100010001000100010";*/                      
+        machine_conf[KW_SG39_PINS_ROTOR_3] = "00000000000000000000000000";                      
 
         c->configure_machine(machine_conf, this);    
         
@@ -266,7 +326,7 @@ bool schluesselgeraet39::randomize(string& param)
         wheel_pos = wheel2_alpha.to_vector(wheel2_alpha.get_random_string(2));
         get_sg39_stepper()->set_wheel_pos(ROTOR_2, wheel_pos[0]);
         wheel_pos = wheel3_alpha.to_vector(wheel3_alpha.get_random_string(2));
-        get_sg39_stepper()->set_wheel_pos(ROTOR_3, wheel_pos[0]);
+        get_sg39_stepper()->set_wheel_pos(ROTOR_3, wheel_pos[0]);        
     }
     catch(...)
     {

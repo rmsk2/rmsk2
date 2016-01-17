@@ -187,9 +187,7 @@ public:
     /*! \brief This method randomizes the state of this schluesselgeraet39 object. If this method returns true an error
      *         occurred and the object's state is unchanged.
      *
-     *  The parameter param is ignored. The pins on the pin wheels and rotors are not changed by this method. Using random
-     *  pin patterns would probably result in all three stepping rotors stepping all the time and/or all rotors not stepping
-     *  for extended periods of key presses.
+     *  The parameter param is ignored.
      */
     virtual bool randomize(string& param);
     
@@ -209,6 +207,14 @@ protected:
      *  false is returned if no errors have been encountered.
      */      
     virtual bool load_additional_components(Glib::KeyFile& ini_file);
+
+    /*! \brief This method returns the number of '1' characters in the string to which wheel_spec points.
+     */          
+    virtual unsigned int count_ones_in_wheel_spec(string *wheel_spec);
+
+    /*! \brief This method ensures that the string to which wheel_spec points contains at least num_ones '1' characters.
+     */          
+    virtual void fill_wheel_spec(string *wheel_spec, unsigned int num_ones);
 };
 
 #endif /* __sg39_h__ */
