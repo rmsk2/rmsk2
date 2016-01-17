@@ -37,7 +37,7 @@ enigma_includes = rmsk['CPPPATH']
 base_files = ['permutation.cpp', 'rand_gen.cpp', 'rotor.cpp', 'simple_mod_int.cpp', 'stepping.cpp']
 base_files += ['rotor_machine.cpp', 'enigma_sim.cpp', 'rmsk_globals.cpp', 'rotor_ring.cpp', 'typex.cpp']
 base_files += ['nema.cpp', 'rotor_set.cpp', 'enigma_uhr.cpp']
-base_files += ['printing_device.cpp', 'rotor_keyboard.cpp', 'kl7.cpp']
+base_files += ['printing_device.cpp', 'rotor_keyboard.cpp', 'kl7.cpp', 'machine_config.cpp']
 
 base_visual_files = ['display_dialog.cpp', 'base_elements.cpp', 'rotor_window.cpp', 'keyboard_vis.cpp', 'selection_dialog.cpp']
 base_visual_files += ['rotor_draw.cpp', 'output_device.cpp', 'rotor_visualizer.cpp', 'special_rotor_visualizer.cpp']
@@ -50,7 +50,7 @@ specmachines_files = ['sigaba.cpp', 'sg39.cpp', 'configurator.cpp'];
 application_base_files = ['simple_state.cpp', 'app_helpers.cpp']
 
 enigma_files = ['enigma_app_window.cpp', 'enigma_app.cpp', 'rotor_dialog.cpp', 'plugboard_dialog.cpp']
-enigma_files += ['machine_config.cpp', 'ukwd_wiring_dialog.cpp']
+enigma_files += ['ukwd_wiring_dialog.cpp']
 
 rotor_vis_files = ['rotorvis.cpp', 'configurator_dialog.cpp']
 

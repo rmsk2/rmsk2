@@ -174,26 +174,69 @@ public:
 
 };
 
-/*! \brief A class intended as the base class for all Enigma variants.
+/*! \brief A class intended as the base class for all Enigma variants including the Typex
  *
- *  It simply adds a method to the rotor_machine class that allows to retrieve the stepping_gear object as 
+ *  It adds a method to the rotor_machine class that allows to retrieve the stepping_gear object as 
  *  an enigma_stepper_base object.
  */
-class enigma_base : public rotor_machine {
+class enigma_family_base : public rotor_machine {
 public:
     /*! \brief Default constructor.
      */ 
-    enigma_base();
+    enigma_family_base();
     
     /*! \brief Allows to retrieve a pointer to the enigma_stepper_base object in use as the stepping_gear. Mainly
      *         a convenience method that eliminates the necessity for type casts in client code. 
      */     
     virtual enigma_stepper_base *get_enigma_stepper()  { return dynamic_cast<enigma_stepper_base *>(stepper); }
+    
+    /*! \brief Destructor.
+     */         
+    virtual ~enigma_family_base() { delete stepper; }    
+};
+
+/*! \brief A class intended as the base class for all german Enigma variants.
+ *
+ *  It adds methods that allow to randomize the machine state and to store additional data along with the machine
+ *  state.
+ */
+class enigma_base : public enigma_family_base {
+public:
+    /*! \brief Default constructor.
+     */ 
+    enigma_base() : enigma_family_base() { ; }
+        
+    /*! \brief This method instruct the rotor machine object to randomize its state. It returns false if the randomization was
+     *         successfull. If this method returns true an error occurred and the object's state is unchanged.
+     *
+     *  Currently the parameter param is ignored.
+     */
+    virtual bool randomize(string& param);
+
+    /*! \brief This method returns the machine type as used by the machine_config class.
+     */    
+    virtual string get_machine_type() { return machine_type; }
 
     /*! \brief Destructor.
      */         
-    virtual ~enigma_base() { delete stepper; }
+    virtual ~enigma_base() { ; } 
+    
+protected:
+
+    /*! \brief This method saves the machine_type variable and a value for the UKW D wiring. ini_file has to specify a Glib::KeyFile
+     *         object into which this data is written.
+     */                      
+    virtual void save_additional_components(Glib::KeyFile& ini_file);
+
+    /*! \brief This method test whether the machinetype stored in ini_file matches the value of the machine_type varible. It returns
+     *         false if no error occurred and true otherwise.
+     */         
+    virtual bool load_additional_components(Glib::KeyFile& ini_file);
+
+    /*! \brief Contains the machine type as needed by machine_config. */    
+    string machine_type;       
 };
+
 
 /*! \brief A class that implements a simulator for the Abwehr Enigma.
  */
@@ -345,9 +388,11 @@ public:
      *         inserted into the machine.
      *
      *  Historically correct values are WALZE_I, WALZE_II, ... , WALZE_VIII for slow_id, middle_id, fast_id and 
-     *  UKW_A, UKW_B and UKW_C for ukw_id. All other values in enigma_rotor_set.h are allowed.     
+     *  UKW_A, UKW_B and UKW_C for ukw_id. All other values in enigma_rotor_set.h are allowed. The flag type_m3 specifies
+     *  whether the machine is of type M3 or Services. This is purely informational but allows to keep historical accuracy
+     *  in some situations.    
      */ 
-    enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middle_id, unsigned int fast_id);
+    enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middle_id, unsigned int fast_id, bool type_m3 = false);
 
     /*! \brief Destructor.
      */        

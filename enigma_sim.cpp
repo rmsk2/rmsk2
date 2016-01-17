@@ -24,6 +24,7 @@
 #include<enigma_sim.h>
 #include<rotor_set.h>
 #include<enigma_rotor_set.cpp>
+#include<machine_config.h>
 
 #define ETW "eintrittswalze"
 
@@ -44,12 +45,123 @@ rotor_set& enigma_rotor_factory::get_rotor_set()
     return enigma_set;
 }
 
-enigma_base::enigma_base() 
+enigma_family_base::enigma_family_base() 
     : rotor_machine()
 { 
     is_pre_step = true;
 
     add_rotor_set(DEFAULT_SET, enigma_rotor_factory::get_rotor_set());    
+}
+
+void enigma_base::save_additional_components(Glib::KeyFile& ini_file)
+{
+    rotor_descriptor& desc = get_enigma_stepper()->get_descriptor(UMKEHRWALZE);
+    vector<unsigned int> perm_data_raw;
+    vector<int> perm_data;
+    int std_ukwd_perm[26] = {13, 21, 20, 9, 16, 24, 25, 17, 19, 3, 23, 15, 22, 0, 18, 11, 4, 7, 14, 8, 2, 1, 12, 10, 5, 6};
+    
+    
+    ini_file.set_string("machine", "machinetype", machine_type);
+    
+    if (desc.id.r_id == UKW_D)
+    {
+        // Machine uses UKW_D. Save the permutation in use
+        desc.r->get_perm()->to_vec(perm_data_raw);
+        
+        for (unsigned int count = 0; count < 26; count++)
+        {
+            perm_data.push_back((int)perm_data_raw[count]);
+        }
+    }
+    else
+    {
+        // Machine does not use UKW_D. Save default value.
+        for (unsigned int count = 0; count < 26; count++)
+        {
+            perm_data.push_back(std_ukwd_perm[count]);
+        }        
+    }
+    
+    ini_file.set_integer_list("machine", "ukwdwiring", perm_data);
+}
+
+bool enigma_base::load_additional_components(Glib::KeyFile& ini_file)
+{
+    bool result = false;
+    
+    result = !ini_file.has_key("machine", "machinetype");
+    
+    if (!result)
+    {
+        result = !(machine_type == ini_file.get_string("machine", "machinetype"));
+    }
+    
+    // Ignore ukwdwiring key in section machine. We have no real way to store it anyway.
+    
+    return result;
+}
+
+bool enigma_base::randomize(string& param)
+{
+    bool result = false;    
+    
+    machine_config rand_conf;
+    Glib::ustring config_name = machine_type;
+    rand_conf.make_config(config_name);
+    
+    steckered_enigma *e = dynamic_cast<steckered_enigma *>(this);
+    rand_conf.get_has_plugboard() = (e != NULL);
+    
+    // Do we have a Steckerbrett?
+    if (e != NULL)
+    {
+        // Is Uhr in use?
+        rand_conf.get_uses_uhr() = e->uses_uhr();        
+    }
+    
+    result = rand_conf.randomize();
+    
+    if (!result)
+    {
+        // Iterate over all rotor slots in conf
+        for (unsigned int count = 0; count < rand_conf.get_all_descriptors().size(); count++)
+        {
+            // Do something only if the rotor slot number count is in use in this machine as determined by conf
+            if (rand_conf.get_desc_at(count).rotor_selection_state)
+            {
+                // Replace rotor in slot number count by new one as prescribed by the configuration contained in conf
+                prepare_rotor(rand_conf.get_active_rotor_id(rand_conf.get_desc_at(count)), rand_conf.get_desc_at(count).wheel_identifier);
+                
+                // If UKW D is in use as the reflector replace the reflector with a new one constructed from the current value in conf
+                if (rand_conf.get_active_rotor_id(rand_conf.get_desc_at(count)) == UKW_D)
+                {
+                    boost::shared_ptr<permutation> new_reflector(new permutation(rand_conf.get_ukw_d_perm()));                
+                    get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);                            
+                }
+                
+                // Change ringstellung to the one determined by conf if the ring in slot number count is settable           
+                if (rand_conf.get_desc_at(count).ring_selection_state)
+                {
+                    get_enigma_stepper()->set_ringstellung(rand_conf.get_desc_at(count).wheel_identifier, tolower(rand_conf.get_desc_at(count).ring_setting));
+                }
+                
+                // Change rotor position to the one specified in conf
+                get_enigma_stepper()->set_rotor_pos(rand_conf.get_desc_at(count).wheel_identifier, tolower(rand_conf.get_desc_at(count).rotor_pos));
+            }        
+        } 
+        
+        if (rand_conf.get_has_plugboard())
+        {
+            e->set_stecker_brett(rand_conf.get_inserted_plugs(), rand_conf.get_uses_uhr());
+                    
+            if (rand_conf.get_uses_uhr())
+            {
+                e->get_uhr()->set_dial_pos(rand_conf.get_uhr_dial_pos());
+            }
+        }                   
+    }    
+    
+    return result;
 }
 
 enigma_stepper_base::enigma_stepper_base(vector<string>& rotor_identifiers) 
@@ -256,13 +368,22 @@ void steckered_enigma::get_stecker_brett(vector<pair<char, char> >& stecker)
     }    
 }
 
-enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middle_id, unsigned int fast_id)
+enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middle_id, unsigned int fast_id, bool type_m3)
     : steckered_enigma()
 {
     vector<string> rotor_names;
     
     stepper = NULL;
     machine_name = MNAME_ENIGMA_I;
+    
+    if (type_m3)
+    {
+        machine_type = "M3";
+    }
+    else
+    {
+        machine_type = "Services";
+    }
     
     // Set names of rotor slots
     rotor_names.push_back(FAST);
@@ -324,18 +445,21 @@ railway_enigma::railway_enigma(unsigned int slow_id, unsigned int middle_id, uns
     : unsteckered_enigma(UKW_RB, slow_id, middle_id, fast_id, WALZE_RB_ETW) 
 { 
     machine_name = MNAME_RAILWAY_ENIGMA; 
+    machine_type = "Railway";
 }
 
 tirpitz_enigma::tirpitz_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id) 
     : unsteckered_enigma(UKW_T, slow_id, middle_id, fast_id, WALZE_T_ETW) 
 { 
     machine_name = MNAME_TIRPITZ_ENIGMA; 
+    machine_type = "Tirpitz";
 }
 
 kd_enigma::kd_enigma(unsigned int slow_id, unsigned int middle_id, unsigned int fast_id) 
     : unsteckered_enigma(UKW_D, slow_id, middle_id, fast_id, WALZE_KD_ETW) 
 { 
     machine_name = MNAME_KD_ENIGMA; 
+    machine_type = "KD";
     unvisualized_rotor_names.insert(UMKEHRWALZE);
 }
 
@@ -346,6 +470,7 @@ abwehr_enigma::abwehr_enigma(unsigned int slow_id, unsigned int middle_id, unsig
     
     stepper = NULL;
     machine_name = MNAME_ABWEHR_ENIGMA;
+    machine_type = "Abwehr";
     
     // Set names of rotor slots
     rotor_names.push_back(ETW);
@@ -386,6 +511,7 @@ enigma_M4::enigma_M4(unsigned int ukw_id, unsigned int griechen_id, unsigned int
     
     stepper = NULL;
     machine_name = MNAME_M4_ENIGMA;
+    machine_type = "M4";
     
     // Set rotor slot names
     rotor_names.push_back(FAST);
@@ -413,6 +539,8 @@ void steckered_enigma::save_additional_components(Glib::KeyFile& ini_file)
     vector<int> perm_data;
     enigma_uhr *uhr;
     string cable_spec;
+
+    enigma_base::save_additional_components(ini_file);
 
     if (input_transform.get() != NULL)
     {
@@ -484,8 +612,10 @@ bool steckered_enigma::load_additional_components(Glib::KeyFile& ini_file)
     enigma_uhr *uhr;
     string uhr_cabling;
     
+    result = enigma_base::load_additional_components(ini_file);
+    
     // Plugboard section in ini_file?
-    if (!(result = !ini_file.has_key("plugboard", "entry")))
+    if (!(result = result || (!ini_file.has_key("plugboard", "entry"))))
     {
         temp_permdata = ini_file.get_integer_list("plugboard", "entry");
         

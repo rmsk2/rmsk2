@@ -48,6 +48,10 @@ class rotor_machine;
  */ 
 #define KEY_MACHINE_NAME "name"
 
+/*! \brief Contains the name of the key in the section MACHINE_SECTION where the machinetype is stored for Enigma variants.
+ */ 
+#define KEY_MACHINE_TYPE "machinetype"
+
 /*! \brief Used in the ::configurator class and its children to represent the boolean value true.  
  */
 #define CONF_TRUE "true"

@@ -176,6 +176,14 @@ public:
      */                  
     virtual void set_description(string new_decription) { ; }    
 
+    /*! \brief This method instruct the rotor machine object to randomize its state. It returns false if the randomization was
+     *         successfull. If this method returns true an error occurred and the object's state is unchanged.
+     *
+     *  The parameter param can be used to influence the randomization. How this is done depends on the implementation of
+     *  this method in the corresponding sunclass.
+     */
+    virtual bool randomize(string& param) { return false; }
+
     /*! \brief Returns the input transform in use in this rotor_machine.
      */
     virtual boost::shared_ptr<encryption_transform> get_input_transform() {return input_transform; }

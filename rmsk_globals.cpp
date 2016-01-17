@@ -342,9 +342,9 @@ rotor_machine *rmsk::make_default_machine(string& machine_name)
     rotor_machine *result = NULL;
     
     // Used for Services and M3 Enigma
-    if (machine_name == MNAME_ENIGMA_I)
+    if ((machine_name == "Services") || (machine_name == "M3"))
     {
-        result = new enigma_I(UKW_C, WALZE_I, WALZE_II, WALZE_III);
+        result = new enigma_I(UKW_C, WALZE_I, WALZE_II, WALZE_III, machine_name == "M3");
     }
 
     // Used for M4 Enigma
@@ -467,6 +467,18 @@ rotor_machine *rmsk::restore_from_ini(Glib::KeyFile& machine_state)
     {
         // load machine name from ini file
         machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
+        
+        if (machine_name == MNAME_ENIGMA_I)
+        {
+            if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_TYPE))
+            {
+                machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_TYPE);
+            }
+            else
+            {
+                machine_name = "";
+            }
+        }
         
         // construct a dummy machine which is then used to load the settings file designated
         // by the parameter file_name        

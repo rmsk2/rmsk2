@@ -225,11 +225,6 @@ void enigma_app_window::setup_menus()
     menu_bar = ui_manager->get_widget("/MenuBar");    
 }
 
-unsigned int enigma_app_window::get_active_rotor_id(rotor_family_descriptor& desc)
-{    
-    return desc.available_rotors[desc.rotor_names[desc.rotor_index_active]];
-}
-
 void enigma_app_window::update_rotors()
 {   
     // Iterate over all rotor slots in conf
@@ -239,10 +234,10 @@ void enigma_app_window::update_rotors()
         if (conf.get_desc_at(count).rotor_selection_state)
         {
             // Replace rotor in slot number count by new one as prescribed by the configuration contained in conf
-            enigma->prepare_rotor(get_active_rotor_id(conf.get_desc_at(count)), conf.get_desc_at(count).wheel_identifier);
+            enigma->prepare_rotor(conf.get_active_rotor_id(conf.get_desc_at(count)), conf.get_desc_at(count).wheel_identifier);
             
             // If UKW D is in use as the reflector replace the reflector with a new one constructed from the current value in conf
-            if (get_active_rotor_id(conf.get_desc_at(count)) == UKW_D)
+            if (conf.get_active_rotor_id(conf.get_desc_at(count)) == UKW_D)
             {
                 boost::shared_ptr<permutation> new_reflector(new permutation(conf.get_ukw_d_perm()));                
                 enigma->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);                            

@@ -173,12 +173,7 @@ protected:
      *         from constructor.
      */    
     void setup_menus();
-
-    /*! \brief Helper method that allows to retrieve the active rotor id from the rotor_family_descriptor referenced in parameter desc. It is intended
-     *         to make the code that needs to determine this value a bit more readable.
-     */                                    
-    virtual unsigned int get_active_rotor_id(rotor_family_descriptor& desc);
-
+    
     /*! \brief Points to the GUI simulator that is in use in this application. */
     rotor_draw *simulator_gui;
     

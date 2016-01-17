@@ -374,6 +374,36 @@ unsigned int rotor_machine_proxy::sigaba_setup_processor(tlv_entry& params, tlv_
     return result;
 }
 
+unsigned int rotor_machine_proxy::randomize_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    
+    // Did we receive a TLV string?
+    if (params.tag != TAG_STRING)
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {        
+        string randomize_param = string((char *)params.value.data(), params.value.length());
+        bool rand_result = machine->randomize(randomize_param);
+        
+        if (rand_result)
+        {
+            // Randomization did not work
+            result = out_stream->write_error_tlv(ERR_RANDOMIZATION_FAILED);
+        }
+        else
+        {
+            // Write end of result stream marker.            
+            result = out_stream->write_error_tlv(ERR_OK);
+        }
+    }
+    
+    return result;
+}
+
+
 unsigned int rotor_machine_proxy::set_state_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
@@ -512,6 +542,7 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["sigabasetup"] = &rotor_machine_proxy::sigaba_setup_processor;
     rotor_proxy_proc["getpositions"] = &rotor_machine_proxy::get_positions_processor;
     rotor_proxy_proc["getpermutations"] = &rotor_machine_proxy::get_permutations_processor;        
+    rotor_proxy_proc["randomizestate"] = &rotor_machine_proxy::randomize_state_processor;
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

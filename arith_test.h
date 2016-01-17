@@ -196,6 +196,11 @@ public:
      */
     virtual unsigned int set_state_processor(tlv_entry& params, tlv_stream *out_stream);
 
+    /*! \brief This method handles randomize requests sent by the client. The parameter params has to contain a string
+     *         tlv_entry which holds the randomization parameter. The parameter out_stream is used to talk to the client.
+     */     
+    virtual unsigned int randomize_state_processor(tlv_entry& params, tlv_stream *out_stream);
+
     /*! \brief This method calls machine->step() a number of times specified by the TLV integer referenced by parameter params.
      *         For each call the result of machine->visualize_all_positions() is returned to the client. Communication with
      *         the client is done via the object to which parameter out_stream points.

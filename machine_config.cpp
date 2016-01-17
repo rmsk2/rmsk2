@@ -41,7 +41,7 @@ enigma_base *machine_config::make_machine(Glib::ustring& subtype)
 
     if ((subtype == "M3") or (subtype == "Services"))
     {
-        enigma = new enigma_I(UKW_B, WALZE_I, WALZE_II, WALZE_III);
+        enigma = new enigma_I(UKW_B, WALZE_I, WALZE_II, WALZE_III, subtype == "M3");
     }
     else
     {
@@ -621,6 +621,11 @@ void machine_config::make_config(Glib::ustring& machine_name)
     } while(0);
 }
 
+unsigned int machine_config::get_active_rotor_id(rotor_family_descriptor& desc)
+{    
+    return desc.available_rotors[desc.rotor_names[desc.rotor_index_active]];
+}
+
 vector<unsigned int> machine_config::make_random_wheel_order(unsigned int num_ukws, unsigned int num_rotors, unsigned int num_greeks)
 {
     vector<unsigned int> result;
@@ -837,7 +842,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
             {
                 break;
             }            
-            
+                        
             if ((result = machine_type != ini_file.get_string("machine", "machinetype")))
             {
                 break;
@@ -846,7 +851,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
             if ((result = (has_plugboard and !ini_file.has_group("plugboard"))))
             {
                 break;
-            }
+            }            
             
             // Load data from enigma object into this configuration object
             for (unsigned int count = 0; (count < all_descriptors.size()) and !result; count++)
@@ -937,12 +942,6 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
     return result;
 }
 
-/*! A saved state of an Enigma simulator that is created without a GUI (for instance by calling the save 
- *  method of an object) can not be read by the GUI simulator as it uses machine_config objects to implement
- *  the functionality called when clicking on the "Save settings ..." menu entry. The reason for this is
- *  that this method adds an ukwdwiring entry to the machine section. Saved states created with the GUI
- *  simulator can be read by the load method of a "naked" simulator object without any problems.
- */
 bool machine_config::save_settings(const Glib::ustring& file_name, enigma_base *enigma)
 {
     bool result = false;
@@ -953,11 +952,9 @@ bool machine_config::save_settings(const Glib::ustring& file_name, enigma_base *
     vector<int> ukwd_wiring;
     vector<unsigned int> ukwd_wiring_help;    
     
-    ini_file.set_string("machine", "machinetype", machine_type);
-    
     enigma->save_ini(ini_file);
     
-    // Add a ukwdwiring entry to the machine section.     
+    // Replace ukwdwiring entry written by save_ini method
     ukwd_perm.to_vec(ukwd_wiring_help);
     
     for (unsigned int count = 0; count < ukwd_perm.get_size(); count++)

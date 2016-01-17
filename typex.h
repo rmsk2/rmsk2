@@ -55,7 +55,7 @@ public:
  *  This class shows very clearly that the Typex is essentially an Enigma (as can be inferred from its full name RAF Enigma
  *  with Type-X extensions), because nearly no additional code has to be added. 
  */
-class typex : public enigma_base {
+class typex : public enigma_family_base {
 public:
     /*! \brief Constructor. The parameters of this method use the rotor_id structure to specify which rotors have to placed in
      *         the machine in what positions.

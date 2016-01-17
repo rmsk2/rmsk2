@@ -206,7 +206,7 @@ class RotorSet:
 
     ## \brief Loads the rotor set from the string which is specified in parameter data.
     #
-    #  \param [file_name] Is a string holding the data contained in a rotor set ini file.
+    #  \param [data] Is a string holding the data contained in a rotor set ini file.
     #
     #  \returns A boolean that is either False when loading was unsuccessful and True otherwise 
     #    
@@ -1259,7 +1259,7 @@ class TypexState(GenericRotorMachineState):
         typex_state.insert_typex_rotor('umkehrwalze', es.TYPEX_SP_02390_UKW, 'a', 'a')                     
         
         return typex_state
-
+    
     ## \brief This method adds a rotor to the data structure held by self._config.
     #
     #  \param [slot_name] Is a string. It specifies the name of the rotor slot into which a new rotor is to be
@@ -1620,20 +1620,30 @@ class RotorMachine(tlvobject.TlvProxy):
             
         return result
 
-    ## \brief Loads and returns a machine state saved in a file.
+    ## \brief Loads a machine state saved in a file and accordingly changes the state of the proxied rotor machine.
     #
     #  \param [file_name] A string. It contains name of a file which is used to store a machine state and is to be read.
     #
-    #  \returns A byte array. This byte array contains a previously saved machine state. In case of an
-    #           error an exception is thrown.
+    #  \returns Nothing. In case of an error an exception is thrown.
     #
-    @staticmethod
-    def load_machine_state(file_name):
+    def load_machine_state(self, file_name):
         f = open(file_name, 'rb')
         s = f.read()
         f.close()
         
-        return s
+        self.set_state(s)
+
+    ## \brief Saves the state of the proxied rotor machine in a file.
+    #
+    #  \param [file_name] A string. It contains name of a file which is used to store a machine state.
+    #
+    #  \returns Nothing. In case of an error an exception is thrown.
+    #
+    def save_machine_state(self, file_name):
+        s = self.get_state()
+        f = open(file_name, 'wb')
+        f.write(s)
+        f.close()
 
     ## \brief Encrypts data using the TLV  rotor machine object proxied by this RotorMachine instance.
     #
@@ -1677,6 +1687,18 @@ class RotorMachine(tlvobject.TlvProxy):
     def set_state(self, new_state):
         param = tlvobject.TlvEntry().to_byte_array(new_state)    
         res = self.do_method_call(self._handle, 'setstate', param)
+
+    ## \brief Changes the current state of the TLV rotor machine object which is proxied by this 
+    #         rotorsim.RotorMachine by randomizing it.
+    #
+    #  \param [randomize_param] A string. It is used to parametrize the ranomization process.
+    #
+    #  \returns Nothing. Exception is thwrown upon error.
+    #                
+    def randomize_state(self, randomize_param):
+        param = tlvobject.TlvEntry().to_string(randomize_param)    
+        res = self.do_method_call(self._handle, 'randomizestate', param)
+
 
     ## \brief Steps the TLV rotor machine object proxied by this rotorsim.RotorMachine instance a given
     #         number of times.

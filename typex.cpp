@@ -56,7 +56,7 @@ void typex::set_reflector(vector<pair<char, char> >& data)
 }
 
 typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id fast_id, rotor_id stat2_id, rotor_id stat1_id) 
-    : enigma_base() 
+    : enigma_family_base() 
 { 
     vector<string> rotor_names;
     vector<gunichar> norm_alph, shift_alph, out_alph;

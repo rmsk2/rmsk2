@@ -149,6 +149,11 @@ public:
      *  is *not configured* according to values set in this machine_config object.        
      */
     virtual enigma_base *make_machine(Glib::ustring& subtype);
+
+    /*! \brief Helper method that allows to retrieve the active rotor id from the rotor_family_descriptor referenced in parameter desc. It is intended
+     *         to make the code that needs to determine this value a bit more readable.
+     */                                    
+    virtual unsigned int get_active_rotor_id(rotor_family_descriptor& desc);
     
     /*! \brief Loads a configuration from an ini file. In case no error was encountered, false is returned.
      */       

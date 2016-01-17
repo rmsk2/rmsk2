@@ -93,7 +93,7 @@ class Processor:
         comm_result = p.communicate(self.__state + bytes([0xFF]) + input_data.encode())
         
         if p.returncode != 0:
-            raise RotorSimException(p.returncode)
+            raise rotorsim.RotorSimException(p.returncode)
         
         if self.__do_state_progression:
             pos = 0
