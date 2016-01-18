@@ -246,7 +246,7 @@ void schluesselgeraet39::fill_wheel_spec(string *wheel_spec, unsigned int num_on
         
     while(count_ones_in_wheel_spec(wheel_spec) < num_ones)
     {
-        (*wheel_spec)[current_pos] = ((wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val()) ? '1' : '0');
+        (*wheel_spec)[current_pos] = ((wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val()) ? '1' : '0');
         current_pos++;
         current_pos = current_pos % wheel_spec->length();
     }
