@@ -489,6 +489,14 @@ class GenericRotorMachineState:
         for slot in self._slot_names:
             self.insert_rotor(slot, rotor_set.ids[0], rotor_set.ids[0], 0, 0)
 
+    ## \brief This method returns the data structure which contains the machine state
+    #
+    #  \returns A dictionary of dictionaries.
+    #                                                                
+    @property
+    def state_config(self):
+        return self._config
+
     ## \brief Returns the names of the rotor slots which are in use in a machine of type self._name
     #
     #  \returns A sequence of strings.
@@ -544,6 +552,17 @@ class GenericRotorMachineState:
     #                                                    
     def insert_rotor(self, slot_name, rotor_id, ring_id, ring_offset, rotor_pos, insert_type = INSERT_NORMAL):
         self._config[slot_name] = {'rid': rotor_id, 'ringid':ring_id, 'ringoffset':ring_offset, 'rotorpos':rotor_pos, 'inserttype':insert_type}
+
+
+    ## \brief This method can be used to retreive the current settings of a rotor.
+    #
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot into which a new rotor is to be
+    #         inserted.
+    #
+    #  \returns A dictionary that contains at least the keys 'rid', 'ringid', 'ringoffset', 'rotorpos' and 'inserttype'.
+    #                                                    
+    def get_rotor_settings(self, slot_name):
+        return self._config[slot_name]
 
     ## \brief This method transforms the data stored in self._config into an INI file.
     #

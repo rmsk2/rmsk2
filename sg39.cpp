@@ -274,9 +274,9 @@ bool schluesselgeraet39::randomize(string& param)
     num_pins_slow.push_back(3);
     num_pins_slow.push_back(5);    
     
-    // Middle rotor has 5 or 7 random pins        
-    num_pins_middle.push_back(5);    
-    num_pins_middle.push_back(7);        
+    // Middle rotor has 7 or 11 random pins        
+    num_pins_middle.push_back(7);    
+    num_pins_middle.push_back(11);        
     
     
     try
@@ -284,9 +284,11 @@ bool schluesselgeraet39::randomize(string& param)
         permutation plugboard_perm = permutation::get_random_permutation(rand, 26);
         permutation reflector_perm = permutation::get_random_permutation(rand, 26);          
         permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
-        // Determine which stepping rotor is the slow (index 0), middle (index 1) or fast (index 2) one
+        // This permutation is used to determine which stepping rotor is the slow (index 0), 
+        // middle (index 1) or fast (index 2) one
         permutation stepping_perm = permutation::get_random_permutation(rand, 3);
 
+        // Determine rotor sequence
         for(unsigned int count = 0; count < 4; count++)
         {
             rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
@@ -321,6 +323,7 @@ bool schluesselgeraet39::randomize(string& param)
         rotor_pos.push_back(0);
         get_sg39_stepper()->set_all_displacements(rotor_pos);
         
+        // Set wheel positions
         wheel_pos = wheel1_alpha.to_vector(wheel1_alpha.get_random_string(2));
         get_sg39_stepper()->set_wheel_pos(ROTOR_1, wheel_pos[0]);
         wheel_pos = wheel2_alpha.to_vector(wheel2_alpha.get_random_string(2));
