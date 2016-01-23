@@ -311,7 +311,7 @@ class RotorSet:
         help = Permutation()
         help.involution_from_pairs(new_perm)
         self.change_perm(reflector_id, help.to_int_vector())
-
+    
     ## \brief Returns the standard rotor set for a specified machine family
     #
     #  \param [set_name] Is a string. Has to specifiy the machine family for which the default RotorSet object is to
@@ -385,6 +385,15 @@ class Permutation:
         
         for i in range(len(self.__alphabet)):
             self.__val[i] = self.from_val(s[i])
+
+    ## \brief Returns the permutation in use in this instance in a string representation
+    #
+    #  \returns A string.
+    #                                    
+    def to_string(self):
+        result = ''.join(list(map(lambda x: self.__alphabet[self.__val[x]], range(len(self.__alphabet)))))                
+        
+        return result
 
     ## \brief Returns the permutation in use in this instance.
     #
@@ -497,6 +506,15 @@ class GenericRotorMachineState:
     def state_config(self):
         return self._config
 
+    ## \brief This method returns the rotor set object relative to which the state of this machine
+    #         is to be interpreted.
+    #
+    #  \returns An object with the same interface as RotorSet.
+    #                                                                
+    @property
+    def rotor_set(self):
+        return self._rotor_set
+
     ## \brief Returns the names of the rotor slots which are in use in a machine of type self._name
     #
     #  \returns A sequence of strings.
@@ -526,6 +544,26 @@ class GenericRotorMachineState:
     def _save_additional_data(self, ini_file):
         pass
 
+    ## \brief This method is intended to load additional data for each rotor slot.
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        return True
+
+    ## \brief This method is intended to load additional data which is indpendent of individual rotor slots.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                    
+    def _load_additional_data(self, parsed_ini_file):
+        return True
+    
     ## \brief This method adds a rotor to the data structure held by self._config.
     #
     #  \param [slot_name] Is a string. It specifies the name of the rotor slot into which a new rotor is to be
@@ -538,10 +576,10 @@ class GenericRotorMachineState:
     #         The id has to be part of the data contained in self._rotor_set
     #
     #  \param [ring_offset] Is an int. It specifies the ring offset which is set for the new rotor. Has to be in
-    #         in the range 0,...,rotor size (usually 25).
+    #         in the range 0,...,rotor size-1 (usually 25).
     #
-    #  \param [rotor_pos] Is an int. It specifies the rotor position of the new rotor. Has to be in
-    #         in the range 0,...,rotor size (usually 25).
+    #  \param [rotor_pos] Is an int. It specifies the rotor position of the new rotor as shown on the rotor ring.
+    #         Has to be in in the range 0,...,rotor size-1 (usually 25).
     #
     #  \param [insert_type] Is an int. Currently the following three values are allowed: INSERT_NORMAL, 
     #         INSERT_INVERSE, INSERT_REVERSE. Inserting a rotor in inverse means that the inverse of the rotor
@@ -564,6 +602,60 @@ class GenericRotorMachineState:
     def get_rotor_settings(self, slot_name):
         return self._config[slot_name]
 
+    ## \brief This method can be used to query what the current position of a rotor is. Put in another way: It can be
+    #         used determine the character that is currently shown on a rotor's ring or circumfence.
+    #    
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the rotor position is to be
+    #         determined.
+    #
+    #  \returns A char. It contains the mapping result.
+    #
+    def get_rotor_pos(self, slot_name):        
+        settings = self.get_rotor_settings(slot_name)        
+        return self._default_alpha[settings['rotorpos']]
+
+    ## \brief This method returns the ring offset of a given rotor in form of a character instead of an integer.
+    #    
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the ring offset is to be
+    #         determined.
+    #
+    #  \returns A char.
+    #
+    def get_ring_offset(self, slot_name):        
+        settings = self.get_rotor_settings(slot_name)        
+        return self._default_alpha[settings['ringoffset']]
+
+    ## \brief This method generates a string representation of a given involution
+    #    
+    #  \param [involution] Is a vector of integers that contains the involution.
+    #
+    #  \param [alpha] Is a string which specifies the alphabet that is to be used to map integers to
+    #         characters. If None is specified the default alphabet which is in use in this machine is used.
+    #
+    #  \returns A string which holds the desired string representation.
+    #        
+    def get_involution_as_string(self, involution, alpha = None):
+        already_seen = set()
+        pairs = []
+        
+        if alpha == None:
+            alpha = self._default_alpha
+        
+        for i in range(len(alpha)):
+            if i not in already_seen:
+                j = involution[i]
+                                
+                if alpha[i] < alpha[j]:
+                    pairs.append(alpha[i] + alpha[j])
+                else:
+                    pairs.append(alpha[j] + alpha[i])
+                
+                already_seen.add(i)
+                already_seen.add(j)
+        
+        pairs.sort()
+        return ''.join(pairs)
+        
     ## \brief This method transforms the data stored in self._config into an INI file.
     #
     #  \param [ini_file_object] Is an object of type GLib.KeyFile(). It specifies the INI file object into which the
@@ -650,6 +742,172 @@ class GenericRotorMachineState:
         
         return result
 
+    ## \brief This method loads the machine state stored in the file specified by file_name.
+    #
+    #  \param [file_name] Is a string. Has to contain the name of the file from which the state is to be read.
+    #    
+    #  \returns A boolean. True means loading the state was successfull.
+    #                                                                
+    def load(self, file_name):
+        result = True
+        
+        try:
+            with open(file_name, 'rb') as f:
+                loaded_data = f.read()
+                f.close()
+                
+                loaded_data = loaded_data.decode()
+                
+                ini_file = GLib.KeyFile()
+                ini_file.load_from_data(loaded_data, len(loaded_data), 0)
+                result = self.load_from_ini(ini_file)
+        except:
+            result = False
+        
+        return result
+
+    ## \brief Load machine state from a given keyfile object.
+    #
+    #  \param [key_file_object] An object of type GLib.KeyFile() containing a previously saved machine state.
+    #
+    #  \returns A boolean. True means loading the state was successfull.
+    #            
+    def load_from_ini(self, key_file_object):
+        parsed_ini = self._parse_ini_file(key_file_object)
+        result = parsed_ini != None
+                
+        if result:
+            current_config = self._config.copy()
+                       
+            try:
+                # Test if machine name matches machine name in this object
+                if self._name != parsed_ini['machine']['name']:
+                    raise RotorSimException(42)
+                
+                # Iterate over known slots
+                for i in self._slot_names:
+                    section_name = 'rotor_' + i
+                    rotor_info = parsed_ini[section_name]
+                    
+                    displacement = rotor_info['rotordisplacement']
+                    insert_type = INSERT_NORMAL
+                    
+                    if rotor_info['insertinverse']:
+                        insert_type = INSERT_REVERSE
+                    
+                    # Calculate current rotor position (i.e. the position currently shown on the rotor's ring)
+                    ringoffset = rotor_info['ringoffset']
+                    pos = (displacement + ringoffset) % len(self._default_alpha)
+                    
+                    # Write data into self._config
+                    self.insert_rotor(i, rotor_info['rid'], rotor_info['ringid'], rotor_info['ringoffset'], pos, insert_type)
+                    
+                    # Load machine specific rotor data
+                    if not self._load_additional_rotor_data(i, parsed_ini):
+                        raise RotorSimException(42)
+                
+                # Load machine specific data    
+                if not self._load_additional_data(parsed_ini):
+                    raise RotorSimException(42)                                        
+            except:
+                result = False
+                self._config = current_config
+                
+        return result
+    
+
+    ## \brief This method loads the machine state stored in the byte array specified as a parameter
+    #
+    #  \param [state_as_bytes] Is a byte string. Has to contain a state as a byte string as returned for instance by
+    #         RotorMachine.get_state().
+    #    
+    #  \returns A boolean. True means loading the state was successfull.
+    #                                                                
+    def load_from_data(self, state_as_bytes):
+        result = True
+        
+        try:            
+            loaded_data = state_as_bytes.decode()            
+            ini_file = GLib.KeyFile()
+            ini_file.load_from_data(loaded_data, len(loaded_data), 0)
+            result = self.load_from_ini(ini_file)
+        except:
+            result = False
+        
+        return result
+
+    ## \brief Parse a key file into a python data structure
+    #
+    #  \param [key_file_object] An object of type GLib.KeyFile()
+    #
+    #  \returns A nested structure of dictionaries in case of success and None in case of an error
+    #            
+    def _parse_ini_file(self, key_file_object):
+        result = {}
+        all_groups = None
+        current_keys = None
+        
+        try:
+            all_groups = (key_file_object.get_groups())[0]
+            
+            for i in all_groups:
+                value_dict = {}
+                current_keys = (key_file_object.get_keys(i))[0]
+                
+                for j in current_keys:
+                    key_val = None
+                    
+                    # The sequence of these tests is not arbitrary. Only change it after thorough
+                    # consideration.
+                    
+                    # test for integer value
+                    try:
+                        key_val = key_file_object.get_integer(i, j)
+                    except:
+                        key_val = None
+                    
+                    if key_val != None:
+                        value_dict[j] = key_val
+                        continue            
+
+                    # test for integer list value
+                    try:
+                        key_val = key_file_object.get_integer_list(i, j)
+                    except:
+                        key_val = None
+                    
+                    if key_val != None:
+                        value_dict[j] = key_val
+                        continue            
+
+                    # test for boolean value. Hint: A numeric zero value would be interpreted as False.
+                    try:
+                        key_val = key_file_object.get_boolean(i, j)
+                    except:
+                        key_val = None
+                    
+                    if key_val != None:
+                        value_dict[j] = key_val
+                        continue            
+
+                    # if the value is nothing of the above, it has to be a string value
+                    try:
+                        key_val = key_file_object.get_string(i, j)
+                    except:
+                        key_val = None
+                    
+                    if key_val != None:
+                        value_dict[j] = key_val
+                        continue            
+                
+                result[i] = value_dict
+                
+        except: 
+            result = None
+        
+        return result
+
+
 
 ## \brief This class allows to create an INI file which represents the state of a SIGABA driver, index or cipher
 #         machine.
@@ -690,7 +948,7 @@ class SigabaSubMachineState(GenericRotorMachineState):
     #                                                            
     def insert_sigaba_rotor(self, slot_name, rotor_id, rotor_pos_as_char, insert_type = INSERT_NORMAL):
         self.insert_rotor(slot_name, rotor_id, rotor_id, 0, 0, insert_type)
-        self._config[slot_name]['rotorpos'] = self.get_rotor_pos(slot_name, rotor_pos_as_char)
+        self._config[slot_name]['rotorpos'] = self.pos_to_int(slot_name, rotor_pos_as_char)
 
     ## \brief This method can be used to map a rotor position in form of a character to a numerical value. It
     #         takes into account, if the rotor for which this mapping is to be performed, has been inserted in
@@ -704,7 +962,7 @@ class SigabaSubMachineState(GenericRotorMachineState):
     #
     #  \returns An integer. It contains the mapping result.
     #
-    def get_rotor_pos(self, slot_name, pos_as_char):
+    def pos_to_int(self, slot_name, pos_as_char):
         result = 0
         perm_help = Permutation(self._default_alpha)
         
@@ -713,6 +971,24 @@ class SigabaSubMachineState(GenericRotorMachineState):
             result = perm_help.neg(result)
             
         return result
+        
+    ## \brief This method can be used to query what the current position of a rotor is. Put in another way: It can be
+    #         used determine the character that is currently shown on a rotor's ring or circumfence.
+    #    
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the mapping is to be
+    #         performed.
+    #
+    #  \returns A char. It contains the mapping result.
+    #
+    def get_rotor_pos(self, slot_name):        
+        perm_help = Permutation(self._default_alpha)
+        settings = self.get_rotor_settings(slot_name)                
+        current_pos = settings['rotorpos']
+        
+        if self._config[slot_name]['inserttype'] == INSERT_REVERSE:
+            current_pos = perm_help.neg(current_pos)
+            
+        return self._default_alpha[current_pos]
 
 
 ## \brief This class allows to create an INI file which represents the state of a whole SIGABA machine which consists
@@ -839,6 +1115,35 @@ class SigabaMachineState:
         state = self.render_state()        
         return RotorMachine(state, server_obj.address)        
 
+    ## \brief This method loads the machine state stored in the byte array specified as a parameter
+    #
+    #  \param [state_as_bytes] Is a byte string. Has to contain a state as a byte string as returned for instance by
+    #         RotorMachine.get_state().
+    #    
+    #  \returns A boolean. True means loading the state was successfull.
+    #                                                                
+    def load_from_data(self, state_as_bytes):
+        result = True
+        
+        try:            
+            result = self.crypt.load_from_data(state_as_bytes)
+
+            if result:
+                result = self.driver.load_from_data(state_as_bytes)            
+                
+            if result:
+                result = self.index.load_from_data(state_as_bytes)        
+            
+            if result:
+                loaded_data = state_as_bytes.decode()            
+                ini_file = GLib.KeyFile()
+                ini_file.load_from_data(loaded_data, len(loaded_data), 0)            
+                self.csp_2900_flag = ini_file.get_boolean('stepper', 'is_csp_2900')            
+        except:
+            result = False
+        
+        return result
+
     ## \brief This method saves the machine state as returned by self.render_state() in a file which is named by parameter file_name.    
     #
     #  \param [file_name] Is a string. Has to contain the name of the file in which the state is stored.
@@ -856,6 +1161,26 @@ class SigabaMachineState:
             result = False
         
         return result
+        
+    ## \brief This method loads the machine state stored in the file specified by file_name.
+    #
+    #  \param [file_name] Is a string. Has to contain the name of the file from which the state is to be read.
+    #    
+    #  \returns A boolean. True means loading the state was successfull.
+    #                                                                
+    def load(self, file_name):
+        result = True
+        
+        try:
+            with open(file_name, 'rb') as f:
+                loaded_data = f.read()
+                f.close()
+                
+                result = self.load_from_data(loaded_data)
+        except:
+            result = False
+        
+        return result        
 
 
 ## \brief This class allows to create an INI file which represents the state of a Nema machine.
@@ -938,6 +1263,27 @@ class NemaState(GenericRotorMachineState):
     def _save_additional_rotor_data(self, slot_name, ini_file):
         if slot_name == 'drive1':
             ini_file.set_integer_list('rotor_drive1', 'ringdata', self._config['redwheeldata'])
+            
+    ## \brief This method loads the Nema's red wheel data.
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        result = True
+        
+        if slot_name == 'drive1':            
+            try:
+                self.is_war_machine = (parsed_ini_file['rotor_drive1']['rid'] == NEMA_DRIVE_WHEEL_22)
+            except:
+                result = False
+        elif slot_name == 'etw':
+            self._config['etw']['inserttype'] = INSERT_INVERSE        
+        
+        return result
 
     ## \brief This method is intended to create the ring data for the red wheel, which is special as it is a combination of two
     #         sets of ring data
@@ -1093,6 +1439,30 @@ class KL7State(GenericRotorMachineState):
         
         if slot_name != 'kl7_rotor_4':
             ini_file.set_integer(section_name, 'rotordisplacement', (self._config[slot_name]['letterring'] + self._config[slot_name]['rotorpos']) % len(self._default_alpha))
+            
+    ## \brief This method loads the KL7's letter ring data abd takes care of handling the stationary rotor.
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        result = True
+        section_name = 'rotor_' + slot_name
+        p = Permutation(self._default_alpha)
+        
+        try:
+            self._config[slot_name]['letterring'] = parsed_ini_file[section_name]['letterring']
+            
+            if slot_name != 'kl7_rotor_4':
+                displacement = parsed_ini_file[section_name]['rotordisplacement']
+                self._config[slot_name]['rotorpos'] = (displacement + p.neg(self._config[slot_name]['letterring'])) % len(self._default_alpha)
+        except:
+            result = False
+                                    
+        return result
 
 
 ## \brief This class allows to create an INI file which represents the state of a Schlüsselgerät 39 (SG39) machine.
@@ -1179,6 +1549,42 @@ class SG39State(GenericRotorMachineState):
         p = Permutation(self._default_alpha)
         self._config[slot_name]['drivewheel'] = {'wheelpos':p.from_val(wheelpos_as_char), 'ringdata':ring_data}
 
+    ## \brief This method can be used to query the current position of a SG39 pin wheel.
+    #    
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the pin wheel position
+    #         is to be retrieved.
+    #
+    #  \returns A char. It contains the mapping result.
+    #
+    def get_wheel_pos(self, slot_name):        
+        settings = self.get_rotor_settings(slot_name)        
+        return self._default_alpha[settings['drivewheel']['wheelpos']]
+
+    ## \brief This method can be used to retreive the pin setting currently active for a rotor.
+    #    
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the pin data
+    #         is to be retrieved.
+    #
+    #  \returns A tuple of two lists. Where the first component contains the pins on the rotor and the second
+    #           the pins on the wheel.
+    #
+    def get_pins(self, slot_name):        
+        settings = self.get_rotor_settings(slot_name)        
+        return (settings['ringdata'], settings['drivewheel']['ringdata'])
+
+    ## \brief This method can be used to retreive a string representation of the variable permutations (plugboard
+    #         plugable reflector) that are used in a SG39.
+    #    
+    #  \returns A tuple of two strings. Where the first component contains the plugboard permutation and the second
+    #           the reflector permutation.
+    #        
+    def get_all_plugs(self):
+        p = Permutation()
+        plugboard_perm = p.from_int_vector(self._config['plugboard'])
+        reflector_perm = self.rotor_set.data[ID_SG39_UKW]['permutation']
+        
+        return (p.to_string(), self.get_involution_as_string(reflector_perm))
+
     ## \brief Sets the permutation of the SG39's plugboard.
     #
     #  \param [plugboard_permutation] Is a string which deteremines to permutation to set.
@@ -1217,6 +1623,48 @@ class SG39State(GenericRotorMachineState):
     #        
     def _save_additional_data(self, ini_file):
         ini_file.set_integer_list('plugboard', 'entry', self._config['plugboard'])
+        
+    ## \brief This method loads the ringdata, wheeldata and wheelpositions for the three moving rotors
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        result = True
+        section_name = 'rotor_' + slot_name
+        
+        try:
+            if slot_name in ['rotor_1', 'rotor_2', 'rotor_3']:
+                self._config[slot_name]['ringdata'] = parsed_ini_file[section_name]['ringdata']
+                self._config[slot_name]['drivewheel'] = {}
+                self._config[slot_name]['drivewheel']['ringdata'] = parsed_ini_file[section_name]['wheeldata']
+                self._config[slot_name]['drivewheel']['wheelpos'] = parsed_ini_file[section_name]['wheelpos']
+            elif slot_name == 'umkehrwalze':
+                reflector_settings = self.get_rotor_settings('umkehrwalze')
+                self._rotor_set.change_perm(reflector_settings['rid'], parsed_ini_file[section_name]['permutation'])        
+        except:
+            result = False
+        
+        return result
+
+    ## \brief This method loads the plugboard from the state.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                    
+    def _load_additional_data(self, parsed_ini_file):
+        result = True        
+        
+        try:
+            self._config['plugboard'] = parsed_ini_file['plugboard']['entry']        
+        except:
+            result = False
+        
+        return result
 
 
 ## \brief This class extends RotorSet by a method which can be used to calculate a permutation as realized
@@ -1303,6 +1751,38 @@ class TypexState(GenericRotorMachineState):
     def insert_typex_rotor(self, slot_name, rotor_id, ring_offset_as_char, rotor_pos_as_char, insert_type = INSERT_NORMAL):
         p = Permutation()
         self.insert_rotor(slot_name, rotor_id, rotor_id, p.from_val(ring_offset_as_char), p.from_val(rotor_pos_as_char), insert_type)
+        
+    ## \brief This method loads the plugable reflector data
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        result = True
+        section_name = 'rotor_' + slot_name
+        
+        try:
+            if slot_name == 'eintrittswalze':
+                self._config[slot_name]['inserttype'] = INSERT_INVERSE
+            elif slot_name == 'umkehrwalze':
+                reflector_settings = self.get_rotor_settings('umkehrwalze')
+                self._rotor_set.change_perm(reflector_settings['rid'], parsed_ini_file[section_name]['permutation'])        
+        except:
+            result = False
+        
+        return result
+        
+    ## \brief This method can be used to retreive a string representation of the plugable reflector permutation.
+    #    
+    #  \returns A string.
+    #                
+    def get_reflector_spec(self):
+        reflector_perm = self.rotor_set.data[es.TYPEX_SP_02390_UKW]['permutation']        
+        return self.get_involution_as_string(reflector_perm)
+    
 
 
 ## \brief This class allows to create an INI file which represents the state of a machine belonging to the Enigma
@@ -1359,6 +1839,49 @@ class BasicEnigmaState(GenericRotorMachineState):
         
         ini_file.set_integer_list('machine', 'ukwdwiring', self._rotor_set.data[es.UKW_D]['permutation'])
         ini_file.set_string('machine', 'machinetype', self._machine_type)
+
+    ## \brief This method sets inserttype on the eintrittswalze, if it is part of the rotor bank
+    #
+    #  \param [slot_name] Is a string. It specifies the slot name for which additional data is to be read.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                
+    def _load_additional_rotor_data(self, slot_name, parsed_ini_file):
+        result = True
+        
+        if slot_name == 'eintrittswalze':
+            self._config[slot_name]['inserttype'] = INSERT_INVERSE
+                    
+        return result
+        
+    ## \brief This method loads the UKW D permutation from the state and checks the machine type.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                    
+    def _load_additional_data(self, parsed_ini_file):
+        result = True        
+        
+        try:
+            result = (self._machine_type == parsed_ini_file['machine']['machinetype'])
+            
+            if result:
+                self.rotor_set.change_perm(es.UKW_D, parsed_ini_file['machine']['ukwdwiring'])            
+        except:
+            result = False
+        
+        return result        
+        
+    ## \brief This method can be used to retreive a string representation of the current UKW D permutation.
+    #    
+    #  \returns A string.
+    #                
+    def get_ukwd_spec(self):
+        reflector_perm = self.rotor_set.data[es.UKW_D]['permutation']        
+        return self.get_involution_as_string(reflector_perm, 'yzxwvutsrqponjmlkihgfedcba')    
 
 
 ## \brief This class allows to create an INI file which represents the state of an Enigma machine without
@@ -1480,6 +2003,16 @@ class SteckeredEnigmaState(BasicEnigmaState):
         self._config['plugboard']['uhr'] = use_uhr
         self._config['plugboard']['dialpos'] = uhr_dial_pos
 
+    ## \brief Returns the configuration of this Enigma's plugboard.
+    #
+    #  \returns a dictionary with the keys 'cabling', 'uhr' and 'dialpos'. The 'uhr' entry is a boolean an signifies
+    #           if the Enigma Uhr is in use. If this is true the 'dialpos' entry spcifies the dial position on the Uhr.
+    #           The 'cabling' entry holds the plugs that are used. It has to be interpreted as sequence of pairs of
+    #           plugs.
+    #            
+    def get_stecker_brett(self):
+        return self._config['plugboard'].copy()
+
     ## \brief This method saves plugboard permutation, uhr cabling and uhr dial pos in the INI file.
     #
     #  \param [ini_file] Is an object of type GLib.KeyFile(). It specifies the INI file object into which the
@@ -1497,7 +2030,66 @@ class SteckeredEnigmaState(BasicEnigmaState):
         
         if self._config['plugboard']['uhr']:
             ini_file.set_string('plugboard', 'uhrcabling', self._config['plugboard']['cabling'])
-            ini_file.set_integer('plugboard', 'uhrdialpos', self._config['plugboard']['dialpos'])            
+            ini_file.set_integer('plugboard', 'uhrdialpos', self._config['plugboard']['dialpos']) 
+
+
+    ## \brief This method returns all the two element cycles of a given permutation
+    #    
+    #  \param [involution] Is a vector of integers that contains the permutation.
+    #
+    #  \returns A string which holds the desired string representation.
+    #        
+    def make_cabling(self, perm):
+        already_seen = set()
+        pairs = []
+        
+        alpha = self._default_alpha
+        
+        for i in range(len(alpha)):
+            if i not in already_seen:
+                j = perm[i]
+                k = perm[j]
+                
+                if (i != j) and (k == i):
+                    # iff the above conditon is true we have a two element cycle
+                    if alpha[i] < alpha[j]:
+                        pairs.append(alpha[i] + alpha[j])
+                    else:
+                        pairs.append(alpha[j] + alpha[i])
+                
+                    already_seen.add(i)
+                    already_seen.add(j)
+                else:
+                    already_seen.add(i)
+        
+        pairs.sort()
+        return ''.join(pairs)
+            
+    ## \brief This method loads the plugboard configuration.
+    #
+    #  \param [parsed_ini_file] Is a python3 representation of a loaded ini file as returned by _parse_ini_file().
+    #
+    #  \returns A boolean. In case of success True is returned.
+    #                                                    
+    def _load_additional_data(self, parsed_ini_file):
+        result = super()._load_additional_data(parsed_ini_file)        
+        
+        try:            
+            if result:
+                self._config['plugboard'] = {}
+                self._config['plugboard']['uhr'] = parsed_ini_file['plugboard']['usesuhr']
+                
+                if self._config['plugboard']['uhr']:                                    
+                    self._config['plugboard']['cabling'] = parsed_ini_file['plugboard']['uhrcabling']
+                    self._config['plugboard']['dialpos'] = parsed_ini_file['plugboard']['uhrdialpos']
+                else:
+                    self._config['plugboard']['cabling'] = self.make_cabling(parsed_ini_file['plugboard']['entry'])
+                    self._config['plugboard']['dialpos'] = 0                    
+                
+        except:
+            result = False
+        
+        return result           
 
 
 ## \brief This class allows to create an INI file which represents the state of an M3 or Services Enigma.
