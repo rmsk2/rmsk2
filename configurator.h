@@ -169,6 +169,17 @@ protected:
      */            
     string vec_to_bool(vector<unsigned int>& vec);
 
+    /*! \brief Returns a string consisting of the characters a-z, where a letter is included iff the position that 
+     *         corresponds to this letter in vec is a one. Only up to the first 26 elements of vec are relevant.
+     */            
+    string bool_to_string(vector<unsigned int>& vec);
+
+    /*! \brief Sets all the positions in vec to 1 which correspond to a letter in pin_spec. If a letter in pin_spec
+     *         is not between a-z and/or the position of the letter in the standard alphabet is bigger than vec.size() it
+     *         is ignored.
+     */                
+    void string_to_bool(vector<unsigned int>& vec, string& pin_spec);
+
     /*! \brief Returns true if the string referenced by parameter to_test is of the length specified in parameter
      *         desired_length. When true is returned the vector referenced by parameter data is filled with 0s and 1s
      *         where each '0' character in to_test prodcues a 0 and all other characters produce a 1.
@@ -204,6 +215,12 @@ protected:
      *         if each character appears at most once.
      */        
     bool check_rotor_spec(string& rotor_spec, char start_char, char end_char, unsigned int desired_length, bool require_unique = true);
+
+    /*! \brief Returns true if the string referenced by parameter pin_spec has length at most max_length and contains only
+     *         characters between start_char and end_char. Each character must appears at most once.
+     */        
+    bool check_pin_spec(string& pin_spec, char start_char, char end_char, unsigned int max_length);
+
 };
 
 /*! \brief A class that knows how to create ::configurator objects for the machines simulated by rotorvis.

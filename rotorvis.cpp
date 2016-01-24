@@ -531,12 +531,12 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
             machine_conf[KW_SG39_ROTORS] = "5143";
             machine_conf[KW_SG39_ENTRY_PLUGS] = "ldtrmihoncpwjkbyevsaxgfzuq";
             machine_conf[KW_SG39_REFLECTOR_PLUGS] = "awbicvdketfmgnhzjulopqrysx";
-            machine_conf[KW_SG39_PINS_WHEEL_1] = "000000000000000000000";
-            machine_conf[KW_SG39_PINS_WHEEL_2] = "11111111111111111111111";            
-            machine_conf[KW_SG39_PINS_WHEEL_3] = "0010010010010010010010010";  
-            machine_conf[KW_SG39_PINS_ROTOR_1] = "00000000000000000000000000";
-            machine_conf[KW_SG39_PINS_ROTOR_2] = "00000000000000000000000000";            
-            machine_conf[KW_SG39_PINS_ROTOR_3] = "10001000100010001000100010";                        
+            machine_conf[KW_SG39_PINS_WHEEL_1] = "";
+            machine_conf[KW_SG39_PINS_WHEEL_2] = "abcdefghijklmnopqrstuvw";            
+            machine_conf[KW_SG39_PINS_WHEEL_3] = "cfilorux";  
+            machine_conf[KW_SG39_PINS_ROTOR_1] = "";
+            machine_conf[KW_SG39_PINS_ROTOR_2] = "";            
+            machine_conf[KW_SG39_PINS_ROTOR_3] = "aeimquy";                        
             
             result = c->make_machine(machine_conf);
             

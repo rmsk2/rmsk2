@@ -97,6 +97,40 @@ string configurator::get_reflector(encryption_transform *t)
     return result;
 }
 
+string configurator::bool_to_string(vector<unsigned int>& vec)
+{
+    string result;
+    unsigned int max_pos = ((vec.size() > 26) ? 26 : vec.size()); 
+    
+    for (unsigned int count = 0; count < max_pos; count++)
+    {
+        if (vec[count] != 0)
+        {
+            result += rmsk::std_alpha()->to_val(count);
+        }
+    }   
+    
+    return result;
+}
+
+void configurator::string_to_bool(vector<unsigned int>& vec, string& pin_spec)
+{
+    unsigned int pos;
+
+    for (unsigned int count = 0; count < pin_spec.length(); count++)
+    {
+        if (rmsk::std_alpha()->contains_symbol(pin_spec[count]))
+        {
+            pos = rmsk::std_alpha()->from_val(pin_spec[count]);
+            
+            if (pos < vec.size())
+            {
+                vec[pos] = 1;
+            }
+        }
+    }
+}
+
 string configurator::vec_to_bool(vector<unsigned int>& vec)
 {
     string result;
@@ -324,6 +358,28 @@ bool configurator::check_rotor_spec(string& rotor_spec, char start_char, char en
     
     return result;
 }
+
+bool configurator::check_pin_spec(string& pin_spec, char start_char, char end_char, unsigned int max_length)
+{
+    bool result = (pin_spec.length() <= max_length);
+    set<char> uniqueness_test;
+    
+    for (unsigned int count = 0; (count < pin_spec.length()) && result; count++)
+    {
+        result = (pin_spec[count] >= start_char) && ((pin_spec[count] <= end_char));
+        uniqueness_test.insert(pin_spec[count]);
+    }
+    
+    if (result)
+    {
+        // all characters are unique if the set uniqueness_test contains the same number of characters
+        // as the string rotor_spec
+        result = (uniqueness_test.size() == pin_spec.length());
+    }
+    
+    return result;
+}
+
 
 /* ----------------------------------------------------------- */
 
@@ -620,26 +676,26 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
     infos.push_back(key_word_info(KW_SG39_ENTRY_PLUGS, KEY_STRING)); 
     
    /*
-    * This configuration element has to contain 21 characters which can either be a 0 or a 1. A one at a certain
-    * position means that the pin on the corresponding position is active. A zero that the pin is inactive.   
+    * This configuration element has to contain at most 21 characters which can be from the range a-u. Each letter
+    * corresponds to a set pin on the position specified by the letter.   
     */
     infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_1, KEY_STRING));     
 
    /*
-    * This configuration element has to contain 23 characters which can either be a 0 or a 1. A one at a certain
-    * position means that the pin on the corresponding position is active. A zero that the pin is inactive.   
+    * This configuration element has to contain at most 23 characters which can be from the range a-w. Each letter
+    * corresponds to a set pin on the position specified by the letter.   
     */
     infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_2, KEY_STRING));         
     
    /*
-    * This configuration element has to contain 25 characters which can either be a 0 or a 1. A one at a certain
-    * position means that the pin on the corresponding position is active. A zero that the pin is inactive.   
-    */    
+    * This configuration element has to contain at most 25 characters which can be from the range a-y. Each letter
+    * corresponds to a set pin on the position specified by the letter.   
+    */
     infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_3, KEY_STRING));         
 
    /*
-    * Each of these configuration elements has to contain 26 characters which can either be a 0 or a 1. A one
-    * at a certain position means that the pin on the corresponding position is active. A zero that the pin is inactive.   
+    * Each of these configuration elements has to contain at most 26 characters which can be from the range a-z.
+    * Each letter corresponds to a set pin on the position specified by the letter.   
     */
     infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_1, KEY_STRING));     
     infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_2, KEY_STRING));         
@@ -677,19 +733,19 @@ void sg39_configurator::get_config(map<string, string>& config_data, rotor_machi
     
     // Retrieve current pin settings of drive wheels
     stepper->get_wheel_data(ROTOR_1, help_vec);
-    config_data[KW_SG39_PINS_WHEEL_1] = vec_to_bool(help_vec);    
+    config_data[KW_SG39_PINS_WHEEL_1] = bool_to_string(help_vec);    
     stepper->get_wheel_data(ROTOR_2, help_vec);
-    config_data[KW_SG39_PINS_WHEEL_2] = vec_to_bool(help_vec);    
+    config_data[KW_SG39_PINS_WHEEL_2] = bool_to_string(help_vec);    
     stepper->get_wheel_data(ROTOR_3, help_vec);
-    config_data[KW_SG39_PINS_WHEEL_3] = vec_to_bool(help_vec);    
+    config_data[KW_SG39_PINS_WHEEL_3] = bool_to_string(help_vec);    
 
     // Retrieve current pin settings of rotors
     stepper->get_descriptor(ROTOR_1).ring->get_ring_data(help_vec);
-    config_data[KW_SG39_PINS_ROTOR_1] = vec_to_bool(help_vec);  
+    config_data[KW_SG39_PINS_ROTOR_1] = bool_to_string(help_vec);  
     stepper->get_descriptor(ROTOR_2).ring->get_ring_data(help_vec);
-    config_data[KW_SG39_PINS_ROTOR_2] = vec_to_bool(help_vec);  
+    config_data[KW_SG39_PINS_ROTOR_2] = bool_to_string(help_vec);  
     stepper->get_descriptor(ROTOR_3).ring->get_ring_data(help_vec); 
-    config_data[KW_SG39_PINS_ROTOR_3] = vec_to_bool(help_vec);         
+    config_data[KW_SG39_PINS_ROTOR_3] = bool_to_string(help_vec);         
 }
 
 /*! Caveat: This method assumes that the unsigned int constants SG39_ROTOR_0, ..., SG39_ROTOR_9 from the file sg39.h
@@ -699,6 +755,7 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
 {
     unsigned int result = CONFIGURATOR_OK;
     bool test_result = true;  
+    vector<unsigned int> zero_21(21, 0), zero_23(23, 0), zero_25(25, 0), zero_26(26, 0);
     
     do
     {  
@@ -710,18 +767,33 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
         }
         
         // Verifiy that pin data is syntactically correct and fill pin data variables 
-        test_result &= check_bool(config_data[KW_SG39_PINS_WHEEL_1], 21, wheel_1_pins);
-        test_result &= check_bool(config_data[KW_SG39_PINS_WHEEL_2], 23, wheel_2_pins);  
-        test_result &= check_bool(config_data[KW_SG39_PINS_WHEEL_3], 25, wheel_3_pins);              
-        test_result &= check_bool(config_data[KW_SG39_PINS_ROTOR_1], 26, rotor_1_pins);        
-        test_result &= check_bool(config_data[KW_SG39_PINS_ROTOR_2], 26, rotor_2_pins);        
-        test_result &= check_bool(config_data[KW_SG39_PINS_ROTOR_3], 26, rotor_3_pins);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_1], 'a', 'u', 21);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_2], 'a', 'w', 23);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_3], 'a', 'y', 25);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_1], 'a', 'z', 26);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_2], 'a', 'z', 26);
+        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_3], 'a', 'z', 26);                
             
         if (!test_result)
         {
             result = CONFIGURATOR_INCONSISTENT;
             break;
         }
+
+        wheel_1_pins = zero_21;
+        string_to_bool(wheel_1_pins, config_data[KW_SG39_PINS_WHEEL_1]);
+        wheel_2_pins = zero_23;
+        string_to_bool(wheel_2_pins, config_data[KW_SG39_PINS_WHEEL_2]);
+        wheel_3_pins = zero_25;
+        string_to_bool(wheel_3_pins, config_data[KW_SG39_PINS_WHEEL_3]);
+        
+        rotor_1_pins = zero_26;
+        string_to_bool(rotor_1_pins, config_data[KW_SG39_PINS_ROTOR_1]);
+        rotor_2_pins = zero_26;
+        string_to_bool(rotor_2_pins, config_data[KW_SG39_PINS_ROTOR_2]);
+        rotor_3_pins = zero_26;
+        string_to_bool(rotor_3_pins, config_data[KW_SG39_PINS_ROTOR_3]);        
+
 
         // Verifiy that rotor setting is syntactically correct          
         if (!check_rotor_spec(config_data[KW_SG39_ROTORS], '0', '9', 4))

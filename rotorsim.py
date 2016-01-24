@@ -1499,13 +1499,13 @@ class SG39State(GenericRotorMachineState):
         rotor_set.change_reflector(ID_SG39_UKW, 'awbicvdketfmgnhzjulopqrysx')
         sg39_state = SG39State(rotor_set)
         sg39_state.set_plugboard('ldtrmihoncpwjkbyevsaxgfzuq')
-        sg39_state.insert_sg39_rotor('rotor_1', SG39_ROTOR_5, 'd', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-        sg39_state.insert_sg39_rotor('rotor_2', SG39_ROTOR_1, 'q', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])        
-        sg39_state.insert_sg39_rotor('rotor_3', SG39_ROTOR_4, 'r', [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0])  
+        sg39_state.insert_sg39_rotor('rotor_1', SG39_ROTOR_5, 'd', SG39State.string_to_pins('', 26))
+        sg39_state.insert_sg39_rotor('rotor_2', SG39_ROTOR_1, 'q', SG39State.string_to_pins('', 26))        
+        sg39_state.insert_sg39_rotor('rotor_3', SG39_ROTOR_4, 'r', SG39State.string_to_pins('aeimquy', 26))  
         sg39_state.insert_sg39_rotor('rotor_4', SG39_ROTOR_3, 'f')  
-        sg39_state.configure_sg39_drive_wheel('rotor_1', 'h', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-        sg39_state.configure_sg39_drive_wheel('rotor_2', 'p', [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])        
-        sg39_state.configure_sg39_drive_wheel('rotor_3', 'a', [0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0])                
+        sg39_state.configure_sg39_drive_wheel('rotor_1', 'h', SG39State.string_to_pins('', 21))
+        sg39_state.configure_sg39_drive_wheel('rotor_2', 'p', SG39State.string_to_pins('abcdefghijklmnopqrstuvw', 23))       
+        sg39_state.configure_sg39_drive_wheel('rotor_3', 'a', SG39State.string_to_pins('cfilorux', 25))                
         sg39_state.insert_sg39_rotor('umkehrwalze', ID_SG39_UKW, 'a')                     
         
         return sg39_state
@@ -1571,6 +1571,35 @@ class SG39State(GenericRotorMachineState):
     def get_pins(self, slot_name):        
         settings = self.get_rotor_settings(slot_name)        
         return (settings['ringdata'], settings['drivewheel']['ringdata'])
+
+    ## \brief This method can be used to transform a pin specification in form of a list of integers into a string.
+    #    
+    #  \param [pin_list] Is a list of integers. It specifies the pins which are set on the wheel/rotor.
+    #
+    #  \returns A string that represents the pins set on the wheel/rotor.
+    #
+    @staticmethod
+    def pins_to_string(pin_list):
+        alpha = 'abcdefghijklmnopqrstuvwxyz'
+        result = ''.join(map(lambda x: '' if pin_list[x] == 0 else alpha[x], range(len(pin_list))))
+        
+        return result
+
+    ## \brief This method can be used to transform a pin specification in form of a string into a list of zeroes
+    #         and ones.
+    #    
+    #  \param [pin_spec] Is a string. It specifies the pins which are set on the wheel/rotor.
+    #
+    #  \param [desired_length] Is an integer. It specifies the overall number of pins on the wheel/rotor.
+    #
+    #  \returns A list of integers each element a 0 or a 1.
+    #
+    @staticmethod
+    def string_to_pins(pin_spec, desired_length):
+        alpha = 'abcdefghijklmnopqrstuvwxyz'
+        result = list(map(lambda x: 1 if alpha[x] in pin_spec else 0, range(min(26, desired_length))))
+        
+        return result
 
     ## \brief This method can be used to retreive a string representation of the variable permutations (plugboard
     #         plugable reflector) that are used in a SG39.

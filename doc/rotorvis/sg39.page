@@ -51,23 +51,23 @@ This picture shows the dialog which can be used to configure the SG39:
     </item>    
     <item>
         <title><code>SG39 Pins wheel 1</code></title>
-        <p>This configuration element has to contain 21 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
-        position is active. A zero that the pin is inactive.</p>
+        <p>This configuration element has to contain at most 21 characters which can be from the range a-u. Each letter
+           corresponds to a set pin on the position specified by the letter.</p>
     </item>    
     <item>
         <title><code>SG39 Pins wheel 2</code></title>
-        <p>This configuration element has to contain 23 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
-        position is active. A zero that the pin is inactive.</p>
+        <p>This configuration element has to contain at most 23 characters which can be from the range a-w. Each letter
+           corresponds to a set pin on the position specified by the letter.</p>
     </item>    
     <item>
         <title><code>SG39 Pins wheel 3</code></title>
-        <p>This configuration element has to contain 25 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
-        position is active. A zero that the pin is inactive.</p>
+        <p>This configuration element has to contain at most 25 characters which can be from the range a-y. Each letter
+           corresponds to a set pin on the position specified by the letter.</p>
     </item>    
     <item>
         <title><code>SG39 Pins rotor 1-3</code></title>
-        <p>Each of these configuration elements has to contain 26 characters which can either be a 0 or a 1. A one at a certain position means that the pin on the corresponding
-        position is active. A zero that the pin is inactive.</p>
+        <p>Each of these configuration elements has to contain at most 26 characters which can be from the range a-z. Each letter
+           corresponds to a set pin on the position specified by the letter.</p>
     </item>    
 </terms>
 

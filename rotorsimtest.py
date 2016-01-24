@@ -729,6 +729,68 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
         return result
 
 
+## \brief This class tests whether state randomization is possible and ensures that loading and parsing state information
+#         is done correctly.
+#        
+class RandomizeTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    # \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.   
+    #   
+    # \param [list_of_states] Is a list of objects which have the same interface as GenericRotorMachineState.
+    #
+    def __init__(self, name, list_of_states):
+        super().__init__(name)
+        self._all_states = list_of_states
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #    
+    def test(self):
+        result = super().test()
+        
+        machine_state = M4EnigmaState.get_default_state().render_state()
+
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(machine_state, server.address) as machine:
+            try:  
+                for i in self._all_states:
+                    # Set machine to test state
+                    machine.set_state(i.render_state())
+                    self.append_note("Testing {} state".format(machine.get_description()))                    
+                    # Randomize machine state
+                    machine.randomize_state()
+                    # Save randomized state
+                    state1 = machine.get_state()
+                    test_message = machine.encrypt('diesisteintest')
+                    # Destroy randomized state
+                    machine.randomize_state()
+                    
+                    # Attempt to reload randomized state
+                    if not i.load_from_data(state1):
+                        self.append_note("Loding failed!!")
+                        result = False
+                        break
+                    
+                    # Loading was successfull. Reset machine to randomized state
+                    machine.set_state(i.render_state())
+                    dec_result = machine.decrypt(test_message)
+                    
+                    # Check whether test decryption worked
+                    if dec_result != 'diesisteintest':
+                        self.append_note("Decryption failed!! Result: {}".format(dec_result))
+                        result = False
+                        break
+                    
+                    self.append_note('OK')
+            except:
+                self.append_note("EXCEPTION!!!!")
+                result = False
+        
+        return result
+
+
 ## \brief Returns a simpletest.SimpleTest object that allows to perform all the tests defined in this module.
 #
 #  \param [test_data] Is a string. It specifies the sample text that is used to measure the decryption speed.
@@ -772,9 +834,23 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     
     if not verification_only:
         performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
-        functional_test = RotorMachineFuncTests("rotorsim functional test")    
+        functional_test = RotorMachineFuncTests("rotorsim functional test")
+        test_states = []
+        test_states.append(M4EnigmaState.get_default_state())
+        test_states.append(ServicesEnigmaState.get_default_state())        
+        test_states.append(UnsteckeredEnigmaState.get_default_state('AbwehrEnigma'))
+        test_states.append(UnsteckeredEnigmaState.get_default_state('KDEnigma'))
+        test_states.append(UnsteckeredEnigmaState.get_default_state('TirpitzEnigma'))
+        test_states.append(UnsteckeredEnigmaState.get_default_state('RailwayEnigma'))
+        test_states.append(SigabaMachineState.get_default_state())
+        test_states.append(KL7State.get_default_state())
+        test_states.append(SG39State.get_default_state())
+        test_states.append(TypexState.get_default_state())
+        test_states.append(NemaState.get_default_state())        
+        rand_test = RandomizeTest('State randomization test', test_states)    
         all_tests.add(functional_test)
         all_tests.add(performance_test)
+        all_tests.add(rand_test)
     
     all_tests.add(enigma_verification_test)
     all_tests.add(sigaba_verification_test)

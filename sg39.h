@@ -149,6 +149,19 @@ protected:
     bool load_additional_components(string& identifier, Glib::KeyFile& ini_file);
 };
 
+/*! \brief A struct which is intended as a helper for the randomize method. It contains the a pointer to the pin
+ *         specification and the maximum number of pins on the corresponding rotor/wheel.
+ */
+struct randomize_help {
+    /*! \brief Constructor. The paramete sp is used for setting spec and sz is used for setting size.
+     */
+    randomize_help(string *sp, unsigned int sz) { spec = sp; size = sz; }
+    /*! \brief Holds a pointer to the pin specification. */
+    string *spec;
+    /*! \brief Holds the maximum number of pins on the corresponding wheel/rotor. */    
+    unsigned int size;
+};
+
 /*! \brief A class that implements a simulator for the Schlüsselgerät 39.
  *
  *  Information about the SG39 can be found in this document (Link goes to NSA. Use at your own risk): 
@@ -214,7 +227,7 @@ protected:
 
     /*! \brief This method ensures that the string to which wheel_spec points contains at least num_ones '1' characters.
      */          
-    virtual void fill_wheel_spec(string *wheel_spec, unsigned int num_ones);
+    virtual void fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones);
 };
 
 #endif /* __sg39_h__ */

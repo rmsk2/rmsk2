@@ -26,6 +26,7 @@
 
 #ifdef SG39_ASYMMETRIC
 
+
 /*! \brief Output characters when doing decryptions and input characters for encryptions.
  */
 static ustring str_plain_chars_ger =  "abcdefghijklmnop rstuvwxyz";
@@ -237,18 +238,15 @@ unsigned int schluesselgeraet39::count_ones_in_wheel_spec(string *wheel_spec)
     return result;
 }
 
-void schluesselgeraet39::fill_wheel_spec(string *wheel_spec, unsigned int num_ones)
+void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones)
 {
-    urandom_generator rand; 
-    permutation start_pos_perm = permutation::get_random_permutation(rand, wheel_spec->length()); 
-    unsigned int current_pos = start_pos_perm.encrypt(0);
-    random_bit_source wheel_pin_source(25);   
+    urandom_generator rand;
+    permutation wheel_spec_perm = permutation::get_random_permutation(rand,  wheel_spec.size);
+    wheel_spec.spec->clear(); 
         
-    while(count_ones_in_wheel_spec(wheel_spec) < num_ones)
+    for (unsigned int count = 0; count < num_ones; count++)
     {
-        (*wheel_spec)[current_pos] = ((wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val() && wheel_pin_source.get_next_val()) ? '1' : '0');
-        current_pos++;
-        current_pos = current_pos % wheel_spec->length();
+        wheel_spec.spec->push_back(rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(count)));
     }
 }
 
@@ -259,16 +257,16 @@ bool schluesselgeraet39::randomize(string& param)
     map<string, string> machine_conf;
     random_bit_source wheel_pin_source(15);    
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
-    string rotors, pins_wheel_1(21, '0'), pins_wheel_2(23, '0'), pins_wheel_3(25, '0'); 
+    string rotors, pins_wheel_1, pins_wheel_2, pins_wheel_3; 
     vector<unsigned int> rotor_pos, wheel_pos, start_pos;
     const char *help = "abcdefghijklmnopqrstuvwxy";  
     alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
     vector<unsigned int> num_pins_slow, num_pins_middle;
-    vector<string *> wheel_specifier;
+    vector<randomize_help> wheel_specifier;
     
-    wheel_specifier.push_back(&pins_wheel_1);
-    wheel_specifier.push_back(&pins_wheel_2);    
-    wheel_specifier.push_back(&pins_wheel_3);
+    wheel_specifier.push_back(randomize_help(&pins_wheel_1, 21));
+    wheel_specifier.push_back(randomize_help(&pins_wheel_2, 23));    
+    wheel_specifier.push_back(randomize_help(&pins_wheel_3, 25));
     
     // Slow rotor has 3 or 5 random pins    
     num_pins_slow.push_back(3);
@@ -295,8 +293,9 @@ bool schluesselgeraet39::randomize(string& param)
         }
                 
         // Set pins on fast rotor
-        string all_ones(wheel_specifier[stepping_perm.encrypt(2)]->length(), '1');
-        (*wheel_specifier[stepping_perm.encrypt(2)]) = all_ones;
+        const char *latin_alpha = "abcdefghijklmnopqrstuvwxyz";
+        string all_ones(latin_alpha, wheel_specifier[stepping_perm.encrypt(2)].size);
+        (*(wheel_specifier[stepping_perm.encrypt(2)].spec)) = all_ones;
         
         // Set pins on slow rotor
         fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(0)], num_pins_slow[wheel_pin_source.get_next_val()]);        
@@ -313,9 +312,9 @@ bool schluesselgeraet39::randomize(string& param)
         // Do not set any pins on the rotors themselves. This limits the number of possible settings but
         // at the moment I am not creative enough to include them in a generalized way such that a half
         // way sensible rotor movement is ensured. 
-        machine_conf[KW_SG39_PINS_ROTOR_1] = "00000000000000000000000000";
-        machine_conf[KW_SG39_PINS_ROTOR_2] = "00000000000000000000000000";            
-        machine_conf[KW_SG39_PINS_ROTOR_3] = "00000000000000000000000000";                      
+        machine_conf[KW_SG39_PINS_ROTOR_1] = "";
+        machine_conf[KW_SG39_PINS_ROTOR_2] = "";            
+        machine_conf[KW_SG39_PINS_ROTOR_3] = "";                      
 
         c->configure_machine(machine_conf, this);    
         
