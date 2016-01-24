@@ -619,3 +619,133 @@ void rotor_machine_provider::delete_object(void *obj_to_delete)
     delete object;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
+
+random_provider::random_provider(object_registry *obj_registry) 
+    : service_provider(obj_registry) 
+{
+    // Fill random_proxy_proc
+    random_proxy_proc["randstring"] = &random_proxy::random_string_processor;
+    random_proxy_proc["randpermutation"] = &random_proxy::random_permutation_processor;    
+}
+
+tlv_callback *random_provider::make_new_handler()
+{
+    tlv_callback *result = new tlv_callback(sigc::mem_fun(*this, &random_provider::new_object));
+    
+    return result;
+}
+
+tlv_callback *random_provider::make_functor(string& method_name, void *object)
+{
+    tlv_callback *result = NULL;
+    random_proxy *self = static_cast<random_proxy *>(object);
+    
+    if (random_proxy_proc.count(method_name) > 0)
+    {
+        result = new tlv_callback(sigc::mem_fun(*self, random_proxy_proc[method_name]));
+    }
+    
+    return result;
+}
+
+unsigned int random_provider::new_object(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    string new_object_name;
+    tlv_entry tlv_handle;
+    alphabet<char> *new_alpha;
+    random_proxy *new_object;
+    string alpha_spec;
+    
+    make_handle(new_object_name);
+    
+    do
+    {
+        // Did we receive a TLV string?
+        if (params.tag != TAG_STRING)
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+        
+        if (!params.tlv_convert(alpha_spec))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+        
+        new_alpha = new alphabet<char>(alpha_spec.c_str(), alpha_spec.length());
+        new_object = new random_proxy(new_alpha);
+                
+        pair<void *, service_provider *> new_val(new_object, this);
+    
+        registry->add_object(new_object_name, new_val);
+        tlv_handle.to_string(new_object_name);
+
+        // Tell client about the new handle and write end of result stream marker.
+        result = out_stream->write_success_tlv(tlv_handle);        
+    
+    } while(0);
+    
+    return result;
+}
+
+void random_provider::delete_object(void *obj_to_delete)
+{
+    random_proxy *object = static_cast<random_proxy *>(obj_to_delete);
+    delete object;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+
+unsigned int random_proxy::random_string_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    int string_size;
+    tlv_entry rand_string;
+    string rand_string_raw;
+    
+    // Did we receive a TLV integer?
+    if (!params.tlv_convert(string_size))
+    {
+        out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        if (string_size < 1)
+        {
+            string_size = 1;
+        }
+        
+        rand_string_raw = alpha->get_random_string((unsigned int)string_size);
+        rand_string.to_string(rand_string_raw);
+        
+        result = out_stream->write_success_tlv(rand_string);
+    }
+    
+    return result;
+}
+
+unsigned int random_proxy::random_permutation_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry new_perm_tlv;
+    basic_string<unsigned char> new_perm_out;        
+    permutation new_perm = alpha->get_random_permutation();
+    vector<unsigned int> new_perm_raw;
+    
+    new_perm.to_vec(new_perm_raw);
+    
+    for (unsigned int count = 0; count < alpha->get_size(); count++)
+    {
+        new_perm_out.push_back((unsigned char)(new_perm_raw[count]));
+    }
+
+    new_perm_tlv.to_byte_array(new_perm_out);
+
+    result = out_stream->write_success_tlv(new_perm_tlv);
+    
+    return result;
+}
+

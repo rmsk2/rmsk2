@@ -103,7 +103,7 @@ void tlv_entry::to_string(const string& str)
 
 void tlv_entry::to_byte_array(const basic_string<unsigned char>& str)
 {
-    tag = TAG_STRING;
+    tag = TAG_BYTE_ARRAY;
     children.clear();        
     value = basic_string<unsigned char>(str.data(), str.length());
 }

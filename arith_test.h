@@ -321,4 +321,90 @@ protected:
     unordered_map<string, rotor_proxy_fun> rotor_proxy_proc;
 };
 
+/* ------------------------------------------------------------------------------------------- */
+
+/*! \brief A TLV class that allows to generate random strings and permutations in relation to an alphabet.
+ */
+class random_proxy {
+public:
+    /*! \brief Constructor. The parameter a has to point to an appropriate alphabet<char> object. This random_proxy
+     *         instance takes ownership of the alphabet object and deletes it when necessary.
+     */        
+    random_proxy(alphabet<char> *a) { alpha = a; }
+
+    /*! \brief This method calls alpha->get_random_string(). The parameter params has to contain an integer which has to be 1
+     *         or bigger. In case its value is < 1 it is set to 1. Communication with the client is done via the object
+     *         to which parameter out_stream points. 
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success. Sends an appropriate tlv_object of type TAG_STRING back to the client.   
+     */    
+    virtual unsigned int random_string_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method calls alpha->get_random_permutation(). The parameter params is ignored. Communication with the client
+     *         is done via the object to which parameter out_stream points. 
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success. Sends an appropriate tlv_object of type TAG_BYTE_ARRAY back to the client.   
+     */    
+    virtual unsigned int random_permutation_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief Destructor.
+     */    
+    virtual ~random_proxy() { delete alpha; }
+    
+protected:
+    /*! \brief Holds the alphabet which is used to generate the random data. */    
+    alphabet<char> *alpha;
+    
+};
+
+/*! \brief typedef for a pointer to a member function of class random_proxy which is suitable as a tlv_callback. */
+typedef unsigned int (random_proxy::*random_proxy_fun)(tlv_entry& params, tlv_stream *out_stream); 
+
+/*! \brief A TLV class that allows to manage TLV objects as implemented by the random_proxy class.
+ */ 
+class random_provider : public service_provider {
+public:
+    /*! \brief Constructor. The parameter obj_regsitry has to point to the object registry which is to be used by this
+     *         random_provider instance.
+     */
+    random_provider(object_registry *obj_registry);
+
+    /*! \brief Returns a callback for the random_provider::new_object() method.
+     */
+    virtual tlv_callback *make_new_handler();
+    
+    /*! \brief Returns a callback for an appropriate (as specified by parameter method_name) method of a random_proxy instance.
+     *         Allowed method names are: randstring, randpermutation.
+     *         
+     *  In case the value of parameter method_name is not contained in the above enumeration NULL is returned.
+     */        
+    virtual tlv_callback *make_functor(string& method_name, void *object);
+
+    /*! \brief Constructs a new random_proxy object and registers it with the object registry. The parameter params
+     *         has to contain a string that sepcifies an alphabet.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.
+     */
+    virtual unsigned int new_object(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief Deletes the object specified by parameter obj_to_delete.
+     */
+    virtual void delete_object(void *obj_to_delete); 
+    
+    /*! \brief Returns the name of the type of objects managed by this random_provider instance.
+     */    
+    virtual string get_name() { return string("randomproxy"); }   
+
+    /*! \brief Destructor.
+     */
+    virtual ~random_provider() { ; }
+
+protected:
+    /*! \brief Maps each allowed method name to a pointer of type random_proxy_fun, where that pointer points to a method of 
+     *         rotor_machine_proxy that knows how to perform the requested method call.
+     */
+    unordered_map<string, random_proxy_fun> random_proxy_proc;
+};
+
+
 #endif /* __arith_test_h__ */

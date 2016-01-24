@@ -2032,7 +2032,6 @@ class SteckeredEnigmaState(BasicEnigmaState):
             ini_file.set_string('plugboard', 'uhrcabling', self._config['plugboard']['cabling'])
             ini_file.set_integer('plugboard', 'uhrdialpos', self._config['plugboard']['dialpos']) 
 
-
     ## \brief This method returns all the two element cycles of a given permutation
     #    
     #  \param [involution] Is a vector of integers that contains the permutation.

@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
     // Create the rotor machine provider
     rotor_machine_provider *rotor_machine_prov = new rotor_machine_provider(&registry);
     string rotor_machine_provider_name = rotor_machine_prov->get_name();
+
+    // Create the rotor machine provider
+    random_provider *random_prov = new random_provider(&registry);
+    string random_provider_name = random_prov->get_name();
     
     string address(argv[1]);
     
@@ -54,6 +58,7 @@ int main(int argc, char *argv[])
     registry.add_service_provider(provider_name, arith_provider);
     registry.add_service_provider(echo_provider_name, echo_prov);
     registry.add_service_provider(rotor_machine_provider_name, rotor_machine_prov);
+    registry.add_service_provider(random_provider_name, random_prov);    
     
     // Create the server object and start the server
     uxdomain_socket_server tlv_server(address);
