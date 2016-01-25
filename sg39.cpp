@@ -234,6 +234,31 @@ void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int
     }
 }
 
+bool schluesselgeraet39::set_test(string& wheel_spec1, string& wheel_spec2, unsigned int max_overlap)
+{
+    bool result = false;
+    set<char> set1;
+    string::iterator iter;
+    unsigned int intersect_count = 0;
+    
+    for (iter = wheel_spec1.begin(); iter != wheel_spec1.end(); ++iter)
+    {
+        set1.insert(*iter);
+    }
+
+    for (iter = wheel_spec2.begin(); iter != wheel_spec2.end(); ++iter)
+    {
+        if (set1.count(*iter) != 0)
+        {
+            intersect_count++;
+        }
+    }
+
+    result = intersect_count <= max_overlap;
+    
+    return result;
+}
+
 bool schluesselgeraet39::randomize(string& param)
 {
     bool result = false;
@@ -257,8 +282,8 @@ bool schluesselgeraet39::randomize(string& param)
     num_pins_slow.push_back(7);    
     
     // Middle rotor has 11 or 13 random pins        
-    num_pins_middle.push_back(11);    
-    num_pins_middle.push_back(13);        
+    num_pins_middle.push_back(7);    
+    num_pins_middle.push_back(11);        
     
     
     try
@@ -281,11 +306,14 @@ bool schluesselgeraet39::randomize(string& param)
         string all_ones(latin_alpha, wheel_specifier[stepping_perm.encrypt(2)].size);
         (*(wheel_specifier[stepping_perm.encrypt(2)].spec)) = all_ones;
         
-        // Set pins on slow rotor
-        fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(0)], num_pins_slow[wheel_pin_source.get_next_val()]);        
+        do
+        {
+            // Set pins on slow rotor
+            fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(0)], num_pins_slow[wheel_pin_source.get_next_val()]);        
 
-        // Set pins on middle rotor
-        fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(1)], num_pins_middle[wheel_pin_source.get_next_val()]);        
+            // Set pins on middle rotor
+            fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(1)], num_pins_middle[wheel_pin_source.get_next_val()]);        
+        } while(!set_test(*wheel_specifier[stepping_perm.encrypt(0)].spec, *wheel_specifier[stepping_perm.encrypt(1)].spec, 2));
         
         machine_conf[KW_SG39_ROTORS] = rotors;
         machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);

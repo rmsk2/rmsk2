@@ -221,6 +221,10 @@ protected:
      */      
     virtual bool load_additional_components(Glib::KeyFile& ini_file);
 
+    /*! \brief This method returns true if the two given wheel specs do not overlap too much.
+     */          
+    virtual bool set_test(string& wheel_spec1, string& wheel_spec2, unsigned int max_overlap);
+
     /*! \brief This method ensures that the string to which wheel_spec points contains at least num_ones '1' characters.
      */          
     virtual void fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones);
