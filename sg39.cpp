@@ -222,22 +222,6 @@ void sg39_stepping_gear::save_additional_components(string& identifier, Glib::Ke
     }
 }
 
-unsigned int schluesselgeraet39::count_ones_in_wheel_spec(string *wheel_spec)
-{
-    unsigned int result = 0;
-    string::iterator iter;
-    
-    for(iter = wheel_spec->begin(); iter != wheel_spec->end(); ++iter)
-    {
-        if (*iter == '1')
-        {
-            result++;
-        }
-    }
-    
-    return result;
-}
-
 void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones)
 {
     urandom_generator rand;
@@ -268,13 +252,13 @@ bool schluesselgeraet39::randomize(string& param)
     wheel_specifier.push_back(randomize_help(&pins_wheel_2, 23));    
     wheel_specifier.push_back(randomize_help(&pins_wheel_3, 25));
     
-    // Slow rotor has 3 or 5 random pins    
-    num_pins_slow.push_back(3);
-    num_pins_slow.push_back(5);    
+    // Slow rotor has 5 or 7 random pins    
+    num_pins_slow.push_back(5);
+    num_pins_slow.push_back(7);    
     
-    // Middle rotor has 7 or 11 random pins        
-    num_pins_middle.push_back(7);    
-    num_pins_middle.push_back(11);        
+    // Middle rotor has 11 or 13 random pins        
+    num_pins_middle.push_back(11);    
+    num_pins_middle.push_back(13);        
     
     
     try

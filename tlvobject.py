@@ -468,8 +468,9 @@ class TlvStream:
         
         if len(tlv_object.value) <= LEN_MAX:        
             try:
-                sock.sendall(TlvStream.make_header(tlv_object.tag, len(tlv_object.value)))
-                sock.sendall(tlv_object.value)
+                data = TlvStream.make_header(tlv_object.tag, len(tlv_object.value))
+                data = data + tlv_object.value
+                sock.sendall(data)
             except:
                 result = ERR_SOCK_WRITE
         else:
@@ -533,6 +534,7 @@ class TlvServer:
         sock.connect(self.address)    
         res = TlvStream.transact(sock, object_name, method_name, params)    
         sock.shutdown(socket.SHUT_RDWR)
+        sock.close()
         return res        
 
     ## \brief This method allows to retrieve the names of all objects known to this TLV server.
@@ -618,6 +620,7 @@ class TlvServer:
             sock.connect(self.address)    
             res = TlvStream.transact(sock, 'root', 'close', param)    
             sock.shutdown(socket.SHUT_RDWR)
+            sock.close()
             
             self._server_process.wait()    
             res_code = self._server_process.returncode
@@ -672,6 +675,7 @@ class TlvProxy:
         sock.connect(self._server_name)    
         res = TlvStream.transact(sock, object_name, method_name, params)    
         sock.shutdown(socket.SHUT_RDWR)
+        sock.close()
         return res        
 
     ## \brief This method deletes the TLV object which is represented by this TlvProxy instance.

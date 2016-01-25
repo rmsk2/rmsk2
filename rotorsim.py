@@ -2063,7 +2063,7 @@ class SteckeredEnigmaState(BasicEnigmaState):
 
     ## \brief This method returns all the two element cycles of a given permutation
     #    
-    #  \param [involution] Is a vector of integers that contains the permutation.
+    #  \param [perm] Is a vector of integers that contains the permutation.
     #
     #  \returns A string which holds the desired string representation.
     #        

@@ -221,10 +221,6 @@ protected:
      */      
     virtual bool load_additional_components(Glib::KeyFile& ini_file);
 
-    /*! \brief This method returns the number of '1' characters in the string to which wheel_spec points.
-     */          
-    virtual unsigned int count_ones_in_wheel_spec(string *wheel_spec);
-
     /*! \brief This method ensures that the string to which wheel_spec points contains at least num_ones '1' characters.
      */          
     virtual void fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones);

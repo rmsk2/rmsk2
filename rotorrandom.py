@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-## @package rotorrandm A Python3 interface to the C++ alphabet class used to generate random strings and permutations
+## @package rotorrandom A Python3 interface to the C++ alphabet class used to generate random strings and permutations
 #           
 # \file rmsk2/rotorrandom.py
 # \brief This file provides some Python3 classes that allow to generate random strings and
@@ -36,7 +36,7 @@ class RotorRandom(tlvobject.TlvProxy):
     #  \param [alphabet] Is a string. It has to specifiy an alphabet which is used to generate random strings.
     #
     #  \param [server_address] Is a string. Has to contain the address of the TLV server that is to be used
-    #         by this RotorMachine instance.
+    #         by this RotorRandom instance.
     #
     def __init__(self, alphabet, server_address):
         super().__init__(server_address)

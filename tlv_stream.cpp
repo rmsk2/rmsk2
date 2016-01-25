@@ -512,6 +512,7 @@ unsigned int socket_tlv_stream::write_all(basic_string<unsigned char>& data_to_w
 
 socket_tlv_stream::~socket_tlv_stream() 
 { 
+    shutdown(socket_fd, SHUT_RDWR);
     close(socket_fd); 
 }
 
