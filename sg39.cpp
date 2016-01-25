@@ -281,7 +281,7 @@ bool schluesselgeraet39::randomize(string& param)
     num_pins_slow.push_back(5);
     num_pins_slow.push_back(7);    
     
-    // Middle rotor has 11 or 13 random pins        
+    // Middle rotor has 7 or 11 random pins        
     num_pins_middle.push_back(7);    
     num_pins_middle.push_back(11);        
     
