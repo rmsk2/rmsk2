@@ -1549,6 +1549,21 @@ class SG39State(GenericRotorMachineState):
         p = Permutation(self._default_alpha)
         self._config[slot_name]['drivewheel'] = {'wheelpos':p.from_val(wheelpos_as_char), 'ringdata':ring_data}
 
+    ## \brief Returns the position and ring settings for a given wheel.
+    #
+    #  \param [slot_name] Is a string. It specifies the name of the rotor slot which the drive wheel controls.
+    #         Must be one of 'rotor_1', 'rotor_2', 'rotor_3'.
+    #
+    #  \returns A dictionary with the keys 'wheelpos' (contains the wheelpos as a char), 'ringdata' (specifies the pins
+    #           set on the wheel as a string) and 'numpins' (the number of settable pins on the wheel).
+    #        
+    def get_drive_wheel_data(self, slot_name):
+        wheelpos_as_char = self.get_wheel_pos(slot_name)
+        wheel_pins = self._config[slot_name]['drivewheel']['ringdata']
+        wheel_pins = self.pins_to_string(wheel_pins)
+        
+        return {'wheelpos': wheelpos_as_char, 'ringdata':wheel_pins, 'numpins': len(self._config[slot_name]['drivewheel']['ringdata'])}
+
     ## \brief This method can be used to query the current position of a SG39 pin wheel.
     #    
     #  \param [slot_name] Is a string. It specifies the name of the rotor slot for which the pin wheel position
@@ -1566,11 +1581,11 @@ class SG39State(GenericRotorMachineState):
     #         is to be retrieved.
     #
     #  \returns A tuple of two lists. Where the first component contains the pins on the rotor and the second
-    #           the pins on the wheel.
+    #           the pins on the wheel. The wheel settings are specified as strings.
     #
     def get_pins(self, slot_name):        
         settings = self.get_rotor_settings(slot_name)        
-        return (settings['ringdata'], settings['drivewheel']['ringdata'])
+        return (self.pins_to_string(settings['ringdata']), self.pins_to_string(settings['drivewheel']['ringdata']))
 
     ## \brief This method can be used to transform a pin specification in form of a list of integers into a string.
     #    
