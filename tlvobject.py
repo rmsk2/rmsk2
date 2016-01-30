@@ -345,7 +345,7 @@ class TlvStream:
                     bytes_to_read -= len(data)
                     result.data = result.data + data
         except:
-            result[0] = ERR_SOCK_READ
+            result.err_code = ERR_SOCK_READ
         
         return result
 
