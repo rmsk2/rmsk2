@@ -271,71 +271,118 @@ bool schluesselgeraet39::randomize(string& param)
     const char *help = "abcdefghijklmnopqrstuvwxy";  
     alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
     vector<unsigned int> num_pins_slow, num_pins_middle;
-    vector<randomize_help> wheel_specifier;
-    vector<string> rotor_pin_specifier;
-    
-    wheel_specifier.push_back(randomize_help(&pins_wheel_1, 21));
-    wheel_specifier.push_back(randomize_help(&pins_wheel_2, 23));    
-    wheel_specifier.push_back(randomize_help(&pins_wheel_3, 25));
-
-    rotor_pin_specifier.push_back("");
-    rotor_pin_specifier.push_back("");    
-    rotor_pin_specifier.push_back("");
-
-    
-    // Slow rotor has 5 or 7 random pins    
-    num_pins_slow.push_back(5);
-    num_pins_slow.push_back(7);    
-    
-    // Middle rotor has 7 or 11 random pins        
-    num_pins_middle.push_back(7);    
-    num_pins_middle.push_back(11);        
-    
+    string pins_rotor_1, pins_rotor_2, pins_rotor_3;        
     
     try
     {
         permutation plugboard_perm = permutation::get_random_permutation(rand, 26);
         permutation reflector_perm = permutation::get_random_permutation(rand, 26);          
+        permutation rotor_pin_perm = permutation::get_random_permutation(rand, 26);
         permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
-        // This permutation is used to determine which stepping rotor is the slow (index 0), 
-        // middle (index 1) or fast (index 2) one
-        permutation stepping_perm = permutation::get_random_permutation(rand, 3);
+        permutation stepping_selection_perm = permutation::get_random_permutation(rand, 3);        
 
         // Determine rotor sequence
         for(unsigned int count = 0; count < 4; count++)
         {
             rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
         }
-                
-        // Set pins on wheel for fast rotor
-        const char *latin_alpha = "abcdefghijklmnopqrstuvwxyz";
-        string all_ones(latin_alpha, wheel_specifier[stepping_perm.encrypt(2)].size);
-        (*(wheel_specifier[stepping_perm.encrypt(2)].spec)) = all_ones;
         
-        // Set one pin on the fast rotor's ring
-        rotor_pin_specifier[stepping_perm.encrypt(2)] = rmsk::std_alpha()->get_random_string(1);
-        
-        do
+        // Determine stepping motion
+        switch(stepping_selection_perm.encrypt(0))
         {
-            // Set pins on wheel for slow rotor
-            fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(0)], num_pins_slow[wheel_pin_source.get_next_val()]);        
+            case 0:        
+            {
+                // rotor 2 always moves
+                pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
+                randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                fill_wheel_spec(wheel_3_rand, 7);
 
-            // Set pins on wheel for middle rotor
-            fill_wheel_spec(wheel_specifier[stepping_perm.encrypt(1)], num_pins_middle[wheel_pin_source.get_next_val()]);        
-        } while(!set_test(*wheel_specifier[stepping_perm.encrypt(0)].spec, *wheel_specifier[stepping_perm.encrypt(1)].spec, 2));
-        
+                randomize_help wheel_1_rand(&pins_wheel_1, 21);
+                fill_wheel_spec(wheel_1_rand, 3);
+
+
+                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
+                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';
+                pins_rotor_2 += rotor_pin_perm.encrypt(15) + 'a';
+                
+                if (wheel_pin_source.get_next_val())
+                {
+                    pins_rotor_2 += rotor_pin_perm.encrypt(7) + 'a';
+                    pins_rotor_2 += rotor_pin_perm.encrypt(9) + 'a';        
+                }
+
+                pins_rotor_3 += rotor_pin_perm.encrypt(2) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(3) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(4) + 'a';
+                
+                if (wheel_pin_source.get_next_val())
+                {
+                    pins_rotor_3 += rotor_pin_perm.encrypt(8) + 'a';        
+                    pins_rotor_3 += rotor_pin_perm.encrypt(10) + 'a';
+                }
+            }
+            break;                
+            case 1:        
+            {
+                // rotor 1 always moves            
+                pins_wheel_1 = "abcdefghijklmnopqrstu";               
+                randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                fill_wheel_spec(wheel_3_rand, 3);
+
+                randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                fill_wheel_spec(wheel_2_rand, 7);
+
+
+                pins_rotor_1 += rotor_pin_perm.encrypt(10) + 'a';
+                pins_rotor_1 += rotor_pin_perm.encrypt(11) + 'a';                
+                pins_rotor_1 += rotor_pin_perm.encrypt(12) + 'a';
+
+                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
+                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';                
+                pins_rotor_2 += rotor_pin_perm.encrypt(2) + 'a';
+            }
+            break;                
+            default:
+            {
+                // rotor 3 always moves
+                pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
+                
+                randomize_help wheel_1_rand(&pins_wheel_1, 21);
+                fill_wheel_spec(wheel_1_rand, 3);	
+
+                randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                fill_wheel_spec(wheel_2_rand, 5);
+
+                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
+                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';
+                
+                pins_rotor_1 += rotor_pin_perm.encrypt(2) + 'a';
+                pins_rotor_1 += rotor_pin_perm.encrypt(3) + 'a';        
+                pins_rotor_1 += rotor_pin_perm.encrypt(4) + 'a';
+
+                pins_rotor_3 += rotor_pin_perm.encrypt(7) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(8) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(9) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(10) + 'a';
+                pins_rotor_3 += rotor_pin_perm.encrypt(11) + 'a';                        
+            }
+            break;
+        }
+
+                        
         machine_conf[KW_SG39_ROTORS] = rotors;
         machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
         machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
         machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;
         machine_conf[KW_SG39_PINS_WHEEL_2] = pins_wheel_2;            
         machine_conf[KW_SG39_PINS_WHEEL_3] = pins_wheel_3;
-        machine_conf[KW_SG39_PINS_ROTOR_1] = rotor_pin_specifier[0];
-        machine_conf[KW_SG39_PINS_ROTOR_2] = rotor_pin_specifier[1];
-        machine_conf[KW_SG39_PINS_ROTOR_3] = rotor_pin_specifier[2];
+        machine_conf[KW_SG39_PINS_ROTOR_1] = pins_rotor_1;
+        machine_conf[KW_SG39_PINS_ROTOR_2] = pins_rotor_2;
+        machine_conf[KW_SG39_PINS_ROTOR_3] = pins_rotor_3;
 
         c->configure_machine(machine_conf, this);    
         
+        // Set random rotor positions
         rotor_pos = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(4));
         rotor_pos.push_back(0);
         get_sg39_stepper()->set_all_displacements(rotor_pos);
