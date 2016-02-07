@@ -34,6 +34,7 @@
 
 // Keywords for Schluesselgeraet 39
 #define KW_SG39_ROTORS "SG39 Rotors"
+#define KW_SG39_RING_POS "SG39 Ring positions"
 #define KW_SG39_REFLECTOR_PLUGS "SG39 Reflector"
 #define KW_SG39_ENTRY_PLUGS "SG39 Plugboard"
 #define KW_SG39_PINS_WHEEL_1 "SG39 Pins wheel 1"
@@ -380,6 +381,10 @@ protected:
     /*! \brief Holds the rotor_id objects that describe the rotors which are to be inserted into the machine.
      */ 
     vector<rotor_id> rotors;
+
+    /*! \brief Holds the ring position for each of the wired rotors.
+     */ 
+    vector<unsigned int> ring_positions;
 
     /*! \brief Holds the cycles that make up the permutation of the pluggable reflector of the Schluesselgeraet 39.
      */     

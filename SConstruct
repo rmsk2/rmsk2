@@ -26,7 +26,7 @@ rmsk_defines = {}
 #rmsk_defines['RMSK_DOC_PATH'] = quote_path('/usr/share/doc/rmsk2')
 
 # Build SG39 with an asymmetric keyboard/printing device using 'Q' as space
-rmsk_defines['SG39_ASYMMETRIC'] = 'asym'
+#rmsk_defines['SG39_ASYMMETRIC'] = 'asym'
 
 # ---- Build configuration variables ----
 

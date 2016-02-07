@@ -657,9 +657,17 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
    /*
     * Determines which rotors are placed in the machine and in what sequence. There are 10 rotors (0-9). For each 
     * rotor that is to be placed in the machine a designation has to be specified. Each designation may only appear
-    * once.   
+    * once. The number of the leftmost (stationary) rotor has to be specified as the first character.
     */    
     infos.push_back(key_word_info(KW_SG39_ROTORS, KEY_STRING));
+
+
+   /*
+    * Determines the ring position of each of the inserted rotors. So this has to be a string of four characters
+    * each of which has to be in the range a-z. The first character specifies the ring position of the leftmost
+    * (stationary) rotor.
+    */    
+    infos.push_back(key_word_info(KW_SG39_RING_POS, KEY_STRING));    
         
    /*
     * As with some Enigma variants the reflector of the SG39 can be set in the field. The reflector is specified 
@@ -716,13 +724,22 @@ void sg39_configurator::get_config(map<string, string>& config_data, rotor_machi
     
     // Retrieve a representation of the rotors currently inserted into the schluesselgeraet39 to which
     // machine points.
-    help += stepper->get_descriptor(ROTOR_1).id.r_id + '0';
-    help += stepper->get_descriptor(ROTOR_2).id.r_id + '0';    
-    help += stepper->get_descriptor(ROTOR_3).id.r_id + '0';    
     help += stepper->get_descriptor(ROTOR_4).id.r_id + '0';
+    help += stepper->get_descriptor(ROTOR_3).id.r_id + '0';    
+    help += stepper->get_descriptor(ROTOR_2).id.r_id + '0';    
+    help += stepper->get_descriptor(ROTOR_1).id.r_id + '0';
     
     config_data[KW_SG39_ROTORS] = help;
     help = "";
+
+    // Retrieve a representation of the rotors currently inserted into the schluesselgeraet39 to which
+    // machine points.
+    help += stepper->get_descriptor(ROTOR_4).ring->get_offset() + 'a';
+    help += stepper->get_descriptor(ROTOR_3).ring->get_offset() + 'a';
+    help += stepper->get_descriptor(ROTOR_2).ring->get_offset() + 'a';
+    help += stepper->get_descriptor(ROTOR_1).ring->get_offset() + 'a';
+    
+    config_data[KW_SG39_RING_POS] = help;
     
     // Retrieve current plugboard setting
     boost::shared_ptr<encryption_transform> plugboard = machine->get_input_transform();
@@ -756,6 +773,7 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
     unsigned int result = CONFIGURATOR_OK;
     bool test_result = true;  
     vector<unsigned int> zero_21(21, 0), zero_23(23, 0), zero_25(25, 0), zero_26(26, 0);
+    string ringstellung_temp;
     
     do
     {  
@@ -805,9 +823,26 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
         rotors.clear();
         
         // Store given rotor data in variable rotors 
-        for (unsigned int count = 0; count < 4; count++)
+        for (unsigned int count = 4; count > 0; count--)
         {
-            rotors.push_back(rotor_id(config_data[KW_SG39_ROTORS][count] - '0', false));
+            rotors.push_back(rotor_id(config_data[KW_SG39_ROTORS][count - 1] - '0', false));
+        }        
+        
+        // Verify ring positions and store in the variable of the same name        
+        ringstellung_temp = config_data[KW_SG39_RING_POS];
+        
+        if (!check_rotor_spec(ringstellung_temp, 'a', 'z', 4, false))
+        {
+            result = CONFIGURATOR_INCONSISTENT;
+            break;            
+        }                
+
+        // Store ring positions in variable ring_postions        
+        ring_positions.clear();
+        
+        for (unsigned int count = 4; count > 0; count--)
+        {
+            ring_positions.push_back(ringstellung_temp[count - 1] - 'a');
         }        
         
         // Verify entry and reflector permutations 
@@ -873,8 +908,23 @@ unsigned int sg39_configurator::configure_machine(map<string, string>& config_da
             machine->set_reflector(reflector);
             // Set plugboard permutation
             machine->set_input_transform(boost::shared_ptr<encryption_transform>(new permutation(entry_perm)));            
-                                     
-            stepper->reset();              
+
+            // Set ring position on rotors            
+            stepper->get_descriptor(ROTOR_1).ring->set_offset(ring_positions[0]);
+            stepper->get_descriptor(ROTOR_2).ring->set_offset(ring_positions[1]);
+            stepper->get_descriptor(ROTOR_3).ring->set_offset(ring_positions[2]);
+            stepper->get_descriptor(ROTOR_4).ring->set_offset(ring_positions[3]);
+
+            // Move all non stationary rotors and all wheels to the 'a' position
+            for (unsigned int count = 0; count < 3; count++)
+            {
+                stepper->get_descriptor(count).ring->set_pos(0);
+                stepper->get_descriptor(count).mod_int_vals["wheelpos"].set_val(0);
+            }
+            
+            // Move stationary rotor to 'a' position
+            stepper->get_descriptor(3).ring->set_pos(0);
+                        
         }
     }
     

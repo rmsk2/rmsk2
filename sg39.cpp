@@ -46,7 +46,7 @@ rotor_set sg39_rotor_factory::sg39_set(rmsk::std_alpha()->get_size());
 rotor_set& sg39_rotor_factory::get_rotor_set()
 {
     if (sg39_set.get_num_rotors() == 0)
-    {
+    {        
         // Normal rotors
         sg39_set.add_rotor(SG39_ROTOR_0, rmsk::std_alpha()->to_vector(string("iymhkeqgbdtuosajvzlwrfpcxn")));
         sg39_set.add_rotor(SG39_ROTOR_1, rmsk::std_alpha()->to_vector(string("nxlpymdvrzieohsafjqctkbguw")));
@@ -60,7 +60,7 @@ rotor_set& sg39_rotor_factory::get_rotor_set()
         sg39_set.add_rotor(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")));
         
         // Reflector
-        sg39_set.add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));
+        sg39_set.add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));                     
     }
     
     return sg39_set;
@@ -268,7 +268,7 @@ bool schluesselgeraet39::randomize(string& param)
     random_bit_source wheel_pin_source(15);    
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
     string rotors, pins_wheel_1, pins_wheel_2, pins_wheel_3; 
-    vector<unsigned int> rotor_pos, wheel_pos, start_pos;
+    vector<unsigned int> rotor_pos, wheel_pos;
     const char *help = "abcdefghijklmnopqrstuvwxy";  
     alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
     vector<unsigned int> num_pins_slow, num_pins_middle;
@@ -387,6 +387,7 @@ bool schluesselgeraet39::randomize(string& param)
 
                         
         machine_conf[KW_SG39_ROTORS] = rotors;
+        machine_conf[KW_SG39_RING_POS] = rmsk::std_alpha()->get_random_string(4);
         machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
         machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
         machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;

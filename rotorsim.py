@@ -1499,14 +1499,14 @@ class SG39State(GenericRotorMachineState):
         rotor_set.change_reflector(ID_SG39_UKW, 'awbicvdketfmgnhzjulopqrysx')
         sg39_state = SG39State(rotor_set)
         sg39_state.set_plugboard('ldtrmihoncpwjkbyevsaxgfzuq')
-        sg39_state.insert_sg39_rotor('rotor_1', SG39_ROTOR_5, 'd', SG39State.string_to_pins('', 26))
-        sg39_state.insert_sg39_rotor('rotor_2', SG39_ROTOR_1, 'q', SG39State.string_to_pins('', 26))        
-        sg39_state.insert_sg39_rotor('rotor_3', SG39_ROTOR_4, 'r', SG39State.string_to_pins('aeimquy', 26))  
-        sg39_state.insert_sg39_rotor('rotor_4', SG39_ROTOR_3, 'f')  
+        sg39_state.insert_sg39_rotor('rotor_1', SG39_ROTOR_5, 'd', 'a', SG39State.string_to_pins('', 26))
+        sg39_state.insert_sg39_rotor('rotor_2', SG39_ROTOR_1, 'q', 'a', SG39State.string_to_pins('', 26))        
+        sg39_state.insert_sg39_rotor('rotor_3', SG39_ROTOR_4, 'r', 'a', SG39State.string_to_pins('aeimquy', 26))  
+        sg39_state.insert_sg39_rotor('rotor_4', SG39_ROTOR_3, 'f', 'a')  
         sg39_state.configure_sg39_drive_wheel('rotor_1', 'h', SG39State.string_to_pins('', 21))
         sg39_state.configure_sg39_drive_wheel('rotor_2', 'p', SG39State.string_to_pins('abcdefghijklmnopqrstuvw', 23))       
         sg39_state.configure_sg39_drive_wheel('rotor_3', 'a', SG39State.string_to_pins('cfilorux', 25))                
-        sg39_state.insert_sg39_rotor('umkehrwalze', ID_SG39_UKW, 'a')                     
+        sg39_state.insert_sg39_rotor('umkehrwalze', ID_SG39_UKW, 'a', 'a')                     
         
         return sg39_state
 
@@ -1521,15 +1521,18 @@ class SG39State(GenericRotorMachineState):
     #  \param [rotor_pos_as_char] Is a char, i.e. a string of length one. It specifies the rotor position of
     #         the new rotor.
     #
+    #  \param [ring_pos_as_char] Is a char, i.e. a string of length one. It specifies the ring offset of
+    #         the new rotor.
+    #
     #  \param [ring_data] Is a vector of 26 integers, where each element of the vector is a 0 or a 1. It specifies the
     #         ring data which is to be set on the corresponding rotors. For 'rotor_4' or 'umkehrwalze the vector can be
     #         None.
     #
     #  \returns Nothing.
     #    
-    def insert_sg39_rotor(self, slot_name, rotor_id, rotor_pos_as_char, ring_data = None):
+    def insert_sg39_rotor(self, slot_name, rotor_id, rotor_pos_as_char, ring_pos_as_char, ring_data = None):
         p = Permutation(self._default_alpha)
-        self.insert_rotor(slot_name, rotor_id, rotor_id, 0, p.from_val(rotor_pos_as_char))
+        self.insert_rotor(slot_name, rotor_id, rotor_id, p.from_val(ring_pos_as_char), p.from_val(rotor_pos_as_char))
         self._config[slot_name]['ringdata'] = ring_data
 
     ## \brief Adds information about the pins of a drive wheel to self._config.

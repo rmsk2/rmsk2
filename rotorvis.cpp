@@ -528,7 +528,8 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
 
         // Construct SG39 machine with default settings        
         {                    
-            machine_conf[KW_SG39_ROTORS] = "5143";
+            machine_conf[KW_SG39_ROTORS] = "3415";
+            machine_conf[KW_SG39_RING_POS] = "aaaa";            
             machine_conf[KW_SG39_ENTRY_PLUGS] = "ldtrmihoncpwjkbyevsaxgfzuq";
             machine_conf[KW_SG39_REFLECTOR_PLUGS] = "awbicvdketfmgnhzjulopqrysx";
             machine_conf[KW_SG39_PINS_WHEEL_1] = "";
