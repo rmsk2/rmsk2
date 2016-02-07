@@ -19,6 +19,7 @@
  */ 
 
 #include<boost/scoped_ptr.hpp>
+#include<boost/lexical_cast.hpp>
 #include<rmsk_globals.h>
 #include<alphabet.h>
 #include<sg39.h>
@@ -271,7 +272,8 @@ bool schluesselgeraet39::randomize(string& param)
     const char *help = "abcdefghijklmnopqrstuvwxy";  
     alphabet<char> wheel1_alpha(help, 21), wheel2_alpha(help, 23), wheel3_alpha(help, 25); 
     vector<unsigned int> num_pins_slow, num_pins_middle;
-    string pins_rotor_1, pins_rotor_2, pins_rotor_3;        
+    string pins_rotor_1, pins_rotor_2, pins_rotor_3; 
+    unsigned int key_gen_selector;
     
     try
     {
@@ -287,8 +289,22 @@ bool schluesselgeraet39::randomize(string& param)
             rotors += '0' + (char)(rotor_selection_perm.encrypt(count));
         }
         
+        key_gen_selector = stepping_selection_perm.encrypt(0);
+        
+        try
+        {
+            if (param != "")
+            {
+                key_gen_selector = boost::lexical_cast<unsigned int>(param);
+            }
+        }
+        catch(...)
+        {
+            ;
+        }
+        
         // Determine stepping motion
-        switch(stepping_selection_perm.encrypt(0))
+        switch(key_gen_selector)
         {
             case 0:        
             {
