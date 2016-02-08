@@ -732,8 +732,7 @@ void sg39_configurator::get_config(map<string, string>& config_data, rotor_machi
     config_data[KW_SG39_ROTORS] = help;
     help = "";
 
-    // Retrieve a representation of the rotors currently inserted into the schluesselgeraet39 to which
-    // machine points.
+    // Retrieve a representation of the ring positions/offsets
     help += stepper->get_descriptor(ROTOR_4).ring->get_offset() + 'a';
     help += stepper->get_descriptor(ROTOR_3).ring->get_offset() + 'a';
     help += stepper->get_descriptor(ROTOR_2).ring->get_offset() + 'a';
@@ -828,7 +827,7 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
             rotors.push_back(rotor_id(config_data[KW_SG39_ROTORS][count - 1] - '0', false));
         }        
         
-        // Verify ring positions and store in the variable of the same name        
+        // Verify ring positions
         ringstellung_temp = config_data[KW_SG39_RING_POS];
         
         if (!check_rotor_spec(ringstellung_temp, 'a', 'z', 4, false))
@@ -837,7 +836,7 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
             break;            
         }                
 
-        // Store ring positions in variable ring_postions        
+        // Store ring positions in variable ring_positions        
         ring_positions.clear();
         
         for (unsigned int count = 4; count > 0; count--)
