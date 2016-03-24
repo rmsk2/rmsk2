@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2015 Martin Grap
+# Copyright 2016 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -547,12 +547,12 @@ class VerificationTests(simpletest.CompositeTest):
     #    
     def inner_test(self, machine):
         result = True
-        #try:            
-        self.set_processor(machine)
-        result = super().test()
-        #except:
-        #    self.append_note("EXCEPTION!!!!")
-        #    result = False
+        try:            
+            self.set_processor(machine)
+            result = super().test()
+        except:
+            self.append_note("EXCEPTION!!!!")
+            result = False
         
         return result                
 
