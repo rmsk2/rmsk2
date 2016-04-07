@@ -62,6 +62,12 @@ configurator_dialog::configurator_dialog(Gtk::Window& parent, vector<key_word_in
         count++; // line count
     }
     
+    // Add an additional empty label to get some space between the configuraton controls and
+    // the dialog buttons
+    Gtk::Label *l = manage(new Gtk::Label(""));
+    config_items.attach(*l, 0, count, 1, 1);
+    
+    
     config_items.set_column_spacing(5);
     config_items.set_row_spacing(4);
     ok_button->set_can_default(true);
