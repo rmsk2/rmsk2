@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2015 Martin Grap
+# Copyright 2016 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 import tlvtest
 import rotorsimtest
 import cmdlinetest
+import rotorrandomtest
 import simpletest
 import subprocess
 import shlex
@@ -79,6 +80,7 @@ def get_all_tests():
     all_tests.add(tlvtest.get_module_test())
     all_tests.add(rotorsimtest.get_module_test())    
     all_tests.add(cmdlinetest.get_module_test())    
+    all_tests.add(rotorrandomtest.get_module_test())
     return all_tests
 
 ## \brief Performs all the tests named in parameter test_names.
