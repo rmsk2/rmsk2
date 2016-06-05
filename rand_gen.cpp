@@ -96,7 +96,7 @@ void urandom_generator::read(vector<unsigned char>& rand_bytes, unsigned int byt
 
 bool urandom_generator::is_ok()
 {
-    return in;
+    return static_cast<bool>(in);
 }
 
 urandom_generator::~urandom_generator()
