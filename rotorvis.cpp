@@ -33,6 +33,7 @@
 #include<configurator_dialog.h>
 #include<simple_state.h>
 #include<app_helpers.h>
+#include<machine_config.h>
 
 #define ROTORVIS "rotorvis"
 
@@ -237,7 +238,20 @@ void rotor_visual::set_titles(Glib::ustring& last_file_name)
 void rotor_visual::on_configure_machine()
 {
     rotor_machine *the_machine =  simulator_gui->get_machine();
-    string name_help = the_machine->get_name();
+    enigma_base *enigma_machine = dynamic_cast<enigma_base *>(the_machine);
+    string name_help;
+    
+    if (enigma_machine != NULL)
+    {
+        // We have an Enigma variant here. Use get_machine_type() to determine model.
+        name_help = enigma_machine->get_machine_type();
+    }
+    else
+    {   
+        // Not an Enigma, use get_name()  
+        name_help = the_machine->get_name();
+    }
+    
     configurator *conf = configurator_factory::get_configurator(name_help);
     
     if (conf != NULL)
@@ -526,6 +540,25 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
             break;
         }
 
+        // Construct Enigma M3 machine with default settings        
+        if (name == "M3")
+        {                                            
+            machine_conf[KW_ENIG_ROTOR_SELECTION] = "1168";
+            machine_conf[KW_ENIG_RINGSTELLUNG] = "abc";
+            machine_conf[KW_ENIG_STECKERBRETT] = "14:adcnetflgijvkzpuqywx";
+            machine_conf[KW_USES_UHR] = CONF_TRUE;
+            machine_conf[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+            
+            result = c->make_machine(machine_conf);
+            
+            rotor_identifiers.push_back(FAST);
+            rotor_identifiers.push_back(MIDDLE);
+            rotor_identifiers.push_back(SLOW);
+            
+            break;
+        }
+
+
         // Construct SG39 machine with default settings        
         {                    
             machine_conf[KW_SG39_ROTORS] = "3415";
@@ -594,8 +627,17 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     menu_action = Gtk::ActionGroup::create();
     ui_manager = Gtk::UIManager::create();       
 
-    // Create simulator GUI object    
-    simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, false, machine_to_visualize, false, 530));
+    // Create simulator GUI object
+    if (dynamic_cast<enigma_base *>(the_machine.get()) == NULL)
+    {
+        // Not an Enigma variant use 530 for rightmost rotor position    
+        simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, false, machine_to_visualize, false, 530));
+    }
+    else
+    {
+        // We have an Enigma variant use default for rightmost rotor position        
+        simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, false, machine_to_visualize, false));
+    }
 
     // Setup object to handle clipboard processing menu events
     clip_helper.set_parent_window(win);    
@@ -773,6 +815,9 @@ int main(int argc, char *argv[])
     allowed_names.insert(MNAME_TYPEX);    
     allowed_names.insert(MNAME_NEMA);        
     allowed_names.insert(MNAME_KL7); 
+#ifdef INCLUDE_ENIGMA
+    allowed_names.insert("M3"); 
+#endif
         
     rotorvis_simulator_app rotorvis_sim(allowed_names);  
       

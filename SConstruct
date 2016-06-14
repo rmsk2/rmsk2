@@ -28,6 +28,9 @@ rmsk_defines = {}
 # Build SG39 with an asymmetric keyboard/printing device using 'Q' as space
 #rmsk_defines['SG39_ASYMMETRIC'] = 'asym'
 
+# Include Enigma variants in rotorvis
+#rmsk_defines['INCLUDE_ENIGMA'] = 'enigma'
+
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
