@@ -339,26 +339,24 @@ public:
      */        
     enigma_configurator(const char *enigma_model) { machine_type = string(enigma_model); config.make_config(machine_type); }
     
-    /*! \brief Returns the configuration of the machine pointed to by the parameter configured_machine
-     *         in the vector referenced by the parameter config_data. Has to be reimplemented in children 
-     *         of this class.
+    /*! \brief Returns the configuration of the Enigma machine pointed to by the parameter configured_machine
+     *         in the vector referenced by the parameter config_data.
      */        
     virtual void get_config(map<string, string>& config_data, rotor_machine *configured_machine);
     
     /*! \brief Returns a vector that contains the key_word_info elements that desribe the configuration
-     *         of a specific type of rotor machine. Has to be reimplemented in children of this class.
+     *         of the specific Enigma model as specified in the constructor.
      */        
     virtual void get_keywords(vector<key_word_info>& infos); 
     
-    /*! \brief Configures the machine pointed to by the parameter machine_to_configure with the data referenced
-     *         by the parameter config_data. Has to be reimplemented in children of this class.
+    /*! \brief Configures the Enigma machine pointed to by the parameter machine_to_configure with the data referenced
+     *         by the parameter config_data.
      *
      *  Returns CONFIGURATOR_OK in case of success.
      */        
     virtual unsigned int configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure);
     
-    /*! \brief Creates a new machine and configures it with the data referenced by the parameter config_data.
-     *         Has to be reimplemented in children of this class.
+    /*! \brief Creates a new Enigma machine and configures it with the data referenced by the parameter config_data.
      *
      *  Returns NULL if errors occurred.
      */        
