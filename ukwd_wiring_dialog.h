@@ -65,24 +65,9 @@ public:
      */    
     virtual void on_delete_all_clicked();    
 
-    /*! \brief Method that can be used to parse the permutation given in parameter perm and which specifies an involution into
-     *         the character pairs that make up that involution. 
-     */    
-    static vector<pair<char, char> > perm_to_plugs(permutation& perm);
-
-    /*! \brief Does the inverse of ukwd_wiring_dialog::perm_to_plugs(). Transforms the vector of character pairs referenced by
-     *         parameter plugs into a permutation.
-     */    
-    static permutation plugs_to_perm(vector<pair<char, char> >& plugs);
-
     /*! \brief Destructor.
      */        
     ~ukwd_wiring_dialog() { ; }
-    
-protected:  
-    /*! \brief Helper method to compare two character pairs by their first element.
-     */        
-    static bool less_than(const pair<char, char>& l, const pair<char, char>& r);    
 };
 
 #endif /* __ukwd_wiring_dialog_h__ */

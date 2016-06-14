@@ -26,6 +26,7 @@
 #include<kl7.h>
 #include<nema.h>
 #include<boost/lexical_cast.hpp>
+#include<machine_config.h>
 
 
 configurator *configurator_factory::get_configurator(string& machine_name)
@@ -55,6 +56,11 @@ configurator *configurator_factory::get_configurator(string& machine_name)
     if (machine_name == MNAME_NEMA)
     {
         result = new nema_configurator;
+    }
+    
+    if (result == NULL)
+    {
+        result = new enigma_configurator(machine_name.c_str());
     }
     
     return result;

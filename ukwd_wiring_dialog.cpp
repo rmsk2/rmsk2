@@ -25,8 +25,6 @@
 #include<rmsk_globals.h>
 #include<locale>
 
-alphabet<char> ukwd_alpha("yzxwvutsrqponjmlkihgfedcba", 26);
-
 ukwd_wiring_dialog::ukwd_wiring_dialog(Gtk::Dialog *d, Glib::RefPtr<Gtk::Builder> r, vector<pair<char, char> >& steckers, Glib::ustring& name_postfix)
     : select_involution_dialog(d, r, steckers, name_postfix)
 {
@@ -35,67 +33,6 @@ ukwd_wiring_dialog::ukwd_wiring_dialog(Gtk::Dialog *d, Glib::RefPtr<Gtk::Builder
     set_plug_count_label_text(new_text);
     update_plug_counter();
     d->set_title("Enigma");
-}
-
-bool ukwd_wiring_dialog::less_than(const pair<char, char>& l, const pair<char, char>& r)
-{
-    return l.first < r.first;
-}
-
-vector<pair<char, char> > ukwd_wiring_dialog::perm_to_plugs(permutation& perm)
-{
-    vector<pair<char, char> > result;
-    set<pair<unsigned int, unsigned int> > involution;
-    set<pair<unsigned int, unsigned int> >::iterator iter;
-    pair<unsigned int, unsigned int> fixed_connection(UKWD_FIXED_CONTACT_Y, UKWD_FIXED_CONTACT_J);
-    char f, s;
-    vector<pair<char, char> > data_sorted;
-
-    // If any of the tests below fails, return an involution that contains only the fixed connection    
-    result.push_back(pair<char, char>('J', 'Y'));
-    perm.test_for_involution(involution); // The set involution is cleared if perm is no involution
-    
-    if (involution.find(fixed_connection) != involution.end())
-    {
-        //  Required connection is included. Good!
-        
-        // An UKW D requires 13 pairs to be correct.
-        if (involution.size() == (rmsk::std_alpha()->get_size() / 2))
-        {
-            // iterate over the pairs returned by perm.test_for_involution(involution)
-            for (iter = involution.begin(); iter != involution.end(); ++iter)
-            {
-                // transform the unsigned ints from the pair into characterts 
-                f = ukwd_alpha.to_val(iter->first);
-                s = ukwd_alpha.to_val(iter->second);
-                
-                // The pairs (f, s) and (s, f) are functionally equivalent. We
-                // prefer the form where f < s.
-                if (f > s)
-                {
-                    data_sorted.push_back(pair<char, char>(s, f));
-                }
-                else
-                {
-                    data_sorted.push_back(pair<char, char>(f, s));                    
-                }
-            }
-            
-            // Normalize sequence of pairs through sorting by the first elements of the pairs
-            sort(data_sorted.begin(), data_sorted.end(), less_than);
-
-            result = data_sorted;            
-        }
-    }
-        
-    return result;
-}
-
-permutation ukwd_wiring_dialog::plugs_to_perm(vector<pair<char, char> >& plugs)
-{
-    permutation result = ukwd_alpha.make_involution(plugs);
-    
-    return result;
 }
 
 void ukwd_wiring_dialog::on_delete_clicked()
@@ -208,7 +145,7 @@ int ukwd_wiring_dialog::run()
        
     dialog->hide();
     
-    return 0;
+    return result;
 }
 
 

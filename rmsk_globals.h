@@ -68,6 +68,10 @@ class rotor_machine;
  */
 #define KL7_RING_CIRCUMFENCE_HELP "ab1cde2fg3hij4klm5no6pqr7st8uvw9xyz0"
 
+/*! \brief Alphabet that specifies the mapping of contacts on a UKW D to the letters on its circumfence
+ */
+#define UKWD_ALPHA_CIRCUMFENCE "yzxwvutsrqponjmlkihgfedcba"
+
 /*! \brief Holds the contact number of the upper fixed contact in a UKW D plugable reflector. */      
 const unsigned int UKWD_FIXED_CONTACT_Y = 0;
 
@@ -182,6 +186,28 @@ struct key_word_info {
      */    
     keyword_type type;
 };
+
+/*! \brief A class which provides several static utility functions for mapping permutations to alphanumeric UKW D plugs
+ *         specifications and vice versa.
+ */
+class ukw_d_wiring_helper {
+public:
+    /*! \brief Method that can be used to parse the permutation given in parameter perm and which specifies an involution into
+     *         the character pairs that make up that involution. 
+     */    
+    static vector<pair<char, char> > perm_to_plugs(permutation& perm);
+
+    /*! \brief Does the inverse of perm_to_plugs(). Transforms the vector of character pairs referenced by
+     *         parameter plugs into a permutation.
+     */    
+    static permutation plugs_to_perm(vector<pair<char, char> >& plugs);
+    
+protected:
+    /*! \brief Helper method to compare two character pairs by their first element.
+     */        
+    static bool less_than(const pair<char, char>& l, const pair<char, char>& r);
+};
+
 
 /*! \brief A class which provides several static utility functions. 
  */

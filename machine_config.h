@@ -28,6 +28,15 @@
 #include<permutation.h>
 #include<gtkmm.h>
 #include<enigma_sim.h>
+#include<configurator.h>
+
+// Configuration keywords for all Enigma variants
+#define KW_ENIG_ROTOR_SELECTION  "Enigma rotors"
+#define KW_ENIG_RINGSTELLUNG "Enigma ring settings"
+#define KW_ENIG_STECKERBRETT "Enigma Steckerbrett"
+#define KW_USES_UHR "Uses Uhr"
+#define KW_UKW_D_PERM "UKW D permutation"
+
 
 using namespace std;
 
@@ -150,6 +159,27 @@ public:
      */
     virtual enigma_base *make_machine(Glib::ustring& subtype);
 
+    /*! \brief Configures the machine given in parameter machine according to the state of this machine_config object. 
+     *
+     *  This method returns true if an error occured during configuring the machine. The parameter rotor_set_name specifies
+     *  the name of the rotor set in relation to which the configuration is to be performed.
+     */    
+    virtual bool configure_machine(enigma_base *machine, string& rotor_set_name);
+
+    /*! \brief Configures the machine given in parameter machine according to the state of this machine_config object. 
+     *
+     *  This method returns true if an error occured during configuring the machine. The configuration is done relative
+     *  to the default rotor set name currently set for the machine object.
+     */    
+    virtual bool configure_machine(enigma_base *machine) { string rotor_set_name = machine->get_default_set_name(); return configure_machine(machine, rotor_set_name); }
+
+    /*! \brief Changes the state of this machine_config instance to refelct the configuration of the machine specified through
+     *         parameter machine.
+     *
+     *  Returns false if the configuration could be retrieved successfully.
+     */    
+    virtual bool get_config(enigma_base *machine);
+
     /*! \brief Helper method that allows to retrieve the active rotor id from the rotor_family_descriptor referenced in parameter desc. It is intended
      *         to make the code that needs to determine this value a bit more readable.
      */                                    
@@ -174,6 +204,32 @@ public:
      *  machine_name can assume the following values: M3, M4, Services, Abwehr, Tirpitz, Railway, KD. 
      */        
     virtual void make_config(Glib::ustring& machine_name);
+
+    /*! \brief Returns true if the machine the configuration of which is described by this object can make use
+     *         of the Umkehrwalze D.
+     */        
+    virtual bool is_ukw_d_capable() { return (machine_type == "Services") || (machine_type == "M3") || (machine_type == "KD"); }
+    
+    /*! \brief Fills the vector referenced in parameter infos such that it contains the key_word_info elements that can be used to
+     *         describe the configuration state of this machine_config instance.
+     */    
+    virtual void get_keywords(vector<key_word_info>& infos);
+
+    /*! \brief Fills the map referenced in parameter config_data such that it contains the keywords and their values
+     *         that can be used to describe the configuration state of this machine_config instance.
+     */    
+    virtual void to_keywords(map<string, string>& config_data);
+
+    /*! \brief Verifies and retrieves the keyword data contained in the config_data parameter and sets this machine_config instance
+     *         up in such a way that it contains the retrieved values.
+     *
+     *  This method returns true if an error was encountered, else it returns false.
+     */    
+    virtual bool from_keywords(map<string, string>& config_data, string& enigma_model);
+
+    /*! \brief Prints rotor ids, ring settings, rotor positions, inserted plugs, flag indicating uhr use, an position of the Uhr dial.
+     */            
+    virtual void print(ostream& out);
     
 protected:
 
@@ -272,6 +328,54 @@ protected:
      /*! \brief Holds the current machine type. A reference to this value is returned by get_machine_type()
      */    
     Glib::ustring machine_type;
+};
+
+/*! \brief A class that knows how to create and configure ::enigma_base objects.
+ */
+class enigma_configurator : public configurator {
+public:
+    /*! \brief Constructor. The parameter enigma_model has to specify the enigma model which is to be the
+     *         configured. Allowed values are: M3, M4, Services, Abwehr, Tirpitz, Railway, KD.
+     */        
+    enigma_configurator(const char *enigma_model) { machine_type = string(enigma_model); config.make_config(machine_type); }
+    
+    /*! \brief Returns the configuration of the machine pointed to by the parameter configured_machine
+     *         in the vector referenced by the parameter config_data. Has to be reimplemented in children 
+     *         of this class.
+     */        
+    virtual void get_config(map<string, string>& config_data, rotor_machine *configured_machine);
+    
+    /*! \brief Returns a vector that contains the key_word_info elements that desribe the configuration
+     *         of a specific type of rotor machine. Has to be reimplemented in children of this class.
+     */        
+    virtual void get_keywords(vector<key_word_info>& infos); 
+    
+    /*! \brief Configures the machine pointed to by the parameter machine_to_configure with the data referenced
+     *         by the parameter config_data. Has to be reimplemented in children of this class.
+     *
+     *  Returns CONFIGURATOR_OK in case of success.
+     */        
+    virtual unsigned int configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure);
+    
+    /*! \brief Creates a new machine and configures it with the data referenced by the parameter config_data.
+     *         Has to be reimplemented in children of this class.
+     *
+     *  Returns NULL if errors occurred.
+     */        
+    virtual rotor_machine *make_machine(map<string, string>& config_data);    
+
+    /*! \brief Destructor.
+     */    
+    virtual ~enigma_configurator() { ; }       
+    
+protected:
+
+    /*! \brief Method required by base class. Not needed here. Always returns CONFIGURATOR_OK.
+     */        
+    virtual unsigned int parse_config(map<string, string>& config_data) { return CONFIGURATOR_OK; }
+
+    Glib::ustring machine_type;
+    machine_config config;
 };
 
 #endif /* __machine_config_h__ */

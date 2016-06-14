@@ -26,6 +26,7 @@
 #include<enigma_sim.h>
 #include<enigma_uhr.h>
 #include<typex.h>
+#include<machine_config.h>
 
 /*! \brief Verification test for Services Enigma.
  */
@@ -34,6 +35,14 @@ decipherment_test enigma_i_test("Enigma I Test");
 /*! \brief Verification test for Services Enigma with Uhr.
  */
 decipherment_test enigma_uhr_test("Enigma-Uhr Test");
+
+/*! \brief Verification test for machine config with Uhr
+ */
+decipherment_test enigma_machine_config_test("Machine config Test Uhr");
+
+/*! \brief Verification test for machine config with UKW D
+ */
+decipherment_test enigma_machine_config_ukw_d_test("Machine config Test UKWD");
 
 /*! \brief Verification test for Abwehr Enigma.
  */
@@ -138,6 +147,7 @@ void register_tests(composite_test_case *container)
     enigma_t2->get_enigma_stepper()->set_rotor_pos("slow", 'j');
     enigma_t2->get_enigma_stepper()->set_rotor_pos("middle", 'n');
     enigma_t2->get_enigma_stepper()->set_rotor_pos("fast", 'a');
+        
     spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
     spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");
     expected_plain1 = ustring("vonvonjlooksjhffttteinseinsdreizwoyyqnnsneuninhaltxxbeiangriffunterwassergedruecktywabosxletztergegnerstandnulachtdreinuluhr");
@@ -237,7 +247,7 @@ void register_tests(composite_test_case *container)
     enigma_t->get_enigma_stepper()->set_rotor_pos("umkehrwalze", 'a');
     enigma_t->get_enigma_stepper()->set_rotor_pos("slow", 'c');
     enigma_t->get_enigma_stepper()->set_rotor_pos("middle", 'f');
-    enigma_t->get_enigma_stepper()->set_rotor_pos("fast", 'm');      
+    enigma_t->get_enigma_stepper()->set_rotor_pos("fast", 'm');
       
     expected_plain = "anxrommelxspruchnummerxeins";
     spruch = "rhmbwnbzgmmnkperufvnyjfkyqg";
@@ -296,8 +306,8 @@ void register_tests(composite_test_case *container)
     enigma_mit_uhr->get_enigma_stepper()->set_ringstellung("fast", 'h');
     enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("slow", 'r');
     enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("middle", 't');
-    enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("fast", 'z');    
-    
+    enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("fast", 'z');
+        
     spruch1 = "ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx";
     spruch2 = "dshvosujnuuaahobhkfxzkkspozkjyjbahrsuebrthacdkqggxqsxqzbqywafstpmwrujffbrkbjfvyy";
     spruch = spruch1 + spruch2;
@@ -310,6 +320,87 @@ void register_tests(composite_test_case *container)
     enigma_uhr_test.set_test_parms(spruch, expected_plain, enigma_mit_uhr, enigma_t1_load_uhr);
     
     container->add(&enigma_uhr_test);       
+
+/* ----------------------------------------------------------------- */    
+
+    // Services Enigma with Uhr verification test
+    // Test message prepared with this Enigma-Uhr simulator CSG http://www.hut-six.co.uk/uhr/
+    
+    enigma_I *enigma_mit_uhr_m_config = new enigma_I(UKW_B, WALZE_I, WALZE_IV, WALZE_III);    
+        
+    enigma_mit_uhr_m_config->set_stecker_brett(cabling, true);
+    enigma_mit_uhr_m_config->get_uhr()->set_dial_pos(27);
+        
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_ringstellung("slow", 'p');
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_ringstellung("middle", 'z');
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_ringstellung("fast", 'h');
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_rotor_pos("slow", 'r');
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_rotor_pos("middle", 't');
+    enigma_mit_uhr_m_config->get_enigma_stepper()->set_rotor_pos("fast", 'z');
+    
+    machine_config test_config;
+    Glib::ustring type = "Services";
+    test_config.make_config(type);
+    bool call_result = false;
+    call_result = call_result || test_config.randomize();
+    call_result = call_result || test_config.get_config(enigma_mit_uhr_m_config);
+    string dummy = "";
+    call_result = call_result || enigma_mit_uhr_m_config->randomize(dummy);
+    call_result = call_result || test_config.configure_machine(enigma_mit_uhr_m_config);
+        
+    spruch1 = "ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx";
+    spruch2 = "dshvosujnuuaahobhkfxzkkspozkjyjbahrsuebrthacdkqggxqsxqzbqywafstpmwrujffbrkbjfvyy";
+    spruch = spruch1 + spruch2;
+    expected_plain1 = "dasoberkommandoderwehrmaqtgibtbekanntxaachenxaachenxistgerettetxdurqgebuendelteneinsatzderhilfskraeftekonntediebedrohungabge";
+    expected_plain2 = "wendetunddierettungderstadtgegenxeinsxaqtxnullxnullxuhrsiqergestelltwerdenx";
+    expected_plain = expected_plain1 + expected_plain2;
+    
+    if (call_result)
+    {
+        expected_plain = "Das war wohl nix";
+    }
+    
+    enigma_I *load_uhr_m_config = new enigma_I(UKW_C, WALZE_II, WALZE_I, WALZE_IV);
+    
+    enigma_machine_config_test.set_test_parms(spruch, expected_plain, enigma_mit_uhr_m_config, load_uhr_m_config);
+    
+    container->add(&enigma_machine_config_test);       
+/* ----------------------------------------------------------------- */
+
+    // UKW D verification test for machine config getting/setting
+    // As there is neither an authentic KD message I know of nor another simulator that is known to be authentic this
+    // test message only verifies that the KD simulator is able to decrypt its own messages.
+    
+    kd_enigma *enigma_kd_m_config = new kd_enigma(WALZE_KD_II, WALZE_KD_VI, WALZE_KD_V);
+    enigma_kd_m_config->get_enigma_stepper()->set_ringstellung("slow", 'q');
+    enigma_kd_m_config->get_enigma_stepper()->set_ringstellung("middle", 'r');
+    enigma_kd_m_config->get_enigma_stepper()->set_ringstellung("fast", 'b');
+    enigma_kd_m_config->get_enigma_stepper()->set_rotor_pos("slow", 'c');
+    enigma_kd_m_config->get_enigma_stepper()->set_rotor_pos("middle", 'f');
+    enigma_kd_m_config->get_enigma_stepper()->set_rotor_pos("fast", 'm');      
+
+    expected_plain = "obwohldierotorverdrahtungenderkdenigmanichtbekanntsindsimulierenwirdiesemaschine";
+    machine_config test_config2;
+    Glib::ustring type2 = "KD";
+    test_config2.make_config(type2);
+    call_result = false;
+    call_result = call_result || enigma_kd_m_config->randomize(dummy);
+    call_result = call_result || test_config2.randomize();    
+    call_result = call_result || test_config2.get_config(enigma_kd_m_config);    
+    spruch = enigma_kd_m_config->get_keyboard()->symbols_typed_encrypt(expected_plain);
+    call_result = call_result || enigma_kd_m_config->randomize(dummy);
+    call_result = call_result || test_config2.configure_machine(enigma_kd_m_config);      
+
+    if (call_result)
+    {
+        expected_plain = "Das war wohl nix";
+    }
+    
+    kd_enigma *enigma_kd_load_m_config = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
+    
+    enigma_machine_config_ukw_d_test.set_test_parms(spruch, expected_plain, enigma_kd_m_config, enigma_kd_load_m_config);        
+    container->add(&enigma_machine_config_ukw_d_test);
+
 }
 
 }

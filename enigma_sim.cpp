@@ -108,9 +108,8 @@ bool enigma_base::randomize(string& param)
     machine_config rand_conf;
     Glib::ustring config_name = machine_type;
     rand_conf.make_config(config_name);
-    
+
     steckered_enigma *e = dynamic_cast<steckered_enigma *>(this);
-    rand_conf.get_has_plugboard() = (e != NULL);
     
     // Do we have a Steckerbrett?
     if (e != NULL)
@@ -118,47 +117,12 @@ bool enigma_base::randomize(string& param)
         // Is Uhr in use?
         rand_conf.get_uses_uhr() = e->uses_uhr();        
     }
-    
+        
     result = rand_conf.randomize();
     
     if (!result)
     {
-        // Iterate over all rotor slots in conf
-        for (unsigned int count = 0; count < rand_conf.get_all_descriptors().size(); count++)
-        {
-            // Do something only if the rotor slot number count is in use in this machine as determined by conf
-            if (rand_conf.get_desc_at(count).rotor_selection_state)
-            {
-                // Replace rotor in slot number count by new one as prescribed by the configuration contained in conf
-                prepare_rotor(rand_conf.get_active_rotor_id(rand_conf.get_desc_at(count)), rand_conf.get_desc_at(count).wheel_identifier);
-                
-                // If UKW D is in use as the reflector replace the reflector with a new one constructed from the current value in conf
-                if (rand_conf.get_active_rotor_id(rand_conf.get_desc_at(count)) == UKW_D)
-                {
-                    boost::shared_ptr<permutation> new_reflector(new permutation(rand_conf.get_ukw_d_perm()));                
-                    get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);                            
-                }
-                
-                // Change ringstellung to the one determined by conf if the ring in slot number count is settable           
-                if (rand_conf.get_desc_at(count).ring_selection_state)
-                {
-                    get_enigma_stepper()->set_ringstellung(rand_conf.get_desc_at(count).wheel_identifier, tolower(rand_conf.get_desc_at(count).ring_setting));
-                }
-                
-                // Change rotor position to the one specified in conf
-                get_enigma_stepper()->set_rotor_pos(rand_conf.get_desc_at(count).wheel_identifier, tolower(rand_conf.get_desc_at(count).rotor_pos));
-            }        
-        } 
-        
-        if (rand_conf.get_has_plugboard())
-        {
-            e->set_stecker_brett(rand_conf.get_inserted_plugs(), rand_conf.get_uses_uhr());
-                    
-            if (rand_conf.get_uses_uhr())
-            {
-                e->get_uhr()->set_dial_pos(rand_conf.get_uhr_dial_pos());
-            }
-        }                   
+        result = rand_conf.configure_machine(this);
     }    
     
     return result;

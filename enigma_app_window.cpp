@@ -289,14 +289,14 @@ void enigma_app_window::on_save_rotor_set_data_activate()
 
 void enigma_app_window::on_ukwd_activate()
 {
-    vector<pair<char, char> > steckers = ukwd_wiring_dialog::perm_to_plugs(conf.get_ukw_d_perm());
+    vector<pair<char, char> > steckers = ukw_d_wiring_helper::perm_to_plugs(conf.get_ukw_d_perm());
     Glib::ustring name_postfix = "_ukw";
     
     ukwd_wiring_dialog d(ukw_d_wiring_dialog, ref_xml, steckers, name_postfix);
     
     if (d.run() == 0)
     {
-        conf.get_ukw_d_perm() = ukwd_wiring_dialog::plugs_to_perm(steckers);
+        conf.get_ukw_d_perm() = ukw_d_wiring_helper::plugs_to_perm(steckers);
         sync_rotor_pos();        
         update_rotors();
     }    

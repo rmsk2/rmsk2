@@ -39,6 +39,8 @@ const unsigned int NO_PADDING_NEEDED = 7;
 const unsigned int B64_OK = 0;
 const unsigned int DOC_MAX_PATH = 4096;
 
+alphabet<char> ukwd_alpha(UKWD_ALPHA_CIRCUMFENCE, 26);
+
 /*! \brief A class implementing a base64 decoder.
  *
  *  Not very efficient but it does the job. Used to decode the glade file in rmsk::get_glade_data(). A valid base64
@@ -217,6 +219,68 @@ unsigned int base64::decode_pad(const char *data_in, string& out)
     
     return result;
 }
+
+bool ukw_d_wiring_helper::less_than(const pair<char, char>& l, const pair<char, char>& r)
+{
+    return l.first < r.first;
+}
+
+vector<pair<char, char> > ukw_d_wiring_helper::perm_to_plugs(permutation& perm)
+{
+    vector<pair<char, char> > result;
+    set<pair<unsigned int, unsigned int> > involution;
+    set<pair<unsigned int, unsigned int> >::iterator iter;
+    pair<unsigned int, unsigned int> fixed_connection(UKWD_FIXED_CONTACT_Y, UKWD_FIXED_CONTACT_J);
+    char f, s;
+    vector<pair<char, char> > data_sorted;
+
+    // If any of the tests below fails, return an involution that contains only the fixed connection    
+    result.push_back(pair<char, char>('J', 'Y'));
+    perm.test_for_involution(involution); // The set involution is cleared if perm is no involution
+    
+    if (involution.find(fixed_connection) != involution.end())
+    {
+        //  Required connection is included. Good!
+        
+        // An UKW D requires 13 pairs to be correct.
+        if (involution.size() == (rmsk::std_alpha()->get_size() / 2))
+        {
+            // iterate over the pairs returned by perm.test_for_involution(involution)
+            for (iter = involution.begin(); iter != involution.end(); ++iter)
+            {
+                // transform the unsigned ints from the pair into characterts 
+                f = ukwd_alpha.to_val(iter->first);
+                s = ukwd_alpha.to_val(iter->second);
+                
+                // The pairs (f, s) and (s, f) are functionally equivalent. We
+                // prefer the form where f < s.
+                if (f > s)
+                {
+                    data_sorted.push_back(pair<char, char>(s, f));
+                }
+                else
+                {
+                    data_sorted.push_back(pair<char, char>(f, s));                    
+                }
+            }
+            
+            // Normalize sequence of pairs through sorting by the first elements of the pairs
+            sort(data_sorted.begin(), data_sorted.end(), less_than);
+
+            result = data_sorted;            
+        }
+    }
+        
+    return result;
+}
+
+permutation ukw_d_wiring_helper::plugs_to_perm(vector<pair<char, char> >& plugs)
+{
+    permutation result = ukwd_alpha.make_involution(plugs);
+    
+    return result;
+}
+
 
 /*! \brief Holds singelton object returned by std_alpha().
  */ 

@@ -21,6 +21,7 @@
 
 #include<vector>
 #include<iostream>
+#include<boost/scoped_ptr.hpp>
 #include<rmsk_globals.h>
 #include<stepping.h>
 #include<alphabet.h>
@@ -38,6 +39,7 @@
 #include<enigma_uhr.h>
 #include<kl7.h>
 #include<kl7_test.h>
+#include<machine_config.h>
 
 using namespace std;
 
@@ -51,6 +53,10 @@ public:
     /*! \brief Default constructor.
      */   
     alles_andere() : test_case("Alles andere") { ; }    
+    
+    /*! \brief Append notes which spcifiy the contents of the machine_config specified in the parameter conf.
+     */    
+    virtual void append_config_notes(map<string, string> config_data);
 
     /*! \brief Implements the tests.
      */   
@@ -60,6 +66,18 @@ public:
      */       
     virtual ~alles_andere() { ; }
 };
+
+void alles_andere::append_config_notes(map<string, string> config_data)
+{
+    map<string, string>::iterator conifg_iter;
+    string help;
+        
+    for (conifg_iter = config_data.begin(); conifg_iter != config_data.end(); ++conifg_iter)
+    {
+        help = conifg_iter->first + ": " + conifg_iter->second;
+        append_note(help);
+    }    
+}
 
 /*! 
  *  Currently this method implements testroutines for the Enigma Uhr and the KL7. Put
@@ -159,6 +177,80 @@ bool alles_andere::test()
         append_note("KL7 rotor sets end");
         
         delete enc;       
+        
+        append_note("Enigma configurator get_config test start");    
+        
+        vector<pair<char, char> > cabling;
+        
+        cabling.push_back(pair<char, char>('a', 'd'));
+        cabling.push_back(pair<char, char>('c', 'n'));    
+        cabling.push_back(pair<char, char>('e', 't')); 
+        cabling.push_back(pair<char, char>('f', 'l'));       
+        cabling.push_back(pair<char, char>('g', 'i'));    
+        cabling.push_back(pair<char, char>('j', 'v'));  
+        cabling.push_back(pair<char, char>('k', 'z')); 
+        cabling.push_back(pair<char, char>('p', 'u'));  
+        cabling.push_back(pair<char, char>('q', 'y'));           
+        cabling.push_back(pair<char, char>('w', 'x'));                   
+        
+        //tirpitz_enigma machine(WALZE_T_VII, WALZE_T_VIII, WALZE_T_V);
+        //machine.get_enigma_stepper()->set_ringstellung("umkehrwalze", 'k');
+        //kd_enigma machine(WALZE_KD_II, WALZE_KD_VI, WALZE_KD_V);
+        enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
+        //enigma_M4 machine(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_III, WALZE_V);
+        machine.get_enigma_stepper()->set_ringstellung("slow", 'q');
+        machine.get_enigma_stepper()->set_ringstellung("middle", 'r');
+        machine.get_enigma_stepper()->set_ringstellung("fast", 'b');
+        //machine.get_enigma_stepper()->set_rotor_pos("umkehrwalze", 'a');
+        machine.get_enigma_stepper()->set_rotor_pos("slow", 'c');
+        machine.get_enigma_stepper()->set_rotor_pos("middle", 'f');
+        machine.get_enigma_stepper()->set_rotor_pos("fast", 'm');
+        
+        machine.set_stecker_brett(cabling, false);
+        //machine.get_uhr()->set_dial_pos(24);                
+        
+        map<string, string> config_data;
+        string egal = machine.get_machine_type();
+        boost::scoped_ptr<configurator> cnf(configurator_factory::get_configurator(egal));
+        
+        try
+        {
+            cnf->get_config(config_data, &machine);
+            append_config_notes(config_data);
+        }
+        catch(...)
+        {
+            append_note("ERROR: Unable to retrieve config"); 
+            result = false;
+        }
+                
+        append_note("Enigma configurator get_config test end"); 
+        append_note("Enigma configurator make_machine test start"); 
+
+        machine_config test_conf2;
+        
+        map<string, string> kw;
+        string enigma_model = "M3";
+        boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
+        kw[KW_ENIG_ROTOR_SELECTION] = "1168";
+        kw[KW_ENIG_RINGSTELLUNG] = "abc";
+        kw[KW_ENIG_STECKERBRETT] = "14:adcnetflgijvkzpuqywx";
+        kw[KW_USES_UHR] = CONF_TRUE;
+        kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+        boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
+        
+        try
+        {
+            cnf2->get_config(config_data, test_machine.get());
+            append_config_notes(config_data);
+        }
+        catch(...)
+        {
+            append_note("ERROR: Unable to retrieve config"); 
+            result = false;
+        }        
+                
+        append_note("Enigma configurator make_machine test end");        
     }
             
     return result;

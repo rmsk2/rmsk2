@@ -112,6 +112,8 @@ public:
 
     /*! \brief Configures the machine pointed to by the parameter machine_to_configure with the data referenced
      *         by the parameter config_data. Has to be reimplemented in children of this class.
+     *
+     *  Returns CONFIGURATOR_OK in case of success.
      */        
     virtual unsigned int configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure) = 0;
 
@@ -131,6 +133,81 @@ public:
     /*! \brief Default constructor.
      */        
     virtual ~configurator() { ; }
+    
+    /*! \brief This method can be used to retrieve the permutation currently implemented by the encryption_transform
+     *         pointed to by parameter t. It is mainly intended to retrieve the current plugboard permutation of a 
+     *         rotor_machine. The result is a string that represents this permutation in the usual way.
+     *
+     *  Assumes that there are exactly 26 input characters.
+     */            
+    static string get_entry_plugboard(encryption_transform *t);
+
+    /*! \brief This method can be used to retrieve the permutation currently implemented by the encryption_transform
+     *         pointed to by parameter t. It is mainly intended to retrieve the current reflector permutation of a 
+     *         rotor_machine. Reflectors always specify an involution. The string returned by this method is to be
+     *         interpreted as the sequence of two element cycles that make up this involution.
+     *
+     *  Assumes that there are exactly 26 input characters.
+     */            
+    static string get_reflector(encryption_transform *t);
+
+    /*! \brief Returns a string consisting of the characters '0' and '1' that depends on the contents of the vector vec.
+     *         Each 0 in the vector referenced by parameter vec creates a '0' in the output string, each nonzero value
+     *         produces a '1' in the output.
+     */            
+    static string vec_to_bool(vector<unsigned int>& vec);
+
+    /*! \brief Returns a string consisting of the characters a-z, where a letter is included iff the position that 
+     *         corresponds to this letter in vec is a one. Only up to the first 26 elements of vec are relevant.
+     */            
+    static string bool_to_string(vector<unsigned int>& vec);
+
+    /*! \brief Sets all the positions in vec to 1 which correspond to a letter in pin_spec. If a letter in pin_spec
+     *         is not between a-z and/or the position of the letter in the standard alphabet is bigger than vec.size() it
+     *         is ignored.
+     */                
+    static void string_to_bool(vector<unsigned int>& vec, string& pin_spec);
+
+    /*! \brief Returns true if the string referenced by parameter to_test is of the length specified in parameter
+     *         desired_length. When true is returned the vector referenced by parameter data is filled with 0s and 1s
+     *         where each '0' character in to_test prodcues a 0 and all other characters produce a 1.
+     */        
+    static bool check_bool(string& to_test, unsigned int desired_length, vector<unsigned int>& data); 
+
+    /*! \brief Returns true if the string referenced by parameter to_test has length 26 and contains 26 different
+     *         characters.
+     */        
+    static bool check_for_perm(string& to_test);  
+
+    /*! \brief Returns true if the string referenced by parameter data contains only characters between '0' and '9' 
+     *         or ' ' characters and if it contains at least one character from the range '0'-'9'. If true is returned
+     *         the vector referenced by parameter parse_result is filled with the numbers that result from converting the
+     *         numeric strings separated by the ' ' characters into numbers.
+     */        
+    static bool parse_numeric_vector(string& data, vector<unsigned int>& parse_result);
+
+    /*! \brief Returns true if the vector referenced by parameter to_test has length desired_length and contains only
+     *         numbers between range_start and range_end. If the parameter require_unique is true it is aditionally checked 
+     *         if each number appears at most once.
+     */        
+    static bool check_vector(vector<unsigned int>& to_test, unsigned int range_start, unsigned int range_end, unsigned int desired_length, bool require_unique = false);    
+
+    /*! \brief Returns true if the vector referenced by parameter to_test has length desired_length and contains only
+     *         numbers from the set referenced by parameter ref_values. If the parameter require_unique is true it is
+     *         aditionally checked  if each number appears at most once.
+     */        
+    static bool check_vector(vector<unsigned int>& to_test, set<unsigned int>& ref_values, unsigned int desired_length, bool require_unique = false);
+
+    /*! \brief Returns true if the string referenced by parameter rotor_spec has length desired_length and contains only
+     *         characters between start_char and end_char. If the parameter require_unique is true it is aditionally checked 
+     *         if each character appears at most once.
+     */        
+    static bool check_rotor_spec(string& rotor_spec, char start_char, char end_char, unsigned int desired_length, bool require_unique = true);
+
+    /*! \brief Returns true if the string referenced by parameter pin_spec has length at most max_length and contains only
+     *         characters between start_char and end_char. Each character must appears at most once.
+     */        
+    static bool check_pin_spec(string& pin_spec, char start_char, char end_char, unsigned int max_length);    
 
 protected:
     /*! \brief Holds the name of the rotor_set name currently in use in this object.
@@ -147,80 +224,6 @@ protected:
      */            
     virtual bool check_for_completeness(map<string, string>& config_data);
 
-    /*! \brief This method can be used to retrieve the permutation currently implemented by the encryption_transform
-     *         pointed to by parameter t. It is mainly intended to retrieve the current plugboard permutation of a 
-     *         rotor_machine. The result is a string that represents this permutation in the usual way.
-     *
-     *  Assumes that there are exactly 26 input characters.
-     */            
-    string get_entry_plugboard(encryption_transform *t);
-
-    /*! \brief This method can be used to retrieve the permutation currently implemented by the encryption_transform
-     *         pointed to by parameter t. It is mainly intended to retrieve the current reflector permutation of a 
-     *         rotor_machine. Reflectors always specify an involution. The string returned by this method is to be
-     *         interpreted as the sequence of two element cycles that make up this involution.
-     *
-     *  Assumes that there are exactly 26 input characters.
-     */            
-    string get_reflector(encryption_transform *t);
-
-    /*! \brief Returns a string consisting of the characters '0' and '1' that depends on the contents of the vector vec.
-     *         Each 0 in the vector referenced by parameter vec creates a '0' in the output string, each nonzero value
-     *         produces a '1' in the output.
-     */            
-    string vec_to_bool(vector<unsigned int>& vec);
-
-    /*! \brief Returns a string consisting of the characters a-z, where a letter is included iff the position that 
-     *         corresponds to this letter in vec is a one. Only up to the first 26 elements of vec are relevant.
-     */            
-    string bool_to_string(vector<unsigned int>& vec);
-
-    /*! \brief Sets all the positions in vec to 1 which correspond to a letter in pin_spec. If a letter in pin_spec
-     *         is not between a-z and/or the position of the letter in the standard alphabet is bigger than vec.size() it
-     *         is ignored.
-     */                
-    void string_to_bool(vector<unsigned int>& vec, string& pin_spec);
-
-    /*! \brief Returns true if the string referenced by parameter to_test is of the length specified in parameter
-     *         desired_length. When true is returned the vector referenced by parameter data is filled with 0s and 1s
-     *         where each '0' character in to_test prodcues a 0 and all other characters produce a 1.
-     */        
-    bool check_bool(string& to_test, unsigned int desired_length, vector<unsigned int>& data); 
-
-    /*! \brief Returns true if the string referenced by parameter to_test has length 26 and contains 26 different
-     *         characters.
-     */        
-    bool check_for_perm(string& to_test);  
-
-    /*! \brief Returns true if the string referenced by parameter data contains only characters between '0' and '9' 
-     *         or ' ' characters and if it contains at least one character from the range '0'-'9'. If true is returned
-     *         the vector referenced by parameter parse_result is filled with the numbers that result from converting the
-     *         numeric strings separated by the ' ' characters into numbers.
-     */        
-    bool parse_numeric_vector(string& data, vector<unsigned int>& parse_result);
-
-    /*! \brief Returns true if the vector referenced by parameter to_test has length desired_length and contains only
-     *         numbers between range_start and range_end. If the parameter require_unique is true it is aditionally checked 
-     *         if each number appears at most once.
-     */        
-    bool check_vector(vector<unsigned int>& to_test, unsigned int range_start, unsigned int range_end, unsigned int desired_length, bool require_unique = false);    
-
-    /*! \brief Returns true if the vector referenced by parameter to_test has length desired_length and contains only
-     *         numbers from the set referenced by parameter ref_values. If the parameter require_unique is true it is
-     *         aditionally checked  if each number appears at most once.
-     */        
-    bool check_vector(vector<unsigned int>& to_test, set<unsigned int>& ref_values, unsigned int desired_length, bool require_unique = false);
-
-    /*! \brief Returns true if the string referenced by parameter rotor_spec has length desired_length and contains only
-     *         characters between start_char and end_char. If the parameter require_unique is true it is aditionally checked 
-     *         if each character appears at most once.
-     */        
-    bool check_rotor_spec(string& rotor_spec, char start_char, char end_char, unsigned int desired_length, bool require_unique = true);
-
-    /*! \brief Returns true if the string referenced by parameter pin_spec has length at most max_length and contains only
-     *         characters between start_char and end_char. Each character must appears at most once.
-     */        
-    bool check_pin_spec(string& pin_spec, char start_char, char end_char, unsigned int max_length);
 
 };
 

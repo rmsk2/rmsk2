@@ -18,9 +18,12 @@
  *  \brief Implements a class that describes the characteristics of the Enigma variants simulated by this software.
  */ 
 
+#include<boost/lexical_cast.hpp>
+#include<boost/regex.hpp>
 #include<machine_config.h>
 #include<enigma_sim.h>
 #include<rand_gen.h>
+#include<configurator.h>
 
 /*! \brief A simple structure that can be used to hold a rotor's position (as shown in its corresponding window), its ring setting
  *         and its index with respect to the contents of rotor_family_descriptor.rotor_names 
@@ -626,6 +629,514 @@ unsigned int machine_config::get_active_rotor_id(rotor_family_descriptor& desc)
     return desc.available_rotors[desc.rotor_names[desc.rotor_index_active]];
 }
 
+bool machine_config::configure_machine(enigma_base *machine, string& rotor_set_name)
+{
+    // Machine type has to match the type of this configuration
+    bool result = (machine->get_machine_type () != machine_type);    
+        
+    steckered_enigma *e = dynamic_cast<steckered_enigma *>(machine);
+    
+    if (!result)
+    {
+        machine->get_stepping_gear()->reset();
+    
+        // Iterate over all rotor slots in conf
+        for (unsigned int count = 0; count < get_all_descriptors().size(); count++)
+        {
+            // Do something only if the rotor slot number count is in use in this machine as determined by conf
+            if (get_desc_at(count).rotor_selection_state)
+            {
+                // Replace rotor in slot number count by new one as prescribed by the configuration contained in conf
+                machine->prepare_rotor(rotor_set_name, get_active_rotor_id(get_desc_at(count)), get_desc_at(count).wheel_identifier);
+                
+                // If UKW D is in use as the reflector replace the reflector with a new one constructed from the current value in conf
+                if (get_active_rotor_id(get_desc_at(count)) == UKW_D)
+                {
+                    boost::shared_ptr<permutation> new_reflector(new permutation(get_ukw_d_perm()));                
+                    machine->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);                            
+                }
+                
+                // Change ringstellung to the one determined by conf if the ring in slot number count is settable           
+                if (get_desc_at(count).ring_selection_state)
+                {
+                    machine->get_enigma_stepper()->set_ringstellung(get_desc_at(count).wheel_identifier, tolower(get_desc_at(count).ring_setting));
+                }
+                
+                // Change rotor position to the one specified in conf
+                machine->get_enigma_stepper()->set_rotor_pos(get_desc_at(count).wheel_identifier, tolower(get_desc_at(count).rotor_pos));
+            }        
+        } 
+        
+        if (get_has_plugboard())
+        {
+            e->set_stecker_brett(get_inserted_plugs(), get_uses_uhr());
+                    
+            if (get_uses_uhr())
+            {
+                e->get_uhr()->set_dial_pos(get_uhr_dial_pos());
+            }
+        }                   
+    }    
+    
+    return result;    
+}
+
+bool machine_config::get_config(enigma_base *machine)
+{
+    bool result = false;
+    
+    Glib::ustring machine_type = machine->get_machine_type();
+    make_config(machine_type);    
+    steckered_enigma *e = dynamic_cast<steckered_enigma *>(machine);
+    enigma_stepper_base *stepper = machine->get_enigma_stepper();
+    unsigned int active_index_found;
+    
+    // Do we have a Steckerbrett?
+    if (get_has_plugboard())
+    {
+        // Is Uhr in use?
+        get_uses_uhr() = e->uses_uhr();        
+    } 
+    
+    for (unsigned int count = 0; (count < get_all_descriptors().size()) and (!result); count++)
+    {
+        rotor_family_descriptor &family_desc = get_desc_at(count);
+        // Do something only if the rotor slot number count is in use in this machine configuration
+        if (family_desc.rotor_selection_state)
+        {
+            // determine slot identifer
+            string identifier = family_desc.wheel_identifier;
+            // determine rotor_descriptor inserted into machine
+            rotor_descriptor &stepper_desc = stepper->get_descriptor(identifier);            
+            // Search rotor id currently in use in the machine in the ids allowed for the current slot and machine type
+            result = find_rotor_index(family_desc, stepper_desc.id.r_id, active_index_found);
+            
+            if (result)
+            {
+                continue;
+            }
+            
+            family_desc.rotor_index_active = active_index_found;
+                        
+            // If UKW D is in use retrieve permutation and store it in instance variable ukwd_perm.
+            if (stepper_desc.id.r_id == UKW_D)
+            {
+                vector<unsigned int> temp;
+                stepper->get_descriptor(UMKEHRWALZE).r->get_perm()->to_vec(temp);
+                
+                ukwd_perm = permutation(temp);
+            }
+            
+            // Retrieve ringstellung
+            if (family_desc.ring_selection_state)
+            {
+                family_desc.ring_setting = toupper(stepper->get_ringstellung(identifier));
+            }
+            
+            // Retrieve rotor position
+            family_desc.rotor_pos = toupper(stepper->get_rotor_pos(identifier));
+        }        
+    }
+    
+    if ((!result) and get_has_plugboard())
+    {
+        e->get_stecker_brett(inserted_plugs);
+        
+        if (get_uses_uhr())
+        {
+            uhr_dial_pos = e->get_uhr()->get_dial_pos();
+        }        
+    } 
+    
+    return result;   
+}
+
+void machine_config::get_keywords(vector<key_word_info>& infos)
+{
+    infos.clear();
+    
+    // All Enigma variants have to be configured with rotor and ring settings
+    infos.push_back(key_word_info(KW_ENIG_ROTOR_SELECTION, KEY_STRING));
+    infos.push_back(key_word_info(KW_ENIG_RINGSTELLUNG, KEY_STRING));    
+    
+    // Only the military variants Services, M3 and M4 have a plugboard
+    if (has_plugboard)
+    {
+        infos.push_back(key_word_info(KW_ENIG_STECKERBRETT, KEY_STRING));
+        
+        // Only Services and M3 can use the Uhr
+        if (uhr_capable)
+        {            
+            infos.push_back(key_word_info(KW_USES_UHR, KEY_BOOL));
+        }
+    }
+    
+    // Only Services, M3 and KD can use UKW D
+    if (is_ukw_d_capable())
+    {
+        infos.push_back(key_word_info(KW_UKW_D_PERM, KEY_STRING));
+    }
+}
+
+void machine_config::to_keywords(map<string, string>& config_data)
+{
+    string rotor_selection, ring_settings, ukw_d_perm_str, plugs;
+    
+    config_data.clear();
+
+    // Generate rotor and ring setting keyword information
+    for (unsigned int count = 0; count < get_all_descriptors().size(); count++)
+    {
+        rotor_family_descriptor &family_desc = get_desc_at(count);
+        
+        // Do something only if the rotor slot number count is in use in this machine configuration
+        if (family_desc.rotor_selection_state)
+        {
+            // Only include rotor selection info if there really is a choice
+            if (family_desc.rotor_names.size() > 1)
+            {
+                rotor_selection += (char)(family_desc.rotor_index_active + '1');                
+            }
+            
+            // Include ringstellung even if there is only one choice for a rotor
+            if (family_desc.ring_selection_state)
+            {
+                ring_settings += tolower(family_desc.ring_setting);
+            }            
+        }        
+    }
+
+    config_data[KW_ENIG_ROTOR_SELECTION] = string(rotor_selection.rbegin(), rotor_selection.rend());
+    config_data[KW_ENIG_RINGSTELLUNG] = string(ring_settings.rbegin(), ring_settings.rend());
+
+    // Generate plugboard keyword information
+    if (has_plugboard)
+    {
+        vector<pair<char, char> >::iterator iter;
+        
+        for (iter = inserted_plugs.begin(); iter != inserted_plugs.end(); ++iter)
+        {
+            plugs += iter->first;
+            plugs += iter->second;
+        }
+        
+        if (uhr_capable)
+        {
+            if (uses_uhr)
+            {
+                config_data[KW_USES_UHR] = CONF_TRUE;
+                plugs = boost::lexical_cast<string>(uhr_dial_pos) + ':' + plugs;
+            }
+            else
+            {
+                config_data[KW_USES_UHR] = CONF_FALSE;
+            }            
+        }
+        
+        config_data[KW_ENIG_STECKERBRETT] = plugs;
+    }
+
+    // Generate UKW D keyword information
+    if (is_ukw_d_capable())
+    {
+        // Only Services, M3 and KD can use UKW D
+        vector<pair<char, char> > res = ukw_d_wiring_helper::perm_to_plugs(ukwd_perm);
+        vector<pair<char, char> >::iterator iter;
+        
+        for (iter = res.begin(); iter != res.end(); ++iter)
+        {
+            if ((iter->first != 'j') && (iter->second != 'y'))
+            {
+                ukw_d_perm_str += iter->first;
+                ukw_d_perm_str += iter->second;
+            }
+        }
+        
+        config_data[KW_UKW_D_PERM] = ukw_d_perm_str;
+    }
+}
+
+bool machine_config::from_keywords(map<string, string>& config_data, string& enigma_model)
+{
+    bool result = false;
+    unsigned int count_rotor_specifiers = 0, count_ring_specifiers = 0;
+    string rotor_selection, ring_settings, plugs, ukwd_plugs_str;
+    unsigned int index_to_test, uhr_dialpos = 100, rotor_selection_pos_count = 0, ring_settings_pos_count = 0;;
+    bool uhr_specified = false;
+    vector<pair<char, char> > ukwd_plugs;
+    Glib::ustring temp_mname = enigma_model;
+    
+    do
+    {
+        if ((result = ((config_data.count(KW_ENIG_ROTOR_SELECTION) == 0) || (config_data.count(KW_ENIG_RINGSTELLUNG) == 0))))
+        {
+            break;    
+        }
+        
+        make_config(temp_mname);
+        
+        // determine the necessary length of rotor and ring settings
+        for (unsigned int count = 0; count < get_all_descriptors().size(); count++)
+        {
+            rotor_family_descriptor &family_desc = get_desc_at(count);
+            
+            if (family_desc.rotor_selection_state)
+            {
+                // Only include rotor selection info if there really is a choice
+                if (family_desc.rotor_names.size() > 1)
+                {
+                    count_rotor_specifiers++;
+                }
+                
+                // Include ringstellung even if there is only one choice for a rotor
+                if (family_desc.ring_selection_state)
+                {
+                    count_ring_specifiers++;
+                }            
+            }        
+        }        
+        
+        rotor_selection = config_data[KW_ENIG_ROTOR_SELECTION];
+        ring_settings = config_data[KW_ENIG_RINGSTELLUNG];
+        
+        // Check for correct length and composition
+        result = !configurator::check_rotor_spec(rotor_selection, '1', '9', count_rotor_specifiers, false); // rotor specifiers are not unique for M3, Services and M4
+        result = result || !configurator::check_rotor_spec(ring_settings, 'a', 'z', count_ring_specifiers, false);
+        
+        if (result)
+        {
+            break;
+        }        
+        
+        // ************ ToDo: Check for rotors which have been inserted twice
+        // reverse rotor and ring settings
+        rotor_selection = string(rotor_selection.rbegin(), rotor_selection.rend());
+        ring_settings = string(ring_settings.rbegin(), ring_settings.rend());
+
+        // Modify rotor selection and ring settings of this machine_configuration instance
+        for (unsigned int count = 0; (count < get_all_descriptors().size()) && (!result); count++)
+        {
+            rotor_family_descriptor &family_desc = get_desc_at(count);
+            
+            if (family_desc.rotor_selection_state)
+            {
+                // Only include rotor selection info if there really is a choice
+                if (family_desc.rotor_names.size() > 1)
+                {
+                    index_to_test = rotor_selection[rotor_selection_pos_count] - '1';
+                    
+                    if ((result = (index_to_test >= family_desc.rotor_names.size())))
+                    {
+                        continue;
+                    }
+                    
+                    family_desc.rotor_index_active = index_to_test;
+                    rotor_selection_pos_count++;
+                }
+                
+                // Include ringstellung even if there is only one choice for a rotor
+                if (family_desc.ring_selection_state)
+                {
+                    family_desc.ring_setting = toupper(ring_settings[ring_settings_pos_count]);
+                    ring_settings_pos_count++;
+                }
+                
+                // reset rotor position
+                family_desc.rotor_pos = 'A';            
+            }            
+        }
+
+        if (result)
+        {
+            break;
+        }        
+        
+        // Check and modify plugboard information
+        if (has_plugboard)
+        {
+            boost::regex plugboard_exp("^([0-9]{1, 2}):([a-z]{2, 26})$");
+            boost::cmatch match_plugboard;
+        
+            if ((result = (config_data.count(KW_ENIG_STECKERBRETT) == 0)))
+            {
+                break;
+            }                                    
+            
+            plugs = config_data[KW_ENIG_STECKERBRETT];
+            
+            // Do we have a dial pos specification?
+            if (boost::regex_match(plugs.c_str(), match_plugboard, plugboard_exp))
+            {
+                // Yes
+                uhr_specified = true;
+                uhr_dialpos = boost::lexical_cast<unsigned int>(match_plugboard[1].str()); // Can not fail
+                plugs = match_plugboard[2].str();
+            }
+            
+            // There has to be an even number of plugs
+            if ((result = ((plugs.length() % 2) == 1)))
+            {
+                break;
+            }                                    
+            
+            // Check for uniqueness
+            if ((result = !configurator::check_pin_spec(plugs, 'a', 'z', 26)))
+            {
+                break;
+            }            
+            
+            if (uhr_capable)
+            {
+                // We need a KW_USES_UHR entry
+                if ((result = config_data.count(KW_USES_UHR) == 0))
+                {
+                    break;
+                }                
+                
+                uses_uhr = (config_data[KW_USES_UHR] == CONF_TRUE);                              
+                
+                if ((result = (uses_uhr != uhr_specified)))
+                {
+                    break;
+                }               
+                
+                if ((result = (uses_uhr && ((uhr_dialpos >= 40) || (plugs.length() != 20)))))
+                {
+                    break;
+                }                
+                
+                uhr_dial_pos = uhr_dialpos;
+            }
+            else
+            {
+                // We are not uhr capable so there must be no dial pos information
+                if ((result = uhr_specified))
+                {
+                    break;
+                }
+                
+                uses_uhr = false;
+            }
+            
+            inserted_plugs.clear();
+            
+            for (unsigned int count = 0; count < (plugs.length() / 2); count++)
+            {
+                inserted_plugs.push_back(pair<char, char>(plugs[2 * count], plugs[2 * count+ 1]));
+            }            
+        }
+        
+        if (is_ukw_d_capable())
+        {
+            if ((result = config_data.count(KW_UKW_D_PERM) == 0))
+            {
+                break;
+            }
+            
+            ukwd_plugs_str = config_data[KW_UKW_D_PERM];
+            
+            // Check for correct length and uniqueness
+            if ((result = ((ukwd_plugs_str.length() != 24) || (!configurator::check_pin_spec(ukwd_plugs_str, 'a', 'z', 24)))))
+            {
+                break;
+            }
+            
+            ukwd_plugs.clear();
+            
+            // Check for forbidden values j and y and fill necessary data structures
+            for (unsigned int count = 0; (count < 12) && (!result); count++)
+            {
+                if ((result = (ukwd_plugs_str[count] == 'j') || (ukwd_plugs_str[count] == 'y')))
+                {
+                    continue;
+                }
+                
+                ukwd_plugs.push_back(pair<char, char>(ukwd_plugs_str[2 * count], ukwd_plugs_str[2 * count + 1]));
+            }
+            
+            if (result)
+            {
+                break;
+            }
+            
+            // Make permutation
+            ukwd_plugs.push_back(pair<char, char>('j', 'y')); // Now add fixed connections
+            ukwd_perm = ukw_d_wiring_helper::plugs_to_perm(ukwd_plugs);                        
+        }
+        
+    } while(0);
+    
+    if (result)
+    {
+        make_config(temp_mname);
+    }
+    
+    return result;
+}
+
+void machine_config::print(ostream& out)
+{
+    string rotor_selection, ringstellung, rotor_positions, plugs;
+
+    out << machine_type << endl;
+    out << "Has plugboard: " << has_plugboard << endl;
+    
+    if (has_plugboard)
+    {
+        out << "Uhr in use: " << uses_uhr << endl;    
+    }
+    
+    // Iterate over all rotor slots in conf
+    for (unsigned int count = 0; count < get_all_descriptors().size(); count++)
+    {
+        if (get_desc_at(count).rotor_selection_state)
+        {            
+            rotor_selection += get_desc_at(count).rotor_names[get_desc_at(count).rotor_index_active] + " ";
+            
+            if (get_desc_at(count).ring_selection_state)
+            {
+                ringstellung += get_desc_at(count).ring_setting;
+            }
+            
+            if (get_desc_at(count).has_rotor_window)
+            {            
+                rotor_positions += get_desc_at(count).rotor_pos;
+            }
+        }        
+    } 
+
+    out << "Walzenlage: " << rotor_selection << endl;
+    out << "Ringstellung: " << ringstellung << endl;
+    out << "Rotor positions: " << rotor_positions << endl;
+    
+    if (get_has_plugboard())
+    {
+        vector<pair<char, char> >::iterator iter;
+        
+        for (iter = inserted_plugs.begin(); iter != inserted_plugs.end(); ++iter)
+        {
+            plugs += iter->first;
+            plugs += iter->second;
+        }
+        
+        out << "Stecker: " << plugs << endl;
+                
+        if (get_uses_uhr())
+        {
+            out << "Dial pos: " << uhr_dial_pos << endl;
+        }
+    }                   
+
+    out << "UKW D permutation: ";
+
+    for (unsigned int count = 0; count < 26; count++)
+    {
+        out << ukwd_perm.encrypt(count) << " "; 
+    }
+
+    out << endl;
+}
+
 vector<unsigned int> machine_config::make_random_wheel_order(unsigned int num_ukws, unsigned int num_rotors, unsigned int num_greeks)
 {
     vector<unsigned int> result;
@@ -770,7 +1281,7 @@ bool machine_config::randomize()
                 permutation perm;
                 perm = permutation::get_random_permutation(gen, 40);
                 // No exception was thrown up to this point, it is now safe to modify the configuration
-                uhr_dial_pos = perm.permute(0);
+                uhr_dial_pos = perm.permute(0);                
             }
             
             inserted_plugs = new_plugs;
@@ -982,4 +1493,63 @@ bool machine_config::save_settings(const Glib::ustring& file_name, enigma_base *
     return result;
 }
 
+/* ----------------------------------------------------------- */
+
+void enigma_configurator::get_config(map<string, string>& config_data, rotor_machine *configured_machine)
+{
+    enigma_base *machine = dynamic_cast<enigma_base *>(configured_machine);    
+    rmsk::simple_assert(machine == NULL, "programmer error: machine is not an Enigma model");
+    
+    rmsk::simple_assert(config.get_config(machine), "programmer error: can not retrieve machine configuration");
+    config.to_keywords(config_data);
+}
+
+void enigma_configurator::get_keywords(vector<key_word_info>& infos)
+{
+    config.get_keywords(infos);
+}
+
+unsigned int enigma_configurator::configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure)
+{
+    unsigned int result = CONFIGURATOR_OK;
+    enigma_base *machine = dynamic_cast<enigma_base *>(machine_to_configure);
+    string enigma_model = string(machine_type.c_str());
+    
+    if (machine == NULL)
+    {
+        result = CONFIGURATOR_ERROR;
+    }
+    else
+    {        
+        if (config.from_keywords(config_data, enigma_model))
+        {
+            result = CONFIGURATOR_ERROR;
+        }
+        else
+        {
+            if (config.configure_machine(machine, rotor_set_name))
+            {
+                result = CONFIGURATOR_ERROR;
+            }
+        }
+    }    
+    
+    return result;
+}
+
+rotor_machine *enigma_configurator::make_machine(map<string, string>& config_data)
+{
+    rotor_machine *result = config.make_machine(machine_type);
+    
+    if (result != NULL)
+    {
+        if (configure_machine(config_data, result) != CONFIGURATOR_OK)
+        {
+            delete result;
+            result = NULL;
+        }
+    }
+    
+    return result;
+}
 
