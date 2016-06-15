@@ -542,11 +542,49 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
 
         // Construct Enigma M3 machine with default settings        
         if (name == "M3")
-        {                                            
+        {
+            // Walzenlage UKW B I VI VIII
             machine_conf[KW_ENIG_ROTOR_SELECTION] = "1168";
             machine_conf[KW_ENIG_RINGSTELLUNG] = "abc";
             machine_conf[KW_ENIG_STECKERBRETT] = "14:adcnetflgijvkzpuqywx";
             machine_conf[KW_USES_UHR] = CONF_TRUE;
+            machine_conf[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+            
+            result = c->make_machine(machine_conf);
+            
+            rotor_identifiers.push_back(FAST);
+            rotor_identifiers.push_back(MIDDLE);
+            rotor_identifiers.push_back(SLOW);
+            
+            break;
+        }
+
+        // Construct Enigma M4 machine with default settings        
+        if (name == "M4")
+        {   
+            // Walzenlage: UKW B-Dünn Beta II IV I                                         
+            machine_conf[KW_ENIG_ROTOR_SELECTION] = "11241";
+            machine_conf[KW_ENIG_RINGSTELLUNG] = "aaav";
+            machine_conf[KW_ENIG_STECKERBRETT] = "atbldfgjhmnwopqyrzvx";
+            
+            result = c->make_machine(machine_conf);
+            
+            rotor_identifiers.push_back(FAST);
+            rotor_identifiers.push_back(MIDDLE);
+            rotor_identifiers.push_back(SLOW);
+            rotor_identifiers.push_back(GRIECHENWALZE);            
+            
+            break;
+        }
+
+        // Construct Enigma Services machine with default settings        
+        if (name == "Services")
+        {
+            // Walzenlage UKW B I II III                                            
+            machine_conf[KW_ENIG_ROTOR_SELECTION] = "1123";
+            machine_conf[KW_ENIG_RINGSTELLUNG] = "abc";
+            machine_conf[KW_ENIG_STECKERBRETT] = "adcnetflgijvkzpuqywx";
+            machine_conf[KW_USES_UHR] = CONF_FALSE;
             machine_conf[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
             
             result = c->make_machine(machine_conf);
@@ -630,13 +668,13 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     // Create simulator GUI object
     if (dynamic_cast<enigma_base *>(the_machine.get()) == NULL)
     {
-        // Not an Enigma variant use 530 for rightmost rotor position    
+        // Not an Enigma variant. Use 530 for rightmost rotor position.
         simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, false, machine_to_visualize, false, 530));
     }
     else
     {
-        // We have an Enigma variant use default for rightmost rotor position        
-        simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, false, machine_to_visualize, false));
+        // We have an Enigma variant. Use default for rightmost rotor position.
+        simulator_gui = Gtk::manage(new class rotor_draw(rotor_names, (machine_to_visualize == "Services"), machine_to_visualize, false));
     }
 
     // Setup object to handle clipboard processing menu events
@@ -817,6 +855,8 @@ int main(int argc, char *argv[])
     allowed_names.insert(MNAME_KL7); 
 #ifdef INCLUDE_ENIGMA
     allowed_names.insert("M3"); 
+    allowed_names.insert("Services");
+    allowed_names.insert("M4");
 #endif
         
     rotorvis_simulator_app rotorvis_sim(allowed_names);  
