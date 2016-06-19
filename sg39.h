@@ -204,15 +204,19 @@ public:
      */
     virtual bool randomize(string& param);
     
-    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+    /*! \brief The parameter new_positions has to contain 7 lowercase characters. The first four specify the rotor positions.
+     *         The last three the wheel positions. The rotor positions have to be from the range a-z. The leftmost wheel position
+     *         has to be from the range a-y, the middle wheel position from the range a-w and the rightmost wheel positions from
+     *         the range a-u. The sequence in which the characters appear in the string new_positions has to match the sequence
+     *         of rotors/wheels as seen by the user in the graphical simulator.
      *
      *  Returns true if an error was encountered else false.
      */
     virtual bool move_all_rotors(ustring& new_positions);
 
-    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+    /*! \brief Does the same as move_all_rotors(ustring& new_positions) but new_positions is a zero terminated C-style string.
      *
-     *  Returns true if an error was encountered else false.
+     *  Returns true if an error was encountered else false. If true is returned the state of the underlying machine has not been changed.
      */
     virtual bool move_all_rotors(const char *new_positions) { ustring help(new_positions); return move_all_rotors(help); }
     

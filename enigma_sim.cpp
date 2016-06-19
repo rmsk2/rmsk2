@@ -78,13 +78,13 @@ bool enigma_family_base::move_all_rotors(ustring& new_positions)
     for (count = visible_ids.size(), iter = visible_ids.begin(); (iter != visible_ids.end()) && (!result); count--, ++iter)
     {
         // Does new_positions[count - 1] belong to rmsk::std_uni_alpha()?
-        result = !rmsk::std_uni_alpha()->contains_symbol(new_positions[count - 1]);
-        
-        if (!result)
-        {
-            // Everything is the way it should be now set position
-            s->set_ring_pos(*iter, rmsk::std_uni_alpha()->from_val(new_positions[count - 1]));
-        }
+        result = !rmsk::std_uni_alpha()->contains_symbol(new_positions[count - 1]);        
+    }
+    
+    // Everything is checked. Now do actual modifications
+    for (count = visible_ids.size(), iter = visible_ids.begin(); (iter != visible_ids.end()) && (!result); count--, ++iter)
+    {
+        s->set_ring_pos(*iter, rmsk::std_uni_alpha()->from_val(new_positions[count - 1]));
     }
     
     return result;

@@ -138,12 +138,13 @@ ustring sigaba_base_machine::visualize_sigaba_rotor_pos(string& rotor_identifier
     return result;       
 }
 
-bool sigaba_base_machine::move_all_sigaba_rotors(ustring& new_rotor_positions, alphabet<char>& alpha)
+bool sigaba_base_machine::move_all_sigaba_rotors(ustring& new_rotor_positions, alphabet<char>& alpha, bool do_modify)
 {
     bool result = (new_rotor_positions.length() != 5);
     vector<string> ids;
     unsigned int numeric_position;
     string new_positions = new_rotor_positions;
+    vector<pair<string, unsigned int> > requested_positions;
     
     get_stepping_gear()->get_rotor_identifiers(ids);
     
@@ -164,13 +165,21 @@ bool sigaba_base_machine::move_all_sigaba_rotors(ustring& new_rotor_positions, a
                 // additve inverse modulo alpha.get_size() of the current position to a letter of the alphabet referenced
                 // by parameter alpha.                
                 
-                get_stepping_gear()->set_ring_pos(identifier, -help);
+                //get_stepping_gear()->set_ring_pos(identifier, -help);
+                requested_positions.push_back(pair<string, unsigned int>(identifier, -help));
             }
             else
             {
-                get_stepping_gear()->set_ring_pos(identifier, numeric_position);
+                //get_stepping_gear()->set_ring_pos(identifier, numeric_position);
+                requested_positions.push_back(pair<string, unsigned int>(identifier, numeric_position));                
             }   
         } 
+    }
+    
+    // Everything was checked. Now do modifications if verification was successfull and user reqested the modifications 
+    for (unsigned int count = 0; (count < 5) && (!result) && (do_modify); count++)
+    {
+        get_stepping_gear()->set_ring_pos(requested_positions[count].first, requested_positions[count].second);
     }
     
     return result;
@@ -209,7 +218,7 @@ sigaba_index_machine::sigaba_index_machine(rotor_id null_id, rotor_id one_id, ro
 
 bool sigaba_index_machine::move_all_rotors(ustring& new_positions)
 {
-    return move_all_sigaba_rotors(new_positions, index_alphabet);
+    return move_all_sigaba_rotors(new_positions, index_alphabet, true);
 }
 
 ustring sigaba_index_machine::visualize_rotor_pos(string& rotor_identifier)
@@ -265,7 +274,7 @@ ustring sigaba_driver::visualize_rotor_pos(string& rotor_identifier)
 
 bool sigaba_driver::move_all_rotors(ustring& new_positions) 
 { 
-    return move_all_sigaba_rotors(new_positions, *rmsk::std_alpha()); 
+    return move_all_sigaba_rotors(new_positions, *rmsk::std_alpha(), true); 
 }
 
 /* ----------------------------------------------------------- */
@@ -595,9 +604,17 @@ bool sigaba::move_all_rotors(ustring& new_positions)
     ustring index_positions = new_positions.substr(0, 5), driver_positions = new_positions.substr(5, 5);
     ustring cipher_positions = new_positions.substr(10, 5);
 
-    result = result || get_sigaba_stepper()->get_index_bank()->move_all_rotors(index_positions);    
-    result = result || get_sigaba_stepper()->get_driver_machine()->move_all_rotors(driver_positions);
-    result = result || move_all_sigaba_rotors(cipher_positions, *rmsk::std_alpha());    
+    result = result || get_sigaba_stepper()->get_index_bank()->move_all_sigaba_rotors(index_positions, index_alphabet, false);
+    result = result || get_sigaba_stepper()->get_driver_machine()->move_all_sigaba_rotors(driver_positions, *rmsk::std_alpha(), false);
+    result = result || move_all_sigaba_rotors(cipher_positions, *rmsk::std_alpha(), false);    
+    
+    // Everything is checked. Now do actual modifications
+    if (!result)
+    {
+        (void)get_sigaba_stepper()->get_index_bank()->move_all_rotors(index_positions);
+        (void)get_sigaba_stepper()->get_driver_machine()->move_all_rotors(driver_positions);
+        (void)move_all_sigaba_rotors(cipher_positions, *rmsk::std_alpha(), true);    
+    }
     
     return result;
 }

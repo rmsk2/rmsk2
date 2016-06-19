@@ -524,6 +524,7 @@ bool schluesselgeraet39::move_all_rotors(ustring& new_positions)
     unsigned int numeric_wheel_pos;
     sg39_stepping_gear *stepper = get_sg39_stepper();
     string identifier;
+    vector<pair<string, unsigned int> > numeric_rotor_positions, numeric_wheel_positions;
     
     stepper->get_rotor_identifiers(ids);
     
@@ -538,7 +539,7 @@ bool schluesselgeraet39::move_all_rotors(ustring& new_positions)
         if (!result)
         {
             // Set displacement
-            stepper->set_ring_pos(identifier, rmsk::std_uni_alpha()->from_val(current_rotor_pos));
+            numeric_rotor_positions.push_back(pair<string, unsigned int>(identifier, rmsk::std_uni_alpha()->from_val(current_rotor_pos)));
             
             // Only ROTOR_1, ROTOR_2 and ROTOR_3 have a wheel associated with them
             if (identifier != ROTOR_4)
@@ -556,12 +557,24 @@ bool schluesselgeraet39::move_all_rotors(ustring& new_positions)
                     if (!result)
                     {
                         // Set wheel position
-                        stepper->set_wheel_pos(identifier.c_str(), numeric_wheel_pos);
+                        numeric_wheel_positions.push_back(pair<string, unsigned int>(identifier, numeric_wheel_pos));
                     }
                 }
             }            
         }
+    }
+    
+    // Everything was checked. Now do modifications or skip them if result == true.
+    for (unsigned int count = 0; (count < 4) && (!result); count++)
+    {
+        stepper->set_ring_pos(numeric_rotor_positions[count].first.c_str(), numeric_rotor_positions[count].second);    
     }        
+
+    for (unsigned int count = 0; (count < 3) && (!result); count++)
+    {
+        stepper->set_wheel_pos(numeric_wheel_positions[count].first.c_str(), numeric_wheel_positions[count].second);
+    }        
+
     
     return result;
 }

@@ -112,6 +112,15 @@ public:
      */
     sigaba_base_machine() : rotor_machine() { ; }
 
+    /*! \brief Set the displacement of all rotors in this machine to such a value that the characters in new_positions
+     *         appear in the rotor windows. The parameter alpha references the alphabet that specifies the allowed 
+     *         characters and their mapping to the correct numerical value. If do_modify is false the machine state is
+     *         not modified. This serves to test that the contents of the parameter new_positions is valid.
+     *
+     *  Returns true in case an error was encountered. Otherwise it returns false.
+     */    
+    bool move_all_sigaba_rotors(ustring& new_positions, alphabet<char>& alpha, bool do_modify);
+
 protected:    
     /*! \brief Returns a string that specifies the character that can currently be seen in the rotor
      *         window of a cipher, driver or index rotor. The rotor is identified by the parameter rotor_identifier.
@@ -122,14 +131,6 @@ protected:
      *  and cipher rotors an alphabet with 26 elements has to be used.
      */
     ustring visualize_sigaba_rotor_pos(string& rotor_identifier, alphabet<char>& alpha);
-
-    /*! \brief Set the displacement of all rotors in this machine to such a value that the characters in new_positions
-     *         appear in the rotor windows. The parameter alpha references the alphabet that specifies the allowed 
-     *         characters and their mapping to the correct numerical value.
-     *
-     *  Returns true in case an error was encountered. Otherwise it returns false.
-     */    
-    bool move_all_sigaba_rotors(ustring& new_positions, alphabet<char>& alpha);        
     
     /*! \brief Destructor.
      */    
@@ -398,15 +399,18 @@ public:
      */    
     virtual string get_description();
     
-    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+    /*! \brief The parameter new_positions has to contain 15 characters: The first five have to be from the range 0-9 and specify the index
+     *         rotor positions. The next five specify the driver rotor positions and the last five the cipher rotor positions. The
+     *         cipher and driver rotor positions have to be lowercase characters from the range a-z. The sequence in which the characters
+     *         appear in the string new_positions has to match the sequence of rotors as seen by the user in the graphical simulator.
      *
-     *  Returns true if an error was encountered else false.
+     *  Returns true if an error was encountered else false. If true is returned the state of the underlying machine has not been changed.
      */
     virtual bool move_all_rotors(ustring& new_positions);    
 
-    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+    /*! \brief Does the same as move_all_rotors(ustring& new_positions) but new_positions is a zero terminated C-style string.
      *
-     *  Returns true if an error was encountered else false.
+     *  Returns true if an error was encountered else false. If true is returned the state of the underlying machine has not been changed.
      */
     virtual bool move_all_rotors(const char *new_positions) { ustring help(new_positions); return move_all_rotors(help); }
 
