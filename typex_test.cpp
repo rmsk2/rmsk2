@@ -122,8 +122,8 @@ void test_typex::register_tests(composite_test_case *container)
     typex_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(MNAME_TYPEX));            
     typex_t = c->make_machine(typex_conf);
-    
-    
+    (dynamic_cast<enigma_family_base *>(typex_t))->move_all_rotors("aaaaa");
+        
     ustring expected_plain = "qwertyuiopasdfghjkl cbnm1234567890-/z%x£*() v',.a";
     ustring spruch =  "ptwcichvmijbkvcazuschqyaykvlbswgqxrqujjnyqyqptrlaly";
     typex_test_case.set_test_parms(spruch, expected_plain, typex_t, typex_t_load);        

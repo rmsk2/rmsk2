@@ -517,6 +517,55 @@ ustring schluesselgeraet39::visualize_all_positions()
     return result;
 }
 
+bool schluesselgeraet39::move_all_rotors(ustring& new_positions)
+{
+    bool result = (new_positions.length() != 7);
+    vector<string> ids;
+    unsigned int numeric_wheel_pos;
+    sg39_stepping_gear *stepper = get_sg39_stepper();
+    string identifier;
+    
+    stepper->get_rotor_identifiers(ids);
+    
+    for (unsigned int count = 0; (count < 4) && (!result); count++)
+    {
+        identifier = ids[count];  
+        gunichar current_rotor_pos = new_positions[3 - count];
+        
+        // Verify that current_rotor_pos is a valid position    
+        result = !rmsk::std_uni_alpha()->contains_symbol(current_rotor_pos);
+        
+        if (!result)
+        {
+            // Set displacement
+            stepper->set_ring_pos(identifier, rmsk::std_uni_alpha()->from_val(current_rotor_pos));
+            
+            // Only ROTOR_1, ROTOR_2 and ROTOR_3 have a wheel associated with them
+            if (identifier != ROTOR_4)
+            {
+                // Verify that current_wheel_pos is a letter
+                gunichar current_wheel_pos = new_positions[6 - count];                
+                result = !rmsk::std_uni_alpha()->contains_symbol(current_wheel_pos);
+                
+                if (!result)
+                {
+                    // Verify that current_wheel_pos is possible with the current wheel
+                    numeric_wheel_pos = rmsk::std_uni_alpha()->from_val(current_wheel_pos);
+                    result = (numeric_wheel_pos >= stepper->get_descriptor(identifier).mod_int_vals["wheelpos"].get_mod());
+                    
+                    if (!result)
+                    {
+                        // Set wheel position
+                        stepper->set_wheel_pos(identifier.c_str(), numeric_wheel_pos);
+                    }
+                }
+            }            
+        }
+    }        
+    
+    return result;
+}
+
 void schluesselgeraet39::save_additional_components(Glib::KeyFile& ini_file)
 {
     vector<int> perm_data;

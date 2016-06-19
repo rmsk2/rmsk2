@@ -193,21 +193,13 @@ bool alles_andere::test()
         cabling.push_back(pair<char, char>('q', 'y'));           
         cabling.push_back(pair<char, char>('w', 'x'));                   
         
-        //tirpitz_enigma machine(WALZE_T_VII, WALZE_T_VIII, WALZE_T_V);
-        //machine.get_enigma_stepper()->set_ringstellung("umkehrwalze", 'k');
-        //kd_enigma machine(WALZE_KD_II, WALZE_KD_VI, WALZE_KD_V);
         enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
-        //enigma_M4 machine(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_III, WALZE_V);
         machine.get_enigma_stepper()->set_ringstellung("slow", 'q');
         machine.get_enigma_stepper()->set_ringstellung("middle", 'r');
         machine.get_enigma_stepper()->set_ringstellung("fast", 'b');
-        //machine.get_enigma_stepper()->set_rotor_pos("umkehrwalze", 'a');
-        machine.get_enigma_stepper()->set_rotor_pos("slow", 'c');
-        machine.get_enigma_stepper()->set_rotor_pos("middle", 'f');
-        machine.get_enigma_stepper()->set_rotor_pos("fast", 'm');
+        machine.move_all_rotors("cfm");
         
         machine.set_stecker_brett(cabling, false);
-        //machine.get_uhr()->set_dial_pos(24);                
         
         map<string, string> config_data;
         string egal = machine.get_machine_type();
@@ -223,6 +215,9 @@ bool alles_andere::test()
             append_note("ERROR: Unable to retrieve config"); 
             result = false;
         }
+        
+        string visualized_rotor_positions = machine.visualize_all_positions();
+        append_note("rotor positions: " + visualized_rotor_positions);
                 
         append_note("Enigma configurator get_config test end"); 
         append_note("Enigma configurator make_machine test start"); 
@@ -239,17 +234,29 @@ bool alles_andere::test()
         kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
         boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
         
-        try
-        {
-            cnf2->get_config(config_data, test_machine.get());
-            append_config_notes(config_data);
+        result = result && (test_machine.get() != NULL);
+        
+        if (result)
+        {        
+            try
+            {
+                cnf2->get_config(config_data, test_machine.get());
+                append_config_notes(config_data);
+            }
+            catch(...)
+            {
+                append_note("ERROR: Unable to retrieve config"); 
+                result = false;
+            }        
+
+            visualized_rotor_positions = test_machine->visualize_all_positions();
+            append_note("rotor positions: " + visualized_rotor_positions);       
         }
-        catch(...)
+        else
         {
-            append_note("ERROR: Unable to retrieve config"); 
-            result = false;
-        }        
-                
+            append_note("Unable to create machine object");
+        }
+                         
         append_note("Enigma configurator make_machine test end");        
     }
             

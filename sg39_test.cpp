@@ -77,13 +77,16 @@ void register_tests(composite_test_case *container)
     sg39->get_sg39_stepper()->get_descriptor(ROTOR_1).ring->set_ring_data(ring_1);
     sg39->get_sg39_stepper()->get_descriptor(ROTOR_2).ring->set_ring_data(ring_2);
     // Set wheel positions
-    sg39->get_sg39_stepper()->set_wheel_pos(ROTOR_2, 15);
-    sg39->get_sg39_stepper()->set_wheel_pos(ROTOR_1, 7);
+    //sg39->get_sg39_stepper()->set_wheel_pos(ROTOR_2, 15);
+    //sg39->get_sg39_stepper()->set_wheel_pos(ROTOR_1, 7);
     // Set rotor positions
-    sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_1, 3);
-    sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_2, 16);
-    sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_3, 17);
-    sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_4, 5);
+    //sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_1, 3);
+    //sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_2, 16);
+    //sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_3, 17);
+    //sg39->get_sg39_stepper()->set_rotor_displacement(ROTOR_4, 5);
+    
+    sg39->move_all_rotors("frqdaph");
+    
     // Set pins on wheels
     sg39->get_sg39_stepper()->set_wheel_data(ROTOR_1, step_1);
     sg39->get_sg39_stepper()->set_wheel_data(ROTOR_2, step_2);

@@ -165,7 +165,7 @@ public:
      *         the new positions in form of 10 lower case letters in the range a-z. The letter on position 0 determines the position
      *         of the leftmost contact or drive wheel and the letter on position 9 the position of the rightmost (red) wheel. 
      */
-    virtual void set_all_positions(string& new_positions);
+    virtual void set_all_positions(string& new_positions);    
 
     /*! \brief Does the same as set_all_positions(string&) but uses a zero terminated C-style string to specify the new positions.
      */
@@ -228,7 +228,19 @@ public:
      *
      *  The parameter param is ignored.
      */
-    virtual bool randomize(string& param);        
+    virtual bool randomize(string& param);
+
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */    
+    virtual bool move_all_rotors(ustring& new_positions);
+    
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(const char *new_positions) { ustring pos_help(new_positions); return move_all_rotors(pos_help); }    
 
     /*! \brief Destructor.
      */  

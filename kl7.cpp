@@ -314,6 +314,60 @@ ustring kl7::visualize_rotor_pos(string& rotor_identifier)
     return result;
 }
 
+bool kl7::move_all_rotors(ustring& new_positions)
+{
+    bool result = false;    
+    string pos_help;
+    vector<unsigned int> new_pos;
+    vector<gunichar> help;
+    vector<string> rotor_names;
+    
+    // Create Unicode helper alphabet for KL7 letter ring data
+    Glib::ustring kl7_chars(KL7_RING_CIRCUMFENCE_HELP);            
+
+    for (unsigned int count = 0; count < kl7_chars.length(); count++)
+    {
+        help.push_back(kl7_chars[count]);
+    }
+    
+    alphabet<gunichar> kl7_uni_alpha(help);
+    get_kl7_stepper()->get_rotor_identifiers(rotor_names);
+    
+    // Check new_positions has correct length
+    result = (new_positions.length() != 8);
+    
+    // Convert alphabetic specification into numeric form
+    for (unsigned int count = 0; (count < new_positions.length()) && (!result); count++)
+    {
+        result = !kl7_uni_alpha.contains_symbol(new_positions[count]);
+        
+        if (!result)
+        {
+            new_pos.push_back(kl7_uni_alpha.from_val(new_positions[count]));
+        }
+    }
+    
+    // Now set all positions using the numeric form
+    if (!result)
+    {
+        for (int count = get_stepping_gear()->get_num_rotors() - 1; count >= 0; count--)
+        {
+            string identifier = rotor_names[count];
+            
+            if (identifier == KL7_ROT_4)
+            {
+                get_kl7_stepper()->set_stationary_rotor_ring_pos(new_pos[count]);
+            }
+            else
+            {
+                get_kl7_stepper()->move_to_letter_ring_pos(identifier.c_str(), new_pos[count]);
+            }
+        }        
+    }    
+    
+    return result;
+}
+
 ustring kl7::visualize_all_positions()
 {
     ustring result;

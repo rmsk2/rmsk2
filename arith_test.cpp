@@ -307,6 +307,31 @@ unsigned int rotor_machine_proxy::get_positions_processor(tlv_entry& params, tlv
     return result;
 }
 
+unsigned int rotor_machine_proxy::set_positions_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    
+    if (params.tag == TAG_STRING)
+    {
+        Glib::ustring desired_positions((char *)params.value.c_str());
+        
+        if (machine->move_all_rotors(desired_positions))
+        {
+            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+        }
+        else
+        {
+            result = out_stream->write_error_tlv(ERR_OK);        
+        }
+    }
+    else
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);    
+    }    
+    
+    return result;
+}
+
 unsigned int rotor_machine_proxy::sigaba_setup_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
@@ -543,6 +568,7 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["getpositions"] = &rotor_machine_proxy::get_positions_processor;
     rotor_proxy_proc["getpermutations"] = &rotor_machine_proxy::get_permutations_processor;        
     rotor_proxy_proc["randomizestate"] = &rotor_machine_proxy::randomize_state_processor;
+    rotor_proxy_proc["setpositions"] = &rotor_machine_proxy::set_positions_processor;
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

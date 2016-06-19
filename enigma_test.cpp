@@ -143,10 +143,7 @@ void register_tests(composite_test_case *container)
     enigma_t2->get_enigma_stepper()->set_ringstellung("slow", 'a');
     enigma_t2->get_enigma_stepper()->set_ringstellung("middle", 'a');
     enigma_t2->get_enigma_stepper()->set_ringstellung("fast", 'v');
-    enigma_t2->get_enigma_stepper()->set_rotor_pos("griechenwalze", 'v');
-    enigma_t2->get_enigma_stepper()->set_rotor_pos("slow", 'j');
-    enigma_t2->get_enigma_stepper()->set_rotor_pos("middle", 'n');
-    enigma_t2->get_enigma_stepper()->set_rotor_pos("fast", 'a');
+    enigma_t2->move_all_rotors("vjna");
         
     spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
     spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");
@@ -244,10 +241,7 @@ void register_tests(composite_test_case *container)
     enigma_t->get_enigma_stepper()->set_ringstellung("slow", 'q');
     enigma_t->get_enigma_stepper()->set_ringstellung("middle", 'r');
     enigma_t->get_enigma_stepper()->set_ringstellung("fast", 'b');
-    enigma_t->get_enigma_stepper()->set_rotor_pos("umkehrwalze", 'a');
-    enigma_t->get_enigma_stepper()->set_rotor_pos("slow", 'c');
-    enigma_t->get_enigma_stepper()->set_rotor_pos("middle", 'f');
-    enigma_t->get_enigma_stepper()->set_rotor_pos("fast", 'm');
+    enigma_t->move_all_rotors("acfm");
       
     expected_plain = "anxrommelxspruchnummerxeins";
     spruch = "rhmbwnbzgmmnkperufvnyjfkyqg";
@@ -304,9 +298,7 @@ void register_tests(composite_test_case *container)
     enigma_mit_uhr->get_enigma_stepper()->set_ringstellung("slow", 'p');
     enigma_mit_uhr->get_enigma_stepper()->set_ringstellung("middle", 'z');
     enigma_mit_uhr->get_enigma_stepper()->set_ringstellung("fast", 'h');
-    enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("slow", 'r');
-    enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("middle", 't');
-    enigma_mit_uhr->get_enigma_stepper()->set_rotor_pos("fast", 'z');
+    enigma_mit_uhr->move_all_rotors("rtz");
         
     spruch1 = "ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx";
     spruch2 = "dshvosujnuuaahobhkfxzkkspozkjyjbahrsuebrthacdkqggxqsxqzbqywafstpmwrujffbrkbjfvyy";

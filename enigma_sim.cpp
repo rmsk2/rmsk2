@@ -53,6 +53,43 @@ enigma_family_base::enigma_family_base()
     add_rotor_set(DEFAULT_SET, enigma_rotor_factory::get_rotor_set());    
 }
 
+bool enigma_family_base::move_all_rotors(ustring& new_positions)
+{
+    bool result = false;
+    stepping_gear *s = get_stepping_gear();
+    vector<string> ids, visible_ids;
+    vector<string>::iterator iter;
+    unsigned int count;
+    
+    s->get_rotor_identifiers(ids);    
+    
+    // Determine ids which belong to visible rotors
+    for (iter = ids.begin(); iter != ids.end(); ++iter)
+    {
+        if (unvisualized_rotor_names.count(*iter) == 0)
+        {
+            visible_ids.push_back(*iter);
+        }
+    }
+    
+    // Check if new_positions has correct length
+    result = (visible_ids.size() != new_positions.length());
+    
+    for (count = visible_ids.size(), iter = visible_ids.begin(); (iter != visible_ids.end()) && (!result); count--, ++iter)
+    {
+        // Does new_positions[count - 1] belong to rmsk::std_uni_alpha()?
+        result = !rmsk::std_uni_alpha()->contains_symbol(new_positions[count - 1]);
+        
+        if (!result)
+        {
+            // Everything is the way it should be now set position
+            s->set_ring_pos(*iter, rmsk::std_uni_alpha()->from_val(new_positions[count - 1]));
+        }
+    }
+    
+    return result;
+}
+
 void enigma_base::save_additional_components(Glib::KeyFile& ini_file)
 {
     rotor_descriptor& desc = get_enigma_stepper()->get_descriptor(UMKEHRWALZE);

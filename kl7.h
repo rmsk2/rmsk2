@@ -147,7 +147,7 @@ public:
     /*! \brief Sets all rings to the offset 0 and moves all rotors to the 0 position.
      */      
     virtual void reset();
-
+    
     /*! \brief Destructor.
      */      
     virtual ~kl7_stepping_gear() { ; }
@@ -213,6 +213,18 @@ public:
      *  The parameter param is ignored.
      */
     virtual bool randomize(string& param);
+    
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions);
+    
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(const char *new_positions) { ustring pos_help(new_positions); return move_all_rotors(pos_help); }        
 
     /*! \brief Destructor.
      */          

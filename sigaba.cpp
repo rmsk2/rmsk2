@@ -123,7 +123,7 @@ ustring sigaba_base_machine::visualize_sigaba_rotor_pos(string& rotor_identifier
     
     if (get_stepping_gear()->get_descriptor(rotor_identifier).id.insert_inverse)
     {
-        simple_mod_int help(get_stepping_gear()->get_descriptor(rotor_identifier).ring->get_pos(), alpha.get_size());
+        simple_mod_int help(get_stepping_gear()->get_ring_pos(rotor_identifier), alpha.get_size());
         
         // When inserted in reverse the character shown in the rotor window can be determined by mapping the
         // additve inverse modulo alpha.get_size() of the current position to a letter of the alphabet referenced
@@ -132,10 +132,48 @@ ustring sigaba_base_machine::visualize_sigaba_rotor_pos(string& rotor_identifier
     }
     else
     {
-        result += alpha.to_val(get_stepping_gear()->get_descriptor(rotor_identifier).ring->get_pos());
+        result += alpha.to_val(get_stepping_gear()->get_ring_pos(rotor_identifier));
     }
     
     return result;       
+}
+
+bool sigaba_base_machine::move_all_sigaba_rotors(ustring& new_rotor_positions, alphabet<char>& alpha)
+{
+    bool result = (new_rotor_positions.length() != 5);
+    vector<string> ids;
+    unsigned int numeric_position;
+    string new_positions = new_rotor_positions;
+    
+    get_stepping_gear()->get_rotor_identifiers(ids);
+    
+    for (unsigned int count = 0; (count < ids.size()) && (!result); count++)
+    {
+        string identifier = ids[count];        
+        result = !alpha.contains_symbol(new_positions[count]);        
+        
+        if (!result)
+        {
+            numeric_position = alpha.from_val(new_positions[count]);
+            
+            if (get_stepping_gear()->get_descriptor(identifier).id.insert_inverse)
+            {
+                simple_mod_int help(numeric_position, alpha.get_size());
+                
+                // When inserted in reverse the character shown in the rotor window can be determined by mapping the
+                // additve inverse modulo alpha.get_size() of the current position to a letter of the alphabet referenced
+                // by parameter alpha.                
+                
+                get_stepping_gear()->set_ring_pos(identifier, -help);
+            }
+            else
+            {
+                get_stepping_gear()->set_ring_pos(identifier, numeric_position);
+            }   
+        } 
+    }
+    
+    return result;
 }
 
 /* ----------------------------------------------------------- */
@@ -167,6 +205,11 @@ sigaba_index_machine::sigaba_index_machine(rotor_id null_id, rotor_id one_id, ro
     prepare_rotor(four_id, I_FOUR);
     
     reset();
+}
+
+bool sigaba_index_machine::move_all_rotors(ustring& new_positions)
+{
+    return move_all_sigaba_rotors(new_positions, index_alphabet);
 }
 
 ustring sigaba_index_machine::visualize_rotor_pos(string& rotor_identifier)
@@ -218,6 +261,11 @@ sigaba_driver::sigaba_driver(rotor_id stat_l_id, rotor_id slow_id, rotor_id fast
 ustring sigaba_driver::visualize_rotor_pos(string& rotor_identifier)
 {
     return visualize_sigaba_rotor_pos(rotor_identifier, *rmsk::std_alpha());
+}
+
+bool sigaba_driver::move_all_rotors(ustring& new_positions) 
+{ 
+    return move_all_sigaba_rotors(new_positions, *rmsk::std_alpha()); 
 }
 
 /* ----------------------------------------------------------- */
@@ -537,6 +585,19 @@ ustring sigaba::visualize_all_positions()
     temp = rotor_machine::visualize_all_positions();    
     reverse(temp.begin(), temp.end());
     result += temp;
+    
+    return result;
+}
+
+bool sigaba::move_all_rotors(ustring& new_positions)
+{
+    bool result = (new_positions.length() != 15);
+    ustring index_positions = new_positions.substr(0, 5), driver_positions = new_positions.substr(5, 5);
+    ustring cipher_positions = new_positions.substr(10, 5);
+
+    result = result || get_sigaba_stepper()->get_index_bank()->move_all_rotors(index_positions);    
+    result = result || get_sigaba_stepper()->get_driver_machine()->move_all_rotors(driver_positions);
+    result = result || move_all_sigaba_rotors(cipher_positions, *rmsk::std_alpha());    
     
     return result;
 }

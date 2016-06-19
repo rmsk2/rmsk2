@@ -241,6 +241,31 @@ ustring nema::visualize_rotor_pos(string& rotor_identifier)
     return result;
 }
 
+bool nema::move_all_rotors(ustring& new_positions)
+{
+    bool result = false;
+    string pos_help;
+    
+    result = (new_positions.length() != 10);
+    
+    for (unsigned int count = 0; (count < new_positions.length()) && (!result); count++)
+    {
+        result = !rmsk::std_uni_alpha()->contains_symbol(new_positions[count]);
+        
+        if (!result)
+        {
+            pos_help += rmsk::std_alpha()->to_val(rmsk::std_uni_alpha()->from_val(new_positions[count]));
+        }
+    }
+    
+    if (!result)
+    {
+        get_nema_stepper()->set_all_positions(pos_help);
+    }
+    
+    return result;
+}
+
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > nema::make_red_wheel(unsigned int rotor_id_l, unsigned int rotor_id_r)
 {
     // Construct selected rings

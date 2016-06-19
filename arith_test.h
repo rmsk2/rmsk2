@@ -233,6 +233,14 @@ public:
      */
     virtual unsigned int get_positions_processor(tlv_entry& params, tlv_stream *out_stream);
 
+    /*! \brief This method returns the result of machine->move_all_rotors("") to the client. The parameter params
+     *         has to contain a string which specifies the positions to which the visible rotors are to be moved.
+     *         The parameter out_stream is used to talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.     
+     */
+    virtual unsigned int set_positions_processor(tlv_entry& params, tlv_stream *out_stream);
+
     /*! \brief This method calls machine->step() a number of times specified by the TLV integer referenced by parameter params.
      *         For each stepping the result of machine->get_current_perm() is returned to the client. If the value of param is 0 
      *         then no stepping is performed but only the result of machine->get_current_perm() is returned to the client. 

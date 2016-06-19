@@ -90,7 +90,7 @@ void register_tests(composite_test_case *container)
     
     // Verification data created with CSG simulator available at http://cryptocellar.web.cern.ch/cryptocellar/simula/sigaba/index.html
     plain =  "dies ist ein toller test fuer die sigaba punkt die amis haben damals glatt mit leerxeichen verschluesselt";
-    spruch = "hiscbulieudekwremsdicbpwarhujhhixjhvxgbxrzypzpbybzycheafdgnffobzvwuasynfuczcsgbzrxxnamortkgugtcddmbnqhzrc";
+    spruch = "hhhtitjpthjbzlqrgncbzikagmfxzuxgjpwpejpuhcswgkblhjkgxhheshmxnxszaxpihzccyfnziodorlpgidxbwrcjkpmomiugxszci";
     
     // construct simple test machine through configurator
     map<string, string> sigaba_conf;
@@ -104,14 +104,8 @@ void register_tests(composite_test_case *container)
     s_load = new sigaba(all_ids_l, true);
     
     st = dynamic_cast<sigaba_stepper *>(s->get_stepping_gear());
-    
-    // set rotor positions on test machine
-    st->set_rotor_displacement(R_TWO, 14);
-    st->get_driver_machine()->get_stepping_gear()->set_rotor_displacement(S_FAST, 14);
         
-    st->setup_step(STATOR_L, 4);
-    st->setup_step(S_FAST, 2);
-    st->setup_step(STATOR_R);    
+    s->move_all_rotors("09000kooonljqmj");
     
     csp_889_test_case.set_test_parms(spruch, plain, s, s_load);
 
@@ -129,7 +123,9 @@ void register_tests(composite_test_case *container)
     
     st = dynamic_cast<sigaba_stepper *>(s->get_stepping_gear());
     
+    // 14 is m when a rotor has been inserted in reverse
     st->set_rotor_displacement(R_TWO, 14);
+    // 14 is m when a rotor has been inserted in reverse
     st->get_driver_machine()->get_stepping_gear()->set_rotor_displacement(S_FAST, 14);    
 
     // set rotor positions on test machine    

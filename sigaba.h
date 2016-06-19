@@ -123,9 +123,17 @@ protected:
      */
     ustring visualize_sigaba_rotor_pos(string& rotor_identifier, alphabet<char>& alpha);
 
+    /*! \brief Set the displacement of all rotors in this machine to such a value that the characters in new_positions
+     *         appear in the rotor windows. The parameter alpha references the alphabet that specifies the allowed 
+     *         characters and their mapping to the correct numerical value.
+     *
+     *  Returns true in case an error was encountered. Otherwise it returns false.
+     */    
+    bool move_all_sigaba_rotors(ustring& new_positions, alphabet<char>& alpha);        
+    
     /*! \brief Destructor.
      */    
-    virtual ~sigaba_base_machine() { ; }
+    virtual ~sigaba_base_machine() { ; }    
 };
 
 /*! \brief A class that implements the stepping_gear which is in use in the SIGABA driver machine.
@@ -181,6 +189,12 @@ public:
      */
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
 
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions);
+
     /*! \brief Destructor. 
      */
     virtual ~sigaba_driver() { delete stepper; } 
@@ -204,6 +218,12 @@ public:
      *         0123456789.
      */
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions);
 
     /*! \brief Destructor. 
      */
@@ -377,6 +397,18 @@ public:
     /*! \brief Returns a description that differentiates between CSP 2900 and CSP 889 mode.
      */    
     virtual string get_description();
+    
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions);    
+
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(const char *new_positions) { ustring help(new_positions); return move_all_rotors(help); }
 
     /*! \brief Destructor.
      */        

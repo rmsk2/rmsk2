@@ -68,7 +68,7 @@ void register_tests(composite_test_case *container)
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(MNAME_KL7));  
     enc = dynamic_cast<kl7 *>(c->make_machine(kl7_conf));
     
-    enc->get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_1, 7);
+    enc->move_all_rotors("faamaaaa");
     enc->step_rotors();
 
     // Set up verification data

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2015 Martin Grap
+# Copyright 2016 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -2391,6 +2391,18 @@ class RotorMachine(tlvobject.TlvProxy):
         param = tlvobject.TlvEntry().to_null()    
         res = self.do_method_call(self._handle, 'getpositions', param)
         return res[0]
+
+    ## \brief Set the displacement of the rotors in such a way that the positions specified in parameter new_positions
+    #         appears in the rotor windows.
+    #
+    #  \param [new_positions] A string. Has to specify the desired rotor positions in the correct format for the underlying
+    #         rotor machine.               
+    #
+    #  \returns Nothing. Throws exception when it fails.
+    #
+    def set_rotor_positions(self, new_positions):
+        param = tlvobject.TlvEntry().to_string(new_positions)    
+        res = self.do_method_call(self._handle, 'setpositions', param)
 
     ## \brief Performs a number of setup steppings of the SIGABA machine which is proxied by this rotorsim.RotorMachine
     #         instance.

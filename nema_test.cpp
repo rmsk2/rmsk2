@@ -56,8 +56,7 @@ void register_tests(composite_test_case *container)
     ustring spruch =         "hrsbvootzucrwlmgrmgvwywovnf";   
     
     // Set first machine to defined rotor position
-    nema_stepper *s = n->get_nema_stepper();    
-    s->set_all_positions("mqqpzqsoev");      
+    n->move_all_rotors("mqqpzqsoev");
     
     nema_test_case.set_test_parms(spruch, expected_plain, n, n_load);            
 

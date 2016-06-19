@@ -611,6 +611,26 @@ unsigned int stepping_gear::get_ring_pos(string& identifier)
     return result;
 }
 
+void stepping_gear::set_ring_pos(string& identifier, unsigned int new_pos)
+{
+    rmsk::simple_assert(rotors.count(identifier) == 0, "programmer error: rotor identifier unknown");
+    
+    if (rotors[identifier].ring.get() != NULL)
+    {
+        rotors[identifier].ring->set_pos(new_pos);
+    }
+    else
+    {
+        set_rotor_displacement(identifier, new_pos);
+    } 
+}
+
+void stepping_gear::set_ring_pos(unsigned int rotor_num, unsigned int new_pos)
+{   
+    string identifier = rotor_positions[rotor_num % num_rotors];
+    
+    set_ring_pos(identifier, new_pos);
+}
 
 rotor_descriptor& stepping_gear::get_descriptor(string& identifier)
 {

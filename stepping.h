@@ -398,6 +398,23 @@ public:
      */  
     virtual unsigned int get_ring_pos(unsigned int rotor_num);
 
+    /*! \brief Sets the displacement of the rotor specified by the identifier given in parameter identifier to such a value that the
+     *         number specified in new_pos would appear in the rotor window of the rotor if the ring would have the numbers 1..get_size()
+     *         inscribed on it.
+     *
+     *  In case there is no ring attached to the specified rotor this method simlpy sets the rotor displacement to the value given in
+     *  new_pos.
+     */  
+    virtual void set_ring_pos(string& identifier, unsigned int new_pos);
+
+    /*! \brief Same as set_ring_pos(string&, unsigned int) but the rotor is identified by a C-style zero terminated string instead of an STL string.
+     */        
+    virtual void set_ring_pos(const char *identifier, unsigned int new_pos) { string temp(identifier); return set_ring_pos(temp, new_pos); }
+
+    /*! \brief Same as set_ring_pos(string&, unsigned int) but the rotor is identified by a rotor number.
+     */  
+    virtual void set_ring_pos(unsigned int rotor_num, unsigned int new_pos);
+
     /*! \brief Returns a reference to the rotor_descriptor that is identified by the value of the parameter identifier.
      */  
     virtual rotor_descriptor& get_descriptor(string& identifier);

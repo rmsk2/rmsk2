@@ -229,6 +229,12 @@ public:
      *         rotor_machine::unvisualized_rotor_names to determine which rotors are not to be visualized at all.
      */
     virtual ustring visualize_all_positions();
+    
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions) { return true; }
 
     /*! \brief This method changes the vector which is referenced through the parameter current_perm in such a way that
      *         it reflects the permutation that is produced by the rotor machine in its current state.

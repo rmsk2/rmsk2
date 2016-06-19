@@ -204,6 +204,18 @@ public:
      */
     virtual bool randomize(string& param);
     
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(ustring& new_positions);
+
+    /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
+     *
+     *  Returns true if an error was encountered else false.
+     */
+    virtual bool move_all_rotors(const char *new_positions) { ustring help(new_positions); return move_all_rotors(help); }
+    
     /*! \brief Destructor.
      */             
     virtual ~schluesselgeraet39() { delete stepper; }
