@@ -113,7 +113,15 @@ protected:
      *  \param [out_s] Has to specify the output stream used by this method.
      *  \param [machine] Has to specify the rotor machine which rotor positions are to be visualized.
      */
-    void execute_pos_command(ostream *out_s, rotor_machine *machine);
+    void execute_getpos_command(ostream *out_s, rotor_machine *machine);
+
+    /*! \brief This method sets the positions of the visible rotors to the values specified in parameter new_positions.
+     * 
+     *  \param [out_s] Has to specify the output stream used by this method.
+     *  \param [new_positions] Has to specify the new rotor positions
+     *  \param [machine] Points to the machine which rotors are moved to new positions
+     */
+    void execute_setpos_command(ostream *out_s, string& new_positions, rotor_machine *machine);
     
     /*! \brief This method performs the actual en/decyption of the input data using the rotor machine specified
      *         on the command line.
@@ -170,6 +178,9 @@ protected:
      */
     string state_file;
 
+    /*! \brief Holds the new positions of the visible rotors. Has to be present when the setpos command is used.
+     */
+    string new_rotor_positions;
 
     /*! \brief Holds the command that is to be executed as specified on the command line by the -c option or as
      *         a positional parameter.
@@ -194,9 +205,10 @@ rotor_sim::rotor_sim()
         ("state-progression", "Write state reached after processing to stdout. Optional.")
         ("rotor-num,r", po::value<int>(&setup_step_rotor_num)->default_value(-1), "Setup step the rotor number with the given number 1-5.")            
         ("config-file,f", po::value<string>(), "Configuration file to read")
-        ("input-file,i", po::value<string>(), "Input file to read. Optional. stdin used if missing.")        
+        ("input-file,i", po::value<string>(), "Input file to read. Optional. stdin used if missing.")
+        ("positions,p", po::value<string>(&new_rotor_positions)->default_value("xnoposx"), "New rotor positions. Optional.")        
         ("output-file,o", po::value<string>(), "Output file to produce. Optional. stdout used if missing.")                    
-        ("command,c", po::value<string>(), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, pos, sigabasetup.")
+        ("command,c", po::value<string>(), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, getpos, setpos, sigabasetup.")
         ("save-state,s", po::value<string>(), "Save state of machine in specified file after processing. Optional.")        
         ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")
         ("num-iterations,n", po::value<int>(&num_iterations)->default_value(1), "Number of iterations to execute perm or step commands.")            
@@ -333,13 +345,26 @@ void rotor_sim::execute_perm_command(int num_iterations, ostream *out, rotor_mac
     }                
 }
 
-void rotor_sim::execute_pos_command(ostream *out, rotor_machine *machine)
+void rotor_sim::execute_getpos_command(ostream *out, rotor_machine *machine)
 {        
     string help = machine->visualize_all_positions();
 
     (*out) << help << endl;
 }
 
+void rotor_sim::execute_setpos_command(ostream *out_s, string& new_positions, rotor_machine *machine)
+{
+    Glib::ustring new_pos((char *)new_positions.c_str());
+    
+    if (machine->move_all_rotors(new_pos))
+    {
+        (*out_s) << "Not a valid rotor position" << endl;
+    }
+    else
+    {
+        (*out_s) << "OK" << endl;
+    }
+}
 
 void rotor_sim::execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine)
 {
@@ -446,9 +471,9 @@ int rotor_sim::execute_command()
             }
             else
             {
-                if (command == "pos")
+                if (command == "getpos")
                 {
-                    execute_pos_command(out, the_machine.get());
+                    execute_getpos_command(out, the_machine.get());
                 }
                 else
                 {
@@ -458,8 +483,15 @@ int rotor_sim::execute_command()
                     }
                     else
                     {
-                        // perm command
-                        execute_perm_command(num_iterations, out, the_machine.get());                
+                        if (command == "setpos")
+                        {
+                            execute_setpos_command(out, new_rotor_positions, the_machine.get());
+                        }
+                        else
+                        {
+                            // perm command
+                            execute_perm_command(num_iterations, out, the_machine.get());                
+                        }
                     }
                 }                
             }
@@ -603,7 +635,8 @@ void rotor_sim::print_help_message(po::options_description *desc)
     cout << "    rotorsim encrypt -f machine_config.ini" << endl;            
     cout << "    rotorsim step -f machine_config.ini -n 2" << endl;                
     cout << "    rotorsim perm -f machine_config.ini -n 3" << endl;    
-    cout << "    rotorsim pos -f machine_config.ini" << endl;        
+    cout << "    rotorsim getpos -f machine_config.ini" << endl;        
+    cout << "    rotorsim setpos -p vjna -f machine_config.ini" << endl;            
     cout << "    rotorsim sigabasetup -f machine_config.ini -r 1 -n 4" << endl;            
     cout << endl;
 }
@@ -649,14 +682,15 @@ int rotor_sim::parse(int argc, char **argv)
         // Check if command is either encrypt, decrypt o step. No further commands are allowed.
         if ((vm["command"].as<string>() != "decrypt") and (vm["command"].as<string>() != "encrypt") and 
             (vm["command"].as<string>() != "step")  and (vm["command"].as<string>() != "perm") and 
-            (vm["command"].as<string>() != "pos") and (vm["command"].as<string>() != "sigabasetup") )
+            (vm["command"].as<string>() != "getpos") and (vm["command"].as<string>() != "sigabasetup") and 
+            (vm["command"].as<string>() != "setpos"))
         {
             cout << "Unknown command " << vm["command"].as<string>() << endl;
             
             return ERR_WRONG_COMMAND_LINE;
         }
 
-        // Command line specified by user is corret. Retrieve data from variable vm and store it
+        // Command line specified by user is correct. Retrieve data from variable vm and store it
         // in the corresponding instance variables.
         
         command = vm["command"].as<string>();

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2015 Martin Grap
+# Copyright 2016 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -166,7 +166,15 @@ class Processor:
     #  \returns A string specifying the current rotor positions.
     #                        
     def get_rotor_positions(self):
-        return self.process('pos', '', 0)
+        return self.process('getpos', '', 0)
+
+    ## \brief Simple wrapper for the process method that allows to set the current rotor positions.
+    #
+    #  \returns A bool. True means that an error occured.
+    #                        
+    def set_rotor_positions(self, new_rotor_positions):
+        help = self.process('setpos', '', 0, ['--positions', new_rotor_positions])
+        return help != 'OK'
 
     ## \brief Simple wrapper for the process method that allows to retrieve the current machine permutation.
     #
