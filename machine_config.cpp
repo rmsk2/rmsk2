@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file machine_config.cpp
  *  \brief Implements a class that describes the characteristics of the Enigma variants simulated by this software.
  */ 
@@ -756,25 +772,25 @@ void machine_config::get_keywords(vector<key_word_info>& infos)
     infos.clear();
     
     // All Enigma variants have to be configured with rotor and ring settings
-    infos.push_back(key_word_info(KW_ENIG_ROTOR_SELECTION, KEY_STRING));
-    infos.push_back(key_word_info(KW_ENIG_RINGSTELLUNG, KEY_STRING));    
+    infos.push_back(key_word_info(KW_ENIG_ROTOR_SELECTION, KEY_STRING, "Enigma rotors"));
+    infos.push_back(key_word_info(KW_ENIG_RINGSTELLUNG, KEY_STRING, "Enigma ring settings"));    
     
     // Only the military variants Services, M3 and M4 have a plugboard
     if (has_plugboard)
     {
-        infos.push_back(key_word_info(KW_ENIG_STECKERBRETT, KEY_STRING));
+        infos.push_back(key_word_info(KW_ENIG_STECKERBRETT, KEY_STRING, "Enigma Steckerbrett"));
         
         // Only Services and M3 can use the Uhr
         if (uhr_capable)
         {            
-            infos.push_back(key_word_info(KW_USES_UHR, KEY_BOOL));
+            infos.push_back(key_word_info(KW_USES_UHR, KEY_BOOL, "Uses Uhr"));
         }
     }
     
     // Only Services, M3 and KD can use UKW D
     if (is_ukw_d_capable())
     {
-        infos.push_back(key_word_info(KW_UKW_D_PERM, KEY_STRING));
+        infos.push_back(key_word_info(KW_UKW_D_PERM, KEY_STRING, "UKW D permutation"));
     }
 }
 

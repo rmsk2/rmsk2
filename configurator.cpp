@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file configurator.cpp
  *  \brief Contains the implementation of ::configurator and its subclasses.
  */ 
@@ -398,20 +414,20 @@ void sigaba_configurator::get_keywords(vector<key_word_info>& infos)
     * Each one of them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation
     * and orientation (N or R) have to be specified. All of the ten available rotors have to be placed in the machine.
     */    
-    infos.push_back(key_word_info(KW_CIPHER_ROTORS, KEY_STRING));    
-    infos.push_back(key_word_info(KW_CONTROL_ROTORS, KEY_STRING));        
+    infos.push_back(key_word_info(KW_CIPHER_ROTORS, KEY_STRING, "Cipher Rotors"));    
+    infos.push_back(key_word_info(KW_CONTROL_ROTORS, KEY_STRING, "Control Rotors"));        
 
    /*
     * Determines which index rotors are placed in the machine and in what sequence. There are five rotors (0-4). Each one of 
     * them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation
     * (N or R) have to be specified. All of the five available rotors have to be placed in the machine.
     */
-    infos.push_back(key_word_info(KW_INDEX_ROTORS, KEY_STRING));        
+    infos.push_back(key_word_info(KW_INDEX_ROTORS, KEY_STRING, "Index Rotors"));        
     
    /*
     * Determines whether the simulated machine is of type CSP 2900 (CONF_TRUE) or CSP889 (CONF_FALSE)
     */
-    infos.push_back(key_word_info(KW_CSP_2900_FLAG, KEY_BOOL));            
+    infos.push_back(key_word_info(KW_CSP_2900_FLAG, KEY_BOOL, "CSP 2900 Flag"));            
 }
 
 unsigned int sigaba_configurator::configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure)
@@ -665,7 +681,7 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
     * rotor that is to be placed in the machine a designation has to be specified. Each designation may only appear
     * once. The number of the leftmost (stationary) rotor has to be specified as the first character.
     */    
-    infos.push_back(key_word_info(KW_SG39_ROTORS, KEY_STRING));
+    infos.push_back(key_word_info(KW_SG39_ROTORS, KEY_STRING, "SG39 Rotors"));
 
 
    /*
@@ -673,47 +689,47 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
     * each of which has to be in the range a-z. The first character specifies the ring position of the leftmost
     * (stationary) rotor.
     */    
-    infos.push_back(key_word_info(KW_SG39_RING_POS, KEY_STRING));    
+    infos.push_back(key_word_info(KW_SG39_RING_POS, KEY_STRING, "SG39 Ring positions"));    
         
    /*
     * As with some Enigma variants the reflector of the SG39 can be set in the field. The reflector is specified 
     * by 13 pairs of letters. Example the pairs are: aw bi cv dk et fm gn hz ju lo pq ry sx specify a valid reflector 
     * setting. Each letter can and must occur once in this seting.   
     */    
-    infos.push_back(key_word_info(KW_SG39_REFLECTOR_PLUGS, KEY_STRING));
+    infos.push_back(key_word_info(KW_SG39_REFLECTOR_PLUGS, KEY_STRING, "SG39 Reflector"));
     
    /*
     * As with some Enigma variants the SG39 had a plugboard that permuted the input before entering and again after
     * leaving the rotor stack. In this setting a permutation of a-z has to be specified. As an example the value 
     * ldtrmihoncpwjkbyevsaxgfzuq is a valid plugboard setting.   
     */        
-    infos.push_back(key_word_info(KW_SG39_ENTRY_PLUGS, KEY_STRING)); 
+    infos.push_back(key_word_info(KW_SG39_ENTRY_PLUGS, KEY_STRING, "SG39 Plugboard")); 
     
    /*
     * This configuration element has to contain at most 21 characters which can be from the range a-u. Each letter
     * corresponds to a set pin on the position specified by the letter.   
     */
-    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_1, KEY_STRING));     
+    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_1, KEY_STRING, "SG39 Pins wheel 1"));     
 
    /*
     * This configuration element has to contain at most 23 characters which can be from the range a-w. Each letter
     * corresponds to a set pin on the position specified by the letter.   
     */
-    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_2, KEY_STRING));         
+    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_2, KEY_STRING, "SG39 Pins wheel 2"));         
     
    /*
     * This configuration element has to contain at most 25 characters which can be from the range a-y. Each letter
     * corresponds to a set pin on the position specified by the letter.   
     */
-    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_3, KEY_STRING));         
+    infos.push_back(key_word_info(KW_SG39_PINS_WHEEL_3, KEY_STRING, "SG39 Pins wheel 3"));         
 
    /*
     * Each of these configuration elements has to contain at most 26 characters which can be from the range a-z.
     * Each letter corresponds to a set pin on the position specified by the letter.   
     */
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_1, KEY_STRING));     
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_2, KEY_STRING));         
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_3, KEY_STRING));         
+    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_1, KEY_STRING, "SG39 Pins rotor 1"));     
+    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_2, KEY_STRING, "SG39 Pins rotor 2"));         
+    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_3, KEY_STRING, "SG39 Pins rotor 3"));         
 }
 
 /*!  Caveat: This method assumes that the unsigned int constants SG39_ROTOR_0, ..., SG39_ROTOR_9 from the file sg39.h
@@ -971,20 +987,20 @@ void typex_configurator::get_keywords(vector<key_word_info>& infos)
     * designation and orientation (N or R) have to be specified. Exactly five of the possible seven rotors have to 
     * be placed in the machine.   
     */    
-    infos.push_back(key_word_info(KW_TYPEX_ROTORS, KEY_STRING));    
+    infos.push_back(key_word_info(KW_TYPEX_ROTORS, KEY_STRING, "Typex Rotors"));    
 
    /*
     * Like Enigma rotors Typex rotors have a letter ring that can be set to 26 different positions with respect to
     * the wiring core. The positions are designated by the letters a-z. Therefore this setting consists of five letters.   
     */
-    infos.push_back(key_word_info(KW_TYPEX_RINGS, KEY_STRING));        
+    infos.push_back(key_word_info(KW_TYPEX_RINGS, KEY_STRING, "Typex rings"));        
 
    /*
     * As with some Enigma variants the reflector of the Typex can be set in the field. The reflector is specified by 13
     * pairs of letters. An example of a valid refelctor setting is: ar by cu dh eq fs gl ix jp kn mo tw vz. Each letter 
     * can and must occur once in this seting.   
     */
-    infos.push_back(key_word_info(KW_TYPEX_REFLECTOR, KEY_STRING));
+    infos.push_back(key_word_info(KW_TYPEX_REFLECTOR, KEY_STRING, "Typex Reflector"));
 }
 
 /*! Caveat: This method assumes that the unsigned int constants TYPEX_SP_02390_A, ..., TYPEX_SP_02390_G from the file enigma_rotor_set.h
@@ -1196,14 +1212,14 @@ void kl7_configurator::get_keywords(vector<key_word_info>& infos)
     * to choose from (a-m). Exactly eight of them have to be placed in the machine and therefore a string 
     * consisting of eight letters has to be specified in this field. Each rotor can appear at most once in this string.   
     */    
-    infos.push_back(key_word_info(KW_KL7_ROTORS, KEY_STRING));    
+    infos.push_back(key_word_info(KW_KL7_ROTORS, KEY_STRING, "KL7 Rotors"));    
     
    /*
     * The alphabet rings can be rotated relative the wiring core. The position to which the alphabet ring is to 
     * be moved is a number between 1 and 36. Therefore this field has to contain 8 such numbers, each seperated from
     * the preceeeding one by a space.   
     */
-    infos.push_back(key_word_info(KW_KL7_ALPHA_POS, KEY_STRING));        
+    infos.push_back(key_word_info(KW_KL7_ALPHA_POS, KEY_STRING, "KL7 Alpha ring positions"));        
 
    /*
     * Determines which notch rings are attached to the rotors. There are eleven notch rings to choose from (1-11). 
@@ -1212,7 +1228,7 @@ void kl7_configurator::get_keywords(vector<key_word_info>& infos)
     * chosen from the set of eleven mentioned above. This field therefore has to contain seven numbers between 
     * 1 and 11, each seperated from the preceeeding one by a space. Each notch ring can appear at most once in this field.   
     */
-    infos.push_back(key_word_info(KW_KL7_NOTCH_RINGS, KEY_STRING));        
+    infos.push_back(key_word_info(KW_KL7_NOTCH_RINGS, KEY_STRING, "KL7 Notch rings"));        
 
    /*
     * Determines to what positions the notch rings are moved after they have been attached to the correponding rotors. 
@@ -1220,7 +1236,7 @@ void kl7_configurator::get_keywords(vector<key_word_info>& infos)
     * specifiy the positions of seven notch rings. Each position is either a letter between a and z or a letter between 
     * a and z followed by a + sign.   
     */
-    infos.push_back(key_word_info(KW_KL7_NOTCH_POS, KEY_STRING));            
+    infos.push_back(key_word_info(KW_KL7_NOTCH_POS, KEY_STRING, "KL7 Notch ring positions"));            
 }
 
 /*! Caveat: This method assumes that KL7_ROTOR_A = 0, KL7_ROTOR_B = 1, ..., KL7_ROTOR_M = 12. On top of that
@@ -1563,7 +1579,7 @@ void nema_configurator::get_keywords(vector<key_word_info>& infos)
     * have to be placed in the machine and therefore a string consisting of four letters has to be specified
     * in this field.   
     */    
-    infos.push_back(key_word_info(KW_NEMA_ROTORS, KEY_STRING));    
+    infos.push_back(key_word_info(KW_NEMA_ROTORS, KEY_STRING, "Nema rotors"));    
 
    /*
     * Determines which notch rings are placed in what sequence in the simulator. The notch rings are designated 
@@ -1572,12 +1588,12 @@ void nema_configurator::get_keywords(vector<key_word_info>& infos)
     * 12, 13, 14, 15, 17, 18. The field has to specify exactly four notch rings, where the four numbers are seperated
     * by a space character.   
     */
-    infos.push_back(key_word_info(KW_NEMA_RINGS, KEY_STRING));   
+    infos.push_back(key_word_info(KW_NEMA_RINGS, KEY_STRING, "Nema rings"));   
     
    /*
     * Determines whether the simulated machine is of type war (CONF_TRUE) or training (CONF_FALSE)
     */         
-    infos.push_back(key_word_info(KW_NEMA_WAR_MACHINE, KEY_BOOL));  
+    infos.push_back(key_word_info(KW_NEMA_WAR_MACHINE, KEY_BOOL, "War machine"));  
 }
 
 /*! Caveat: This method assumes that NEMA_ROTOR_A = 0, NEMA_ROTOR_B = 1, ..., NEMA_ROTOR_F = 5. It also assumes

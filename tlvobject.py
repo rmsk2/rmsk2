@@ -1,4 +1,20 @@
 ################################################################################
+# Copyright 2016 Martin Grap
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+################################################################################
 # Copyright 2015 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -694,6 +710,45 @@ class TlvProxy:
     def get_handle(self):
         return self._handle
 
+## \brief A class that allows to en/decode dictionary objects to/from TLV format
+#
+class TlvDict:
+    ## \brief This method takes a dictionary specified in parameter dict_data and returns a correspondig
+    #         TlvEntry object.
+    #
+    #  \param [dict_data] A dictionary. Keys and values are transformed into strings.
+    #
+    #  \returns A TlvEntry object
+    #    
+    @staticmethod
+    def dict_to_tlv(dict_data):
+        entry = TlvEntry()
+        entry_data = []
+        
+        for i in dict_data.keys():
+            key = TlvEntry().to_string(str(i))
+            value = TlvEntry().to_string(str(dict_data[i]))
+            seq = TlvEntry().to_sequence([key, value])
+            entry_data.append(seq)
+        
+        entry.to_sequence(entry_data)
+        
+        return entry
+
+    ## \brief This method takes a parsed dictionary as returned by TlvStream.transact and turns it into a dictionary 
+    #
+    #  \param [parsed_dict] A sequence of two element sequences. Both elements of that sequence are turned into strings.
+    #
+    #  \returns A dictionary object.
+    #
+    @staticmethod        
+    def parsed_tlv_to_dict(parsed_dict):
+        result = {}
+        
+        for i in parsed_dict:
+                result[str(i[0])] = str(i[1])
+        
+        return result
 
 ## \brief A class which allows to manage and access echo objects managed by a TLV server.
 #
@@ -721,6 +776,19 @@ class TestEcho(TlvProxy):
         res = self.do_method_call(self._handle, 'echo', param)
     
         return res
+
+    ## \brief This method sends a dictionary object to an echo object on a TLV server. There it is parsed, modified and sent
+    #         back to the client.
+    #
+    #  \param [param] Is a dictionary object.
+    #
+    #  \returns A sequence. The type of the sequence components is generic and depends on the values sent back by the 
+    #           server.    
+    #    
+    def echo_dict(self, param):
+        res = self.do_method_call(self._handle, 'echodict', TlvDict.dict_to_tlv(param))
+    
+        return TlvDict.parsed_tlv_to_dict(res[0])
 
     
 ## \brief A class which allows to manage and access test arithmetic objects managed by a TLV server.

@@ -14,12 +14,31 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file arith_test.cpp
  *  \brief Implementation of some classes which allow to test the TLV infrastructure. On top of that it contains
  *         the implementation for the TLV rotor machine functionality.
  */ 
 
+#include<boost/scoped_ptr.hpp>
+#include<configurator.h>
 #include<arith_test.h>
+#include<tlv_data_struct.h>
 
 unsigned int arithmetic::add_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -155,6 +174,36 @@ unsigned int echo::echo_processor(tlv_entry& params, tlv_stream *out_stream)
     return result;
 }
 
+unsigned int echo::echo_dict_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_map test_map;
+    map<string, string> res_map, new_map;
+    map<string, string>::iterator iter;
+    
+    // Try to parse the TLV structure passed in params
+    if (test_map.set_elements(params))
+    {
+        // Error -> Tell client
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        test_map.tlv_convert(res_map);
+
+        for (iter = res_map.begin(); iter != res_map.end(); ++iter)
+        {
+            new_map[iter->first] = iter->second + " echo";
+        }
+        
+        test_map.to_tlv_entry(new_map);
+
+        result = out_stream->write_success_tlv(test_map.get_elements());
+    }    
+    
+    return result;
+}
+
 /* ---------------------------------------------------------------------------------------------- */
 
 unsigned int echo_provider::new_object(tlv_entry& params, tlv_stream *out_stream)
@@ -191,6 +240,13 @@ tlv_callback *echo_provider::make_functor(string& method_name, void *object)
     if (method_name == "echo")
     {
         result = new tlv_callback(sigc::mem_fun(*self, echo_proc));
+    }
+    else
+    {
+        if (method_name == "echodict")
+        {
+            result = new tlv_callback(sigc::mem_fun(*self, echo_dict_proc));
+        }    
     }
     
     return result;
@@ -276,6 +332,81 @@ unsigned int rotor_machine_proxy::get_state_processor(tlv_entry& params, tlv_str
     
     return result;
 }
+
+unsigned int rotor_machine_proxy::get_config_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_map config_map;
+    string config_name = rmsk::get_config_name(machine);
+    map<string, string> current_config;
+    
+    try
+    {
+        do
+        {
+            boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(config_name));
+            
+            if (c.get() == NULL)
+            {
+                result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                break;
+            }
+            
+            c->get_config(current_config, machine);
+            
+            config_map.to_tlv_entry(current_config);
+
+            // Tell client about processing result and write end of result stream marker.        
+            result = out_stream->write_success_tlv(config_map.get_elements());
+        } while(0);
+    }
+    catch(...)
+    {
+        result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+    }
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::set_config_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_map config_map;
+    string config_name = rmsk::get_config_name(machine);
+    map<string, string> current_config;
+    
+    do
+    {
+        if (config_map.set_elements(params))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+    
+        boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(config_name));
+        
+        if (c.get() == NULL)
+        {
+            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+            break;
+        }
+        
+        config_map.tlv_convert(current_config);
+        
+        if (c->configure_machine(current_config, machine) != ERR_OK)
+        {
+            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+            break;        
+        }
+
+        result = out_stream->write_error_tlv(ERR_OK);
+        
+    } while(0);
+
+    
+    return result;
+}
+
 
 unsigned int rotor_machine_proxy::get_description_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -569,6 +700,8 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["getpermutations"] = &rotor_machine_proxy::get_permutations_processor;        
     rotor_proxy_proc["randomizestate"] = &rotor_machine_proxy::randomize_state_processor;
     rotor_proxy_proc["setpositions"] = &rotor_machine_proxy::set_positions_processor;
+    rotor_proxy_proc["getconfig"] = &rotor_machine_proxy::get_config_processor;
+    rotor_proxy_proc["setconfig"] = &rotor_machine_proxy::set_config_processor;    
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 #ifndef __arith_test_h__
 #define __arith_test_h__
 
@@ -105,6 +121,13 @@ public:
      *  In case of success this method returns ERR_OK (i.e. 0).
      */ 
     virtual unsigned int echo_processor(tlv_entry& params, tlv_stream *out_stream);
+    
+    /*! \brief This method handles echo requests for dictionaries. The parameter params has to contain a TLV structure that
+     *         represnets a dictionary. The dictionary is pased modified and sent back to the client.
+     *
+     *  In case of success this method returns ERR_OK (i.e. 0).
+     */ 
+    virtual unsigned int echo_dict_processor(tlv_entry& params, tlv_stream *out_stream);    
 
     /*! \brief Destructor.
      */    
@@ -121,7 +144,7 @@ public:
     /*! \brief Constructor. The parameter obj_regsitry has to point to the object registry which is to be used by this
      *         echo_provider instance.
      */
-    echo_provider(object_registry *obj_registry) : service_provider(obj_registry) { echo_proc = &echo::echo_processor; }
+    echo_provider(object_registry *obj_registry) : service_provider(obj_registry) { echo_proc = &echo::echo_processor; echo_dict_proc = &echo::echo_dict_processor; }
 
     /*! \brief Returns a callback for the echo_provider::new_object() method.
      */    
@@ -154,7 +177,7 @@ public:
 
 protected:
     /*! \brief Holds a pointer to the echo::echo_processor member function. */    
-    echo_mem_fun echo_proc;
+    echo_mem_fun echo_proc, echo_dict_proc;
 };
 
 /* ------------------------------------------------------------------------------------------- */
@@ -232,6 +255,20 @@ public:
      *  Returns ERR_OK (i.e. 0) in case of success.     
      */
     virtual unsigned int get_positions_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method returns the configuration of the underlying rotor machine in the format used by configurator::get_config. 
+     *         The parameter params is ignored. The parameter out_stream is used to talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.     
+     */
+    virtual unsigned int get_config_processor(tlv_entry& params, tlv_stream *out_stream);
+    
+    /*! \brief This method configures the underlying rotor machine according to the dictionary sent by the client in the parameter 
+     *         param. The parameter out_stream is used to talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.     
+     */
+    virtual unsigned int set_config_processor(tlv_entry& params, tlv_stream *out_stream);    
 
     /*! \brief This method returns the result of machine->move_all_rotors("") to the client. The parameter params
      *         has to contain a string which specifies the positions to which the visible rotors are to be moved.

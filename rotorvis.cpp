@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file rotorvis.cpp
  *  \brief This file contains a class that implements all the user interface stuff that is provided on top of the basic KL7, SIGABA, Typex, SG39 and Nema simulator functionality.
  */
@@ -238,19 +254,7 @@ void rotor_visual::set_titles(Glib::ustring& last_file_name)
 void rotor_visual::on_configure_machine()
 {
     rotor_machine *the_machine =  simulator_gui->get_machine();
-    enigma_base *enigma_machine = dynamic_cast<enigma_base *>(the_machine);
-    string name_help;
-    
-    if (enigma_machine != NULL)
-    {
-        // We have an Enigma variant here. Use get_machine_type() to determine model.
-        name_help = enigma_machine->get_machine_type();
-    }
-    else
-    {   
-        // Not an Enigma, use get_name()  
-        name_help = the_machine->get_name();
-    }
+    string name_help = rmsk::get_config_name(the_machine);
     
     configurator *conf = configurator_factory::get_configurator(name_help);
     

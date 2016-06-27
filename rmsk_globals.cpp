@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file rmsk_globals.cpp
  *
  *  \brief Implementations of some general helper functions and classes.
@@ -520,6 +536,25 @@ rotor_machine *rmsk::make_default_machine(string& machine_name)
     }    
     
     return result;
+}
+
+string rmsk::get_config_name(rotor_machine *machine)
+{
+    string result;
+    enigma_base *enigma_machine = dynamic_cast<enigma_base *>(machine);
+    
+    if (enigma_machine != NULL)
+    {
+        // We have an Enigma variant here. Use get_machine_type() to determine model.
+        result = enigma_machine->get_machine_type();
+    }
+    else
+    {   
+        // Not an Enigma, use get_name()  
+        result = machine->get_name();
+    }
+    
+    return result;    
 }
 
 rotor_machine *rmsk::restore_from_ini(Glib::KeyFile& machine_state)

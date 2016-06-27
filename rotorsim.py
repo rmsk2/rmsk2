@@ -14,6 +14,22 @@
 # limitations under the License.
 ################################################################################
 
+################################################################################
+# Copyright 2016 Martin Grap
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
 ## @package rotorsim A Python3 interface to the C++ rotor machines implemented by rmsk2.
 #           
 # \file rmsk2/rotorsim.py
@@ -2333,6 +2349,29 @@ class RotorMachine(tlvobject.TlvProxy):
         param = tlvobject.TlvEntry().to_null()    
         res = self.do_method_call(self._handle, 'getstate', param)
         return res[0]
+
+    ## \brief Returns the current state of the TLV rotor machine object which is proxied by this 
+    #         rotorsim.RotorMachine instance in form of a dictionary of key value pairs.
+    #
+    #  \returns A byte array. The result specifies the machine state.
+    #            
+    def get_config(self):
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getconfig', param)
+        return tlvobject.TlvDict.parsed_tlv_to_dict(res[0])
+
+    ## \brief Changes the current state of the TLV rotor machine object which is proxied by this 
+    #         rotorsim.RotorMachine instance to a new state as specified by the key value pairs in
+    #         the parameter new_config.
+    #
+    #  \param [new_config] A dictionary with strings as keys and values. It has to specify the new machine 
+    #         configuration.
+    #
+    #  \returns Nothing. Throws exception when ot fails.
+    #                
+    def set_config(self, new_config):
+        param = tlvobject.TlvDict.dict_to_tlv(new_config)    
+        res = self.do_method_call(self._handle, 'setconfig', param)
 
     ## \brief Changes the current state of the TLV rotor machine object which is proxied by this 
     #         rotorsim.RotorMachine instance to a new state.

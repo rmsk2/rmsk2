@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 /*! \file configurator_dialog.cpp
  *  \brief Implementation for the application class that provide the configuration dialog of rotorvis.
  */
@@ -36,7 +52,7 @@ configurator_dialog::configurator_dialog(Gtk::Window& parent, vector<key_word_in
     for (iter = infos.begin(); iter != infos.end(); ++iter)
     {
         // Add label
-        Gtk::Label *l = manage(new Gtk::Label(iter->keyword));
+        Gtk::Label *l = manage(new Gtk::Label(iter->descriptive_text));
         config_items.attach(*l, 0, count, 1, 1);
         
         if (iter->type == KEY_STRING)

@@ -1,4 +1,20 @@
 ################################################################################
+# Copyright 2016 Martin Grap
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+################################################################################
 # Copyright 2015 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,7 +104,17 @@ class TlvFuncTest(simpletest.SimpleTest):
                     self.append_note("Echo result: " + str(echo_result))
                     
                     if not last_result:
-                        self.append_note("Echo test FAILED")                                        
+                        self.append_note("Echo test FAILED")
+                    
+                    test_dict = {'k1':'v1', 'k2':'v2'}
+                    echo_dict = e.echo_dict(test_dict)
+                    
+                    last_result = (echo_dict['k1'] == 'v1 echo') and (echo_dict['k2'] == 'v2 echo')                                         
+                    result = result and last_result
+                    self.append_note("Echo dict result: " + str(echo_dict))
+                    
+                    if not last_result:
+                        self.append_note("Echo dictionary test FAILED")                    
                     
                     # Ask server for list of known objects
                     obj_list = s.list_objects()                    

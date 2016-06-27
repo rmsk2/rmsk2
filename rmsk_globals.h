@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 #ifndef __rmsk_globals_h__
 #define __rmsk_globals_h__
 
@@ -176,11 +192,15 @@ struct rotor_assembly {
 struct key_word_info {
     /*! \brief Constructs a key_word_info instance using the given key word and type.  
      */   
-    key_word_info(string kw, keyword_type t) { keyword = kw; type = t; }
+    key_word_info(string kw, keyword_type t, string d) { keyword = kw; type = t; descriptive_text = d; }
 
     /*! \brief Name/identifer of the configuration key word.  
      */       
     string keyword;
+
+    /*! \brief Human understandable description.  
+     */           
+    string descriptive_text;
     
     /*! \brief Type: STRING or BOOLEAN.  
      */    
@@ -259,6 +279,11 @@ public:
      *  In case of an error NULL is returned.
      */
     static rotor_machine *make_default_machine(string& machine_name);
+
+    /*! \brief Returns the string which is to be used to construct a configurator object for this machine via a
+     *         call to configurator_factory::get_configurator().
+     */
+    static string get_config_name(rotor_machine *machine);
 
     /*! \brief Restores the state stored in the file named by parameter file_name into a rotor_machine object
      *         and returns that object.

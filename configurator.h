@@ -14,6 +14,22 @@
  * limitations under the License.
  ***************************************************************************/
 
+/***************************************************************************
+ * Copyright 2015 Martin Grap
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************/
+
 #ifndef __configurator_h__
 #define __configurator_h__
 
@@ -27,38 +43,38 @@
 #include<rotor_machine.h>
 
 // Keywords for SIGABA
-#define KW_CIPHER_ROTORS "Cipher Rotors"
-#define KW_CONTROL_ROTORS "Control Rotors"
-#define KW_INDEX_ROTORS "Index Rotors"
-#define KW_CSP_2900_FLAG "CSP 2900 Flag"
+#define KW_CIPHER_ROTORS "cipher"
+#define KW_CONTROL_ROTORS "control"
+#define KW_INDEX_ROTORS "index"
+#define KW_CSP_2900_FLAG "csp2900"
 
 // Keywords for Schluesselgeraet 39
-#define KW_SG39_ROTORS "SG39 Rotors"
-#define KW_SG39_RING_POS "SG39 Ring positions"
-#define KW_SG39_REFLECTOR_PLUGS "SG39 Reflector"
-#define KW_SG39_ENTRY_PLUGS "SG39 Plugboard"
-#define KW_SG39_PINS_WHEEL_1 "SG39 Pins wheel 1"
-#define KW_SG39_PINS_WHEEL_2 "SG39 Pins wheel 2"
-#define KW_SG39_PINS_WHEEL_3 "SG39 Pins wheel 3"
-#define KW_SG39_PINS_ROTOR_1 "SG39 Pins rotor 1"
-#define KW_SG39_PINS_ROTOR_2 "SG39 Pins rotor 2"
-#define KW_SG39_PINS_ROTOR_3 "SG39 Pins rotor 3"
+#define KW_SG39_ROTORS "rotors"
+#define KW_SG39_RING_POS "rings"
+#define KW_SG39_REFLECTOR_PLUGS "reflector"
+#define KW_SG39_ENTRY_PLUGS "plugs"
+#define KW_SG39_PINS_WHEEL_1 "pinswheel1"
+#define KW_SG39_PINS_WHEEL_2 "pinswheel2"
+#define KW_SG39_PINS_WHEEL_3 "pinswheel3"
+#define KW_SG39_PINS_ROTOR_1 "pinsrotor1"
+#define KW_SG39_PINS_ROTOR_2 "pinsrotor2"
+#define KW_SG39_PINS_ROTOR_3 "pinsrotor3"
 
 // Keywords for Typex
-#define KW_TYPEX_ROTORS "Typex Rotors"
-#define KW_TYPEX_RINGS "Typex rings"
-#define KW_TYPEX_REFLECTOR "Typex Reflector"
+#define KW_TYPEX_ROTORS "rotors"
+#define KW_TYPEX_RINGS "rings"
+#define KW_TYPEX_REFLECTOR "reflector"
 
 // Keywords for KL7
-#define KW_KL7_ROTORS "KL7 Rotors"
-#define KW_KL7_ALPHA_POS "KL7 Alpha ring positions"
-#define KW_KL7_NOTCH_RINGS "KL7 Notch rings"
-#define KW_KL7_NOTCH_POS "KL7 Notch ring positions"
+#define KW_KL7_ROTORS "rotors"
+#define KW_KL7_ALPHA_POS "alpharings"
+#define KW_KL7_NOTCH_RINGS "notchselect"
+#define KW_KL7_NOTCH_POS "KL7 notchrings"
 
 // Keywords for Nema
-#define KW_NEMA_ROTORS "Nema rotors"
-#define KW_NEMA_RINGS "Nema rings"
-#define KW_NEMA_WAR_MACHINE "War machine"
+#define KW_NEMA_ROTORS "rotors"
+#define KW_NEMA_RINGS "ringselect"
+#define KW_NEMA_WAR_MACHINE "warmachine"
 
 using namespace std;
 

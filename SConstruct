@@ -61,7 +61,7 @@ perm_files = ['rand_perm.cpp']
 
 rotor_sim_files = ['rotor_sim.cpp']
 
-tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp']
+tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp', 'tlv_data_struct.cpp']
 
 hdr = rmsk.Gladeheader('glade_data.h', 'rotor_dialog_2.ui')
 rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'enigrotorset.py')
