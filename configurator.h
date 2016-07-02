@@ -53,7 +53,7 @@
 #define KW_KL7_ROTORS "rotors"
 #define KW_KL7_ALPHA_POS "alpharings"
 #define KW_KL7_NOTCH_RINGS "notchselect"
-#define KW_KL7_NOTCH_POS "KL7 notchrings"
+#define KW_KL7_NOTCH_POS "notchrings"
 
 // Keywords for Nema
 #define KW_NEMA_ROTORS "rotors"

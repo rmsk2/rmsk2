@@ -121,10 +121,18 @@ class Processor:
     #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
     #                     that can not be encoded in ASCII.
     #
+    #  \param [new_rotor_pos] Is a string which specifies the new positions to which the visible rotors are set
+    #         before the input data is processed. If this string is empty the rotor positions remain unchanged.
+    #
     #  \returns A string containing the decryption result.
     #            
-    def decrypt(self, input_data):
-        return self.process('decrypt', input_data, 0)
+    def decrypt(self, input_data, new_rotor_pos = ''):
+        additional_params = []
+        
+        if new_rotor_pos != '':
+            additional_params = ['-p', new_rotor_pos]
+    
+        return self.process('decrypt', input_data, 0, additional_params)
 
     ## \brief Simple wrapper for the process method that allows to encrypt the string value specified in paramter 
     #         input_data.
@@ -133,10 +141,18 @@ class Processor:
     #                      that can not be encoded in ASCII.
     #  \param [out_grouping] Is an int. Specifies the group size which is used when producing the output string.
     #
+    #  \param [new_rotor_pos] Is a string which specifies the new positions to which the visible rotors are set
+    #         before the input data is processed. If this string is empty the rotor positions remain unchanged.
+    #
     #  \returns A string containing the encryption result.
     #                    
-    def encrypt(self, input_data, out_grouping = 0):
-        return self.process('encrypt', input_data, out_grouping)
+    def encrypt(self, input_data, out_grouping = 0, new_rotor_pos = ''):
+        additional_params = []
+        
+        if new_rotor_pos != '':
+            additional_params = ['-p', new_rotor_pos]
+    
+        return self.process('encrypt', input_data, out_grouping, additional_params)
 
     ## \brief Simple wrapper for the process method that allows to step the rotor machine specified by self.__state.
     #
@@ -170,11 +186,12 @@ class Processor:
 
     ## \brief Simple wrapper for the process method that allows to set the current rotor positions.
     #
-    #  \returns A bool. True means that an error occured.
+    #  \param [new_rotor_positions] Is a string which specifies the new positions to which the visible rotors are set.
+    #    
+    #  \returns Nothing.
     #                        
     def set_rotor_positions(self, new_rotor_positions):
-        help = self.process('setpos', '', 0, ['--positions', new_rotor_positions])
-        return help != 'OK'
+        self.process('encrypt', '', 0, ['-p', new_rotor_positions])
 
     ## \brief Simple wrapper for the process method that allows to retrieve the current machine permutation.
     #
