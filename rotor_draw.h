@@ -89,11 +89,11 @@ public:
     virtual rotor_visualizer *get_rotor_visualizer() { return visualizer.get(); }
     
     /*! \brief Sets this rotor_draw object to be either in Encryption (do_enc = True) or Decryption (do_enc = False) mode.
-    */
+     */
     virtual void set_enc_flag(bool do_enc);
 
     /*! \brief Returns the current mode (En/Decryption) of this rotor_draw object.
-    */
+     */
     virtual bool get_enc_flag() { return enc_flag; }
     
     /*! \brief Sets the output device in use with this rotor_draw object to be either on (new_lampboard_state = True) or off (new_lampboard_state = False).
@@ -121,23 +121,23 @@ public:
     virtual void print_char(gunichar letter);
     
     /*! \brief Causes the visualizer object that represents the rotor stack of the simulated machine to be redrawn.
-    */        
+     */        
     virtual void update_rotors(Cairo::RefPtr<Cairo::Context> cr);
 
     /*! \brief Causes the whole simulated machine to be redrawn.
-    */        
+     */        
     virtual void redraw();
 
     /*! \brief A signal that is emitted when the mode of the machine (En/Decryption) has changed.
-    */            
+     */            
     virtual sigc::signal<void>& signal_mode_changed() { return mode_setting_changed; }    
 
     /*! \brief Callback for mouse click events.
-    */                    
+     */                    
     bool on_clicked(GdkEvent *event);
 
     /*! \brief Callback for computer keyboard events.
-    */                    
+     */                    
     bool on_key(GdkEventKey *event);
 
 protected:
@@ -150,36 +150,36 @@ protected:
     void set_keycode_alpha(alphabet<gunichar> *new_keycode_alpha);    
 
     /*! \brief Causes the element to which the paramter elem points to be redrawn.
-    */                    
+     */                    
     virtual void redraw_element(element *elem);    
 
     /*! \brief Draws the simulators graphical representation, i.e. its GUI.
-    */                    
+     */                    
     virtual bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
     
     /*! \brief Fills the clickable_elements member. If is_counter_active, typex_buttons_active, use_kl7_step_button or use_figure_lamp is False the
      *         corresponding element is not included in clickable_elements.
-    */                        
+     */                        
     void fill_data_structures();
 
     /*! \brief Callback that receives the input and output keycodes of each character processed by the underlying rotor_machine.
-    */                        
+     */                        
     virtual void inout_value_callback(unsigned int in_value, unsigned int out_value);
 
     /*! \brief Causes the underlying rotor_machine to advance its rotors and redraws the visualizer representing the rotor stack.
-    */                        
+     */                        
     virtual void step_machine();
 
     /*! \brief Callback that is called when a simulated key is released.
-    */                        
+     */                        
     virtual void key_up_callback(); 
 
     /*! \brief Causes a letter and a figures button to be shown in the simulator's GUI.
-    */                        
+     */                        
     void add_ltr_fig_gui(); 
 
     /*! \brief Causes a step button to be shown in the simulator's GUI.
-    */                        
+     */                        
     void add_step_button();
 
     /*! \brief Causes a character counter to be shown in the simulator's GUI. The parameters x_pos and y_pos specify the coordinates where
@@ -200,19 +200,20 @@ protected:
     void set_triangular_lampboard_layout(enigma_lamp_board *lamps_help); 
 
     /*! \brief Causes a simulated Enigma printer (Schreibmax) to be shown in the simulator's GUI.
-    */                        
+     */                        
     void add_schreibmax();
 
     /*! \brief Causes a printer (simulated paper strip) to be shown in the simulator's GUI.
-    */                        
+     */                        
     void add_printer();
 
-    /*! \brief Causes a dual printer (simulated paper strips for input and output characters) to be shown in the simulator's GUI.
-    */                        
-    void add_dual_printer();
+    /*! \brief Causes a dual printer (simulated paper strips for input and output characters) to be shown in the simulator's GUI. The parameters
+     *         pos_x and pos_y specify the upper left corner where the dual printer is drawn.
+     */                        
+    void add_dual_printer(int pos_x, int pos_y);
 
     /*! \brief Causes a lampboard to be shown in the simulator's GUI.
-    */                        
+     */                        
     void add_lampboard();
 
     /*! \brief Initializes the internal data structures and configures the created objects in such a way that the simulator's GUI shows an Enigma variant

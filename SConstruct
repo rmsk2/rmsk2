@@ -31,6 +31,9 @@ rmsk_defines = {}
 # Include Enigma variants in rotorvis
 #rmsk_defines['INCLUDE_ENIGMA'] = 'enigma'
 
+# Build Typex with a dual printer
+#rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
+
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 

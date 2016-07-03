@@ -117,7 +117,7 @@ void rotor_draw::build_sg39(vector<string>& r_names)
 #else
     set_triangular_keyboard_layout(keys.get(), "qwertzuiopasdfghjklyxcvbnm", SIZE_Y_DEFAULT);
 #endif
-    add_dual_printer();
+    add_dual_printer(0, 320 - 50);
     visualizer = boost::shared_ptr<rotor_visualizer>(new sg39_rotor_visualizer(r_names, 420));
     add_counter(530, COUNTER_ROW_Y);
 }
@@ -152,7 +152,11 @@ void rotor_draw::build_typex(vector<string>& r_names)
     set_triangular_keyboard_layout(keys.get(), "qwertyuiopasdfghjklzxcvbnm", SIZE_Y_SPACE_BAR);
     // Add space bar on specified position where the 'X' key doubles as space key
     keys->add_space_bar(300, 30, 'x');
+#ifdef TYPEX_DUAL_PRINTER
+    add_dual_printer(0, 305 - 50);
+#else
     add_printer();
+#endif
     visualizer = boost::shared_ptr<rotor_visualizer>(new enigma_visualizer(r_names, false, 380));
     add_counter(530, COUNTER_ROW_Y);       
     add_ltr_fig_gui();
@@ -252,12 +256,12 @@ void rotor_draw::add_printer()
     lamps->set_width(SIZE_X_BIG_KEYBOARD);
 }
 
-void rotor_draw::add_dual_printer()
+void rotor_draw::add_dual_printer(int pos_x, int pos_y)
 {
     int current_width, current_height;
     
     get_size_request(current_width, current_height);
-    printer_base *temp = new dual_printer(sigc::mem_fun(this, &rotor_draw::get_enc_flag), sigc::mem_fun(this, &rotor_draw::redraw), signal_mode_changed(), 0, 320 - 50);
+    printer_base *temp = new dual_printer(sigc::mem_fun(this, &rotor_draw::get_enc_flag), sigc::mem_fun(this, &rotor_draw::redraw), signal_mode_changed(), pos_x, pos_y);
     lamps = boost::shared_ptr<output_device>(temp);
     lamps->set_width(current_width);
 }
