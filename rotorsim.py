@@ -2337,7 +2337,7 @@ class RotorMachine(tlvobject.TlvProxy):
     ## \brief Returns the current state of the TLV rotor machine object which is proxied by this 
     #         rotorsim.RotorMachine instance in form of a dictionary of key value pairs.
     #
-    #  \returns A byte array. The result specifies the machine state.
+    #  \returns A dictionary of key value pairs where keys and values are strings. The result specifies the machine state.
     #            
     def get_config(self):
         param = tlvobject.TlvEntry().to_null()    

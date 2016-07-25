@@ -37,7 +37,7 @@ rmsk_defines = {}
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
-rmsk_libs = rmsk['LIBS'] + ['specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'boost_system', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
+rmsk_libs = rmsk['LIBS'] + ['specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'cmdline_base', 'boost_system', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
 enigma_includes = rmsk['CPPPATH']
 
 base_files = ['permutation.cpp', 'rand_gen.cpp', 'rotor.cpp', 'simple_mod_int.cpp', 'stepping.cpp']
@@ -62,7 +62,9 @@ rotor_vis_files = ['rotorvis.cpp', 'configurator_dialog.cpp']
 
 perm_files = ['rand_perm.cpp']
 
+commandline_base_files = ['cmdline_base.cpp']
 rotor_sim_files = ['rotor_sim.cpp']
+rotor_state_files = ['rotor_state.cpp']
 
 tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp', 'tlv_data_struct.cpp']
 
@@ -72,16 +74,19 @@ base_lib = rmsk.Library('rmsk_base', base_files, CPPDEFINES = rmsk_defines)
 spec_lib = rmsk.Library('specmachines', specmachines_files, CPPDEFINES = rmsk_defines)
 visual_lib = rmsk.Library('base_visual', base_visual_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
 app_lib = rmsk.Library('application_base', application_base_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
+cmdline_base_lib = rmsk.Library('cmdline_base', commandline_base_files, CPPDEFINES = rmsk_defines)
 rmsk_prog = rmsk.Program('rmsk', rmsk_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)
 enigma_prog = rmsk.Program('enigma', enigma_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
 rand_perm_prog = rmsk.Program('rand_perm', perm_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)
 rotorvis_prog = rmsk.Program('rotorvis', rotor_vis_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
 rotor_sim_prog = rmsk.Program('rotorsim', rotor_sim_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)
+rotor_state_prog = rmsk.Program('rotorstate', rotor_state_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)
 tlv_object_server = rmsk.Program('tlv_rotorsim', tlv_object_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)
 
 rmsk.Install('dist', rotorvis_prog)
 rmsk.Install('dist', enigma_prog)
 rmsk.Install('dist', rotor_sim_prog)
+rmsk.Install('dist', rotor_state_prog)
 rmsk.Install('dist', tlv_object_server)
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.page'))
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.png'))

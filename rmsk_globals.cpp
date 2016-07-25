@@ -412,31 +412,31 @@ rotor_machine *rmsk::make_default_machine(string& machine_name)
     }
 
     // Used for M4 Enigma
-    if (machine_name == MNAME_M4_ENIGMA)
+    if ((machine_name == MNAME_M4_ENIGMA) || (machine_name == "M4"))
     {
         result = new enigma_M4(UKW_C_DN, WALZE_BETA, WALZE_I, WALZE_II, WALZE_VII);
     }
 
     // Used for Railway Enigma
-    if (machine_name == MNAME_RAILWAY_ENIGMA)
+    if ((machine_name == MNAME_RAILWAY_ENIGMA) || (machine_name == "Railway"))
     {
         result = new railway_enigma(WALZE_RB_I, WALZE_RB_II, WALZE_RB_III);
     }
 
     // Used for Tirpitz Enigma
-    if (machine_name == MNAME_TIRPITZ_ENIGMA)
+    if ((machine_name == MNAME_TIRPITZ_ENIGMA) || (machine_name == "Tirpitz"))
     {
         result = new tirpitz_enigma(WALZE_T_I, WALZE_T_II, WALZE_T_III);
     }
 
     // Used for Abwehr Enigma
-    if (machine_name == MNAME_ABWEHR_ENIGMA)
+    if ((machine_name == MNAME_ABWEHR_ENIGMA) || (machine_name == "Abwehr"))
     {
         result = new abwehr_enigma(WALZE_ABW_I, WALZE_ABW_II, WALZE_ABW_III);
     }
 
     // Used for KD Enigma
-    if (machine_name == MNAME_KD_ENIGMA)
+    if ((machine_name == MNAME_KD_ENIGMA) || (machine_name == "KD"))
     {
         result = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
     }
@@ -516,7 +516,7 @@ rotor_machine *rmsk::make_default_machine(string& machine_name)
         settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_15, NEMA_ROTOR_B));
         settings_l.push_back(rotor_assembly(NEMA_DRIVE_WHEEL_14, NEMA_ROTOR_A));    
         
-        result = new nema(settings_l, NEMA_DRIVE_WHEEL_23, NEMA_DRIVE_WHEEL_2);
+        result = new nema(settings_l, NEMA_DRIVE_WHEEL_22, NEMA_DRIVE_WHEEL_1);
     }    
     
     return result;

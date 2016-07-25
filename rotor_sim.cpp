@@ -19,30 +19,17 @@
  *  \brief Implements a generic command line simulator for all machines simulated by enigma and rotorvis.
  */     
 
-#include<iostream>
-#include<vector>
-#include<string>
-#include<exception>
-#include<boost/program_options.hpp>
-#include<boost/shared_ptr.hpp>
-#include<rotor_machine.h>
+#include<cmdline_base.h>
 #include<sigaba.h>
 #include<glibmm.h>
 
 #define ROTORPOS_DEFAULT "xnoposx"
 
-namespace po = boost::program_options;
-using namespace std;
-
-const int RETVAL_OK = 0;
-const int ERR_WRONG_COMMAND_LINE = 1;
 const int ERR_UNABLE_SET_ROTOR_POS = 2;
-const int ERR_IO_FAILURE = 42;
-
 
 /*! \brief A class which implements the generic command line simulator called rotorsim.
  */
-class rotor_sim {
+class rotor_sim : public cmdline_base {
 public:
     /*! \brief Constructor.
      */
@@ -50,39 +37,26 @@ public:
 
     /*! \brief This method parses the command line and processes the input data using the appropriate rotor machine.
      */
-    int parse(int argc, char **argv);
+    virtual int parse(int argc, char **argv);
 
     /*! \brief This method executes the command requested by the user.
      */
-    int execute_command();
+    virtual int execute_command();
+
+    /*! \brief Destructor.
+     */    
+    virtual ~rotor_sim() { ; }
     
 protected:
 
     /*! \brief This method prints a message that describes how to use rotorsim.
      */
-    void print_help_message(po::options_description *desc);
+    virtual void print_help_message(po::options_description *desc);
 
     /*! \brief Creates the machine that is to be simulated on the basis of the name of the config file contained in parameter
      *         config_file. Returns NULL in case of an error.
      */
     rotor_machine *determine_machine(string& config_file);
-
-    /*! \brief This method creates the input stream used by this program. In case an error occurs NULL is returned. The parameter
-     *         file_name has to specify the name of the input file or "" in case stdin is to be used. The second parameter is
-     *         an ifstream instance which is returned as an istream if file_name is not the empty string.
-     */
-    istream *determine_input_stream(string& file_name, ifstream& file_in);
-
-    /*! \brief This method creates the output stream used by this program. In case an error occurs NULL is returned. The parameter
-     *         file_name has to specify the name of the output file or "" in case stdout is to be used. The second parameter is
-     *         an ofstream instance which is returned as an ostream if file_name is not the empty string.
-     */
-    ostream *determine_output_stream(string& file_name, ofstream& file_out);
-
-    /*! \brief This method save the state of the rotor machine specified through parameter machine in the file named by the parameter
-     *         file_name. Use "" as file_name in order to save the state to stdout. In case of success RETVAL_OK is returned.
-     */
-    int save_machine_state(string& file_name, rotor_machine *machine);
 
     /*! \brief This method returns the permutations the underlying rotor machine generates during the next num_iterations - 1 steps.
      * 
@@ -123,23 +97,6 @@ protected:
      */
     int process_stream(istream *in_s, ostream *out_s, int output_grouping, sigc::slot<Glib::ustring, gunichar> proc_func, sigc::slot<bool, gunichar> symbol_is_ok);
 
-    /*! \brief This method reads data from the stream specified in parameter in_s and stores that data in the string referenced
-     *         by parameter data_read until either the value stored in delimiter is read or the end of the stream is reached.
-     */
-    int read_delimited_stream(istream *in_s, string& data_read, int delimiter);
-
-    /*! \brief Holds a specification of the positional parameters that should be recognized. Here the only positional 
-     *         parameter is the command (encrypt/decrypt) to execute.
-     */
-    po::positional_options_description p;    
-
-    /*! \brief Holds a specification of all the command line parameters that are understood by rotorsim.
-     */
-    po::options_description desc;
-
-    /*! \brief After parsing the command line the parsed data is stored in this object.
-     */
-    po::variables_map vm;
 
     /*! \brief Holds the grouping width as specified on the command line by the -g option.
      */
@@ -191,12 +148,12 @@ protected:
 };
 
 rotor_sim::rotor_sim()
-    :   desc("Allowed options")
+    :   cmdline_base("Allowed options")
 {
     p.add("command", 1);    
 
     desc.add_options()
-        ("help,h", "Produce help message")
+        ("help,h", "Produce help message")   
         ("state-progression", "Write state reached after processing to stdout. Optional.")
         ("rotor-num,r", po::value<int>(&setup_step_rotor_num)->default_value(-1), "Setup step the SIGABA control rotor with the given number 1-5.")            
         ("config-file,f", po::value<string>(&config_file), "Configuration file to read")
@@ -210,48 +167,6 @@ rotor_sim::rotor_sim()
     ;
     
     state_progression = false;
-}
-
-istream *rotor_sim::determine_input_stream(string& file_name, ifstream& file_in)
-{
-    istream *result = NULL;
-
-    if (file_name != "")
-    {        
-        file_in.open(file_name, ifstream::in | ifstream::binary);
-        
-        if (file_in.good())
-        {
-            result = &file_in;
-        }
-    }
-    else
-    {
-        result = &cin;
-    }
-    
-    return result;
-}
-
-ostream *rotor_sim::determine_output_stream(string& file_name, ofstream& file_out)
-{
-    ostream *result = NULL;
-    
-    if (file_name != "")
-    {
-        file_out.open(file_name, ofstream::out | ofstream::binary);
-        
-        if (file_out.good())
-        {
-            result = &file_out;
-        }
-    }            
-    else
-    {
-        result = &cout;
-    }
-    
-    return result;
 }
 
 rotor_machine *rotor_sim::determine_machine(string& config_file)
@@ -275,34 +190,6 @@ rotor_machine *rotor_sim::determine_machine(string& config_file)
     return machine;
 }
 
-int rotor_sim::save_machine_state(string& file_name, rotor_machine *machine)
-{
-    Glib::KeyFile ini_file;
-    int result = RETVAL_OK;
-    Glib::ustring data_temp; 
-    string ini_data;       
-
-    if (file_name != "")
-    {
-        if (machine->save(file_name))
-        {
-            result = ERR_IO_FAILURE;
-        }
-    }
-    else
-    {
-        // Write state to stdout using 0xFF as delimiter between the state and the output data
-        machine->save_ini(ini_file);
-                        
-        cout << (char)(255);
-        
-        data_temp = ini_file.to_data();
-        ini_data = data_temp;
-        cout << ini_data;                                
-    }            
-    
-    return result;
-}
 
 void rotor_sim::execute_perm_command(int num_iterations, ostream *out, rotor_machine *machine)
 {
@@ -498,44 +385,6 @@ int rotor_sim::execute_command()
     
     file_in.close();
     file_out.close();
-    
-    return result;
-}
-
-int rotor_sim::read_delimited_stream(istream *in, string& data_read, int delimiter)
-{
-    int result = RETVAL_OK;
-    int char_read = 0;
-
-    data_read.clear();
-    
-    try
-    {
-        while (in->good() and (char_read != delimiter))
-        {
-            // Read input character
-            char_read = in->get();
-            
-            if ((char_read != char_traits<char>::eof()) and (char_read != delimiter))
-            {
-                data_read += (char)char_read;
-            }
-        }
-        
-        // Check if input stream is still ok. If the failbit is set on 
-        // the stream then flag an error. If the failbit is set but the
-        // stream has also reached EOF, then everything is still OK.
-        if (in->fail() and !in->eof())
-        {
-            result = ERR_IO_FAILURE;
-            cout << "IO error!" << endl;        
-        }        
-    }
-    catch(...)
-    {
-        result = ERR_IO_FAILURE;
-        cout << "IO error!" << endl;
-    }    
     
     return result;
 }
