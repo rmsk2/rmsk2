@@ -200,7 +200,7 @@ int rotor_state::parse(int argc, char **argv)
                         // Check that true or false is used as a value for a boolean option
                         if (bool_config_map[iter_conf_map->first])
                         {
-                            if ((iter_conf_map->second != "true") && (iter_conf_map->second != "false"))
+                            if ((iter_conf_map->second != CONF_TRUE) && (iter_conf_map->second != CONF_FALSE))
                             {
                                 cout << "Value given for option " << iter_conf_map->first << " has to be either true or false" << endl;
                                 return_code = ERR_WRONG_COMMAND_LINE;
