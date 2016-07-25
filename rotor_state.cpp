@@ -73,7 +73,7 @@ rotor_state::rotor_state()
     desc.add_options()
         ("help,h", "Produce help message")    
         ("random", "Generate random machine state. Optional.")
-        ("positions,p", po::value<string>(&rotor_positions)->default_value(ROTOR_DEFAULT_POS), "Desired positions of settable rotors.")
+        ("positions,p", po::value<string>(&rotor_positions)->default_value(ROTORPOS_DEFAULT), "Desired positions of settable rotors.")
         ("input-file,i", po::value<string>(&input_file), "Read input data from this file and pipe it to stdout. Optional. stdin used if missing and --pipe specified.")
         ("stdout", "Force generated state to also be written to stdout. Has no effect if no output file was specified.")
         ("pipe", "Pipe input data from stdin to stdout. Has no effect if an input file was specified.")
@@ -279,11 +279,11 @@ int rotor_state::execute_command()
         }
         
         // Modify rotor positions if requested by user
-        if (rotor_positions != ROTOR_DEFAULT_POS)
+        if (rotor_positions != ROTORPOS_DEFAULT)
         {
             if (machine->move_all_rotors(new_positions))
             {
-                result = ERR_ROTOR_MACHINE;
+                result = ERR_UNABLE_SET_ROTOR_POS;
                 cout << "Unable to set rotor positions" << endl;
                 break;
             }

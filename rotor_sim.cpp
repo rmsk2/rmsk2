@@ -23,10 +23,6 @@
 #include<sigaba.h>
 #include<glibmm.h>
 
-#define ROTORPOS_DEFAULT "xnoposx"
-
-const int ERR_UNABLE_SET_ROTOR_POS = 2;
-
 /*! \brief A class which implements the generic command line simulator called rotorsim.
  */
 class rotor_sim : public cmdline_base {

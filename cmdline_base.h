@@ -29,14 +29,16 @@
 #include<boost/shared_ptr.hpp>
 #include<rotor_machine.h>
 
+#define ROTORPOS_DEFAULT "xnoposx"
+
 namespace po = boost::program_options;
 using namespace std;
 
 const int RETVAL_OK = 0;
 const int ERR_WRONG_COMMAND_LINE = 1;
+const int ERR_UNABLE_SET_ROTOR_POS = 2;
 const int ERR_IO_FAILURE = 42;
 const int ERR_ROTOR_MACHINE = 43;
-
 
 
 /*! \brief A class which serves as the base class for several command line programs in this project.
