@@ -19,6 +19,8 @@
  *  \brief Implements a generic command line simulator for all machines simulated by enigma and rotorvis.
  */     
 
+#include<boost/scoped_ptr.hpp>
+#include<configurator.h>
 #include<cmdline_base.h>
 #include<sigaba.h>
 #include<glibmm.h>
@@ -87,6 +89,13 @@ protected:
      *  \param [machine] Has to specify the rotor machine which rotor positions are to be visualized.
      */
     void execute_getpos_command(ostream *out_s, rotor_machine *machine);
+
+    /*! \brief This method writes a visualization of the current machine configuration to the output stream.
+     * 
+     *  \param [out_s] Has to specify the output stream used by this method.
+     *  \param [machine] Has to specify the rotor machine which configuration is to be retrieved.
+     */
+    void execute_getconfig_command(ostream *out_s, rotor_machine *machine);
     
     /*! \brief This method performs the actual en/decyption of the input data using the rotor machine specified
      *         on the command line.
@@ -156,7 +165,7 @@ rotor_sim::rotor_sim()
         ("input-file,i", po::value<string>(&input_file), "Input file to read. Optional. stdin used if missing.")
         ("positions,p", po::value<string>(&new_rotor_positions)->default_value(ROTORPOS_DEFAULT), "New rotor positions. Optional. Only used with the encrypt or decrypt commands.")        
         ("output-file,o", po::value<string>(&output_file), "Output file to produce. Optional. stdout used if missing.")                    
-        ("command,c", po::value<string>(&command), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, getpos, sigabasetup.")
+        ("command,c", po::value<string>(&command), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, getpos, getconfig, sigabasetup.")
         ("save-state,s", po::value<string>(&state_file), "Save state of machine in specified file after processing. Optional.")        
         ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")
         ("num-iterations,n", po::value<int>(&num_iterations)->default_value(1), "Number of iterations to execute perm or step commands.")            
@@ -229,6 +238,29 @@ void rotor_sim::execute_getpos_command(ostream *out, rotor_machine *machine)
 
     (*out) << help << endl;
 }
+
+void rotor_sim::execute_getconfig_command(ostream *out, rotor_machine *machine)
+{        
+    string rotor_positions = machine->visualize_all_positions();
+    string machine_type = rmsk::get_config_name(machine);
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_type));
+    map<string, string> config;
+    vector<key_word_info> kw_info;
+    vector<key_word_info>::iterator iter;
+    
+    c->get_keywords(kw_info);
+    c->get_config(config, machine);
+
+    (*out) << "Machine: " << machine_type << endl;
+    
+    for (iter = kw_info.begin(); iter != kw_info.end(); ++iter)
+    {
+        (*out) << iter->descriptive_text << " (" << iter->keyword << "): " << config[iter->keyword] << endl;
+    }
+    
+    (*out) << "Rotor positions: " << rotor_positions << endl;    
+}
+
 
 void rotor_sim::execute_sigabasetup_command(int num_iterations, int setup_step_rotor_num, ostream *out, rotor_machine *machine)
 {
@@ -361,8 +393,15 @@ int rotor_sim::execute_command()
                     }
                     else
                     {
-                        // perm command
-                        execute_perm_command(num_iterations, out, the_machine.get());                
+                        if (command == "getconfig")
+                        {
+                            execute_getconfig_command(out, the_machine.get());
+                        }
+                        else
+                        {
+                            // perm command
+                            execute_perm_command(num_iterations, out, the_machine.get());                
+                        }
                     }
                 }                
             }
@@ -468,7 +507,8 @@ void rotor_sim::print_help_message(po::options_description *desc)
     cout << "    rotorsim encrypt -f machine_config.ini" << endl;            
     cout << "    rotorsim step -f machine_config.ini -n 2" << endl;                
     cout << "    rotorsim perm -f machine_config.ini -n 3" << endl;    
-    cout << "    rotorsim getpos -f machine_config.ini" << endl;        
+    cout << "    rotorsim getpos -f machine_config.ini" << endl;   
+    cout << "    rotorsim getconfig -f machine_config.ini" << endl;            
     cout << "    rotorsim sigabasetup -f machine_config.ini -r 1 -n 4" << endl;            
     cout << endl;
 }
@@ -502,7 +542,8 @@ int rotor_sim::parse(int argc, char **argv)
         // Check if the value of the command parameter is among the allowed values.
         if ((command != "decrypt") and (command != "encrypt") and 
             (command != "step")  and (command != "perm") and 
-            (command != "getpos") and (command != "sigabasetup"))
+            (command != "getpos") and (command != "sigabasetup") and
+            (command != "getconfig"))
         {
             cout << "Unknown command " << command << endl;
             

@@ -106,11 +106,12 @@ void rotor_state::print_help_message(po::options_description *desc)
     cout << "First parameter has to be machine type. Valid values are: " << allowed_names << endl << endl;
     cout << (*desc) << endl;
     cout << "Examples:" << endl << endl;
-    cout << "echo vonvonjl | ./rotorstate M4 --pipe --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | ./rotorsim encrypt -g 4 -p vjna" << endl;                        
-    cout << "./rotorstate M4 -o m4_verification_test.ini --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx" << endl;
-    cout << "./rotorstate M4 -o m4_verification_test.ini --random" << endl;
-    cout << "./rotorstate M4 -i test_data.txt --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | ./rotorsim encrypt -g 4 -p vjna" << endl;
-    cout << "echo thisisatest | ./rotorstate KL7 --random -o egal.ini --pipe --stdout | ./rotorsim encrypt -g 5" << endl;
+    cout << "echo vonvonjl | rotorstate M4 --pipe --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | rotorsim encrypt -g 4 -p vjna" << endl;                        
+    cout << "rotorstate M4 -o m4_verification_test.ini --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx -p fgtu" << endl;
+    cout << "rotorstate M4 -o m4_verification_test.ini --random" << endl;
+    cout << "rotorstate M4 -i test_data.txt --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | rotorsim encrypt -g 4 -p vjna" << endl;
+    cout << "echo thisisatest | rotorstate KL7 --random -o egal.ini --pipe --stdout | rotorsim encrypt -g 5" << endl;
+    cout << "rotorstate KL7 -h" << endl;    
     cout << endl;
 }
 
