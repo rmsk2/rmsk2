@@ -24,7 +24,6 @@
 #include<cmdline_base.h>
 #include<configurator.h>
 
-#define ROTOR_DEFAULT_POS "xnoposx"
 
 /*! \brief A class which implements a command line tool that allows to generate and save rotor machine states.
  */
@@ -52,19 +51,41 @@ protected:
      */
     virtual void print_help_message(po::options_description *desc);
 
+    /*! \brief This method modifies the parameter description stored in this.desc to
+     *         include the machine specific configuration options. The parameter type
+     *         has to specify the machine type.
+     */    
+    virtual void add_machine_specific_options(string& type);
+
+    /*! \brief This method checks whether the command line parameters given on the command
+     *         line for the machine specific parameters are valid or not. In case of an error
+     *         the string refrenced by parameter err_message is set to an error message.
+     *
+     *  Returns RETVAL_OK if the parameters are valid.
+     */    
+    virtual int check_machine_specific_options(string& err_message);
+
+
     /*! \brief Holds the configuration information as specified on the command line. */
     map<string, string> config_map;
+    
     /*! \brief Holds the allowed machine names. */    
     set<string> allowed_machine_names;
 
     /*! \brief Stores the rotor position as specified on the command line. */
     string rotor_positions;
+    
     /*! \brief Holds the machine type as specified on the command line. */    
     string machine_type;
+    
     /*! \brief Holds the input file name as specified on the command line. */    
     string input_file;
+    
     /*! \brief Holds the output file name as specified on the command line. */    
     string output_file;
+    
+    /*! \brief Contains a flag that is true if the corresponding command line option is boolean valued. */
+    map<string, bool> bool_config_map;     
 };
 
 rotor_state::rotor_state()
@@ -115,15 +136,66 @@ void rotor_state::print_help_message(po::options_description *desc)
     cout << endl;
 }
 
+void rotor_state::add_machine_specific_options(string& type)
+{
+    vector<key_word_info> configurator_keywords;
+    vector<key_word_info>::iterator iter_kw;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(type));                
+    c->get_keywords(configurator_keywords);        
+    config_map.clear();
+    bool_config_map.clear();  
+    string desc_help;      
+    
+    for (iter_kw = configurator_keywords.begin(); iter_kw != configurator_keywords.end(); ++iter_kw)
+    {
+        desc_help = iter_kw->descriptive_text;
+        bool_config_map[iter_kw->keyword] = (iter_kw->type == KEY_BOOL);
+        
+        if (iter_kw->type == KEY_BOOL)
+        {
+            desc_help += " (true/false)";
+        }
+                        
+        config_map[iter_kw->keyword] = "";
+        desc.add_options()((iter_kw->keyword).c_str(), po::value<string>(&config_map[iter_kw->keyword]), (desc_help).c_str());
+    }
+}
+
+int rotor_state::check_machine_specific_options(string& err_message)
+{
+    int return_code = RETVAL_OK;
+    map<string, string>::iterator iter_conf_map;
+    
+    // Verify dynamic per machine options
+    for (iter_conf_map = config_map.begin(); (iter_conf_map != config_map.end()) && (return_code == RETVAL_OK); ++iter_conf_map)
+    {
+        // Given value must not be empty
+        if (iter_conf_map->second == "")
+        {
+            err_message = "No value given for option " + iter_conf_map->first;
+            return_code = ERR_WRONG_COMMAND_LINE;
+        }
+        else
+        {
+            // Check that true or false is used as a value for a boolean option
+            if (bool_config_map[iter_conf_map->first])
+            {
+                if ((iter_conf_map->second != CONF_TRUE) && (iter_conf_map->second != CONF_FALSE))
+                {
+                    err_message = "Value given for option " + iter_conf_map->first + " has to be either true or false";
+                    return_code = ERR_WRONG_COMMAND_LINE;
+                }
+            }
+        }
+    }      
+    
+    return return_code;
+}
+
 int rotor_state::parse(int argc, char **argv)
 {
     int return_code = RETVAL_OK;
-    vector<key_word_info> configurator_keywords;
-    vector<key_word_info>::iterator iter_kw;
-    string desc_help;
-    // Contains a flag that is true if the corresponding command line option is boolean valued
-    map<string, bool> bool_config_map; 
-    map<string, string>::iterator iter_conf_map;    
+    string err_message;
     
     try
     {
@@ -153,24 +225,7 @@ int rotor_state::parse(int argc, char **argv)
             }
             
             // Append machine specific options dynamically to parameter description
-            boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_type));                
-            c->get_keywords(configurator_keywords);        
-            config_map.clear();
-            bool_config_map.clear();        
-            
-            for (iter_kw = configurator_keywords.begin(); iter_kw != configurator_keywords.end(); ++iter_kw)
-            {
-                desc_help = iter_kw->descriptive_text;
-                bool_config_map[iter_kw->keyword] = (iter_kw->type == KEY_BOOL);
-                
-                if (iter_kw->type == KEY_BOOL)
-                {
-                    desc_help += " (true/false)";
-                }
-                                
-                config_map[iter_kw->keyword] = "";
-                desc.add_options()((iter_kw->keyword).c_str(), po::value<string>(&config_map[iter_kw->keyword]), (desc_help).c_str());
-            }
+            add_machine_specific_options(machine_type);
             
             // parse command line    
             po::store(po::command_line_parser(argc - 1, argv + 1).options(desc).positional(p).run(), vm);
@@ -186,29 +241,11 @@ int rotor_state::parse(int argc, char **argv)
             
             // Only check dynamic parameters if a randomized state has not been requested
             if (vm.count("random") == 0)
-            {                 
-                // Verify dynamic per machine options
-                for (iter_conf_map = config_map.begin(); (iter_conf_map != config_map.end()) && (return_code == RETVAL_OK); ++iter_conf_map)
+            {
+                if ((return_code = check_machine_specific_options(err_message)) != RETVAL_OK)
                 {
-                    // Given value must not be empty
-                    if (iter_conf_map->second == "")
-                    {
-                        cout << "No value given for option " << iter_conf_map->first << endl;
-                        return_code = ERR_WRONG_COMMAND_LINE;
-                    }
-                    else
-                    {
-                        // Check that true or false is used as a value for a boolean option
-                        if (bool_config_map[iter_conf_map->first])
-                        {
-                            if ((iter_conf_map->second != CONF_TRUE) && (iter_conf_map->second != CONF_FALSE))
-                            {
-                                cout << "Value given for option " << iter_conf_map->first << " has to be either true or false" << endl;
-                                return_code = ERR_WRONG_COMMAND_LINE;
-                            }
-                        }
-                    }
-                }      
+                    cout << err_message << endl;
+                }
             }
             
         } while(0); 

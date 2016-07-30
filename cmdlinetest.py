@@ -42,11 +42,11 @@ class Processor:
     ## \brief Constructor. 
     #
     # \param [state] Is a byte array. Has to specifiy the machine state with which this instance is to
-    #         operate.
+    #        operate.
     # \param [binary_name] Is a string. Has to contain the path to the binary of the rotorsim C++
-    #         program
+    #        program
     # \param [progress_state] Is a boolean. If it is true then the member self.__state is updated with
-    #         the new state after a call to encrypt, decrypt or process.
+    #        the new state after a call to encrypt, decrypt or process.
     #
     def __init__(self, state, binary_name = './rotorsim', progress_state = True):
         self.__rotorsim_binary = binary_name
@@ -68,11 +68,10 @@ class Processor:
     ## \brief Constructs a command line for the C++ program rotorsim and executes rotorsim.
     #
     #  \param [command] Is a string and has to specifiy the command which is used as the paraemter for the -c option
-    #                  Allowed values at the moment are "encrypt" and "decrypt".
+    #                   Allowed values at the moment are "encrypt" and "decrypt".
     #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
-    #                     that can not be encoded in ASCII.
+    #                      that can not be encoded in ASCII.
     #  \param [output_grouping] Is an int. Specifies the group size which is used when producing the output string.
-    #
     #  \param [additional_params] Is a list of strings. Each element of the list is appended to the command line
     #                             when "calling" the C++ rotorsim program.
     #
@@ -226,6 +225,136 @@ class Processor:
         return eval(result)
 
 
+## \brief This class allows to "call" to the C++ rotorstate program.
+#
+class CLIRotorState:
+    ## \brief Constructor. 
+    #
+    # \param [binary_name] Is a string. Has to contain the path to the binary of the rotorstate C++
+    #        program
+    #
+    def __init__(self, binary_name = './rotorstate'):
+        self.__rotorstate_binary = binary_name
+
+    ## \brief Constructs a command line for the C++ program rotorstate and executes rotorstate.
+    #
+    #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
+    #  \param [configuration_params] Is a string to string dictionary that specifies the command line parameters and their
+    #                                values which are used to determine the machine state.
+    #  \params [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
+    #                            state.
+    #  \param [additional_params] Is a list of strings. Each element of the list is appended to the command line
+    #                             when "calling" the C++ rotorstate program.    
+    #
+    #  \returns A byte array which contains the generated state.
+    #            
+    def process(self, machine_name, configuration_params, rotor_positions, additional_params = []):
+        result = ''
+        empty_input_data = ''
+        
+        proc_arguments = [self.__rotorstate_binary, machine_name]
+        
+        if rotor_positions != '':        
+            proc_arguments = proc_arguments + ['-p', rotor_positions]
+        
+        for i in configuration_params.keys():
+            proc_arguments.append("--" + i)
+            proc_arguments.append(configuration_params[i])
+            
+        proc_arguments = proc_arguments + additional_params            
+        
+        # call rotorstate program
+        p = subprocess.Popen(proc_arguments, cwd=os.getcwd(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        comm_result = p.communicate(empty_input_data.encode())
+        
+        if p.returncode != 0:
+            raise rotorsim.RotorSimException(p.returncode)
+        
+        pos = 0
+        
+        # search terminator (0xFF) for state output
+        while (pos < len(comm_result[0])) and (comm_result[0][pos] != 255):
+            pos += 1
+        
+        # A correct output is not empty and it has to contain 0xFF    
+        if (pos < 1) or (pos == len(comm_result[0])):            
+            raise ProcessorException(RESULT_PROCESSOR_FORMAT)          
+        
+        # new state is everyting before the 0xFF            
+        result = comm_result[0][:pos]    
+                    
+        return result
+
+    ## \brief Creates a new rotor machine state.
+    #
+    #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
+    #  \param [configuration_params] Is a string to string dictionary that specifies the command line parameters and their
+    #                                values which are used to determine the machine state.
+    #  \params [rotor_positions] Is a string. It has to specify the rotor positions whcih are to be used in the newly created
+    #                            state.
+    #
+    #  \returns A byte array which contains the generated state.
+    #                
+    def make_state(self, machine_name, configuration_params, rotor_positions = ''):
+        return self.process(machine_name, configuration_params, rotor_positions)
+
+    ## \brief Creates a new random rotor machine state.
+    #
+    #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
+    #  \params [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
+    #                            state.
+    #
+    #  \returns A byte array which contains the generated state.
+    #                
+    def make_random_state(self, machine_name, rotor_positions = ''):
+        return self.process(machine_name, {}, rotor_positions, ['--random'])
+
+
+## \brief This class implements a verification test for the rotorstate program.
+#
+class RotorStateTest(simpletest.SimpleTest):
+    ## \brief Constructor.
+    #
+    def __init__(self):
+        super().__init__('CLI RotorState test')
+
+    ## \brief Performs the actual test. Creates Enigma M4 state an does a trial decryptions.
+    #    
+    #  \returns A boolean. Is True when the trial decryptions were successfull.
+    #                    
+    def test(self):
+        result = super().test()
+        
+        try:
+            r_state = CLIRotorState()
+            
+            # Check whether decryption with a known state produces expected result
+            state = r_state.make_state('M4', {'rotors':'11241', 'rings':'aaav', 'plugs':'atbldfgjhmnwopqyrzvx'}, 'vjna')
+            p = Processor(state)
+            
+            dec_result = p.decrypt('nczwvusx')
+            self.append_note('CLI rotor state decryption result: ' + dec_result)
+            
+            result = result and (dec_result == 'VONVONJL')
+            
+            # Check whether decryption with a random state produces a consistent result
+            plain = 'diesisteintest'.upper()
+            state = r_state.make_random_state('KL7')
+            p.set_state(state)
+            enc_result = p.encrypt(plain)
+            self.append_note('KL7 random state encryption result ' + enc_result)
+            p.set_state(state)
+            dec_result = p.decrypt(enc_result)
+            self.append_note('KL7 random state decryption result ' + dec_result)
+            
+            result = result and (dec_result == plain)            
+            
+        except:
+            self.append_note('------------ EXCEPTION ------------')
+            result = False
+        
+        return result
+
 ## \brief This function serves as the context "object" for verification tests using the command line program.
 #
 def cli_context(inner_test):
@@ -241,7 +370,8 @@ def cli_context(inner_test):
 #  \returns A simpletest.CompositeTest object.
 #                
 def get_module_test():
-    all_tests = rotorsimtest.get_module_test(context=cli_context, verification_only=True)        
+    all_tests = rotorsimtest.get_module_test(context=cli_context, verification_only=True)
+    all_tests.add(RotorStateTest())        
     all_tests.name = 'CLI'
     
     return all_tests

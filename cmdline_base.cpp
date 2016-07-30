@@ -105,7 +105,7 @@ int cmdline_base::read_delimited_stream(istream *in, string& data_read, int deli
     
     try
     {
-        while (in->good() and (char_read != delimiter))
+        do
         {
             // Read input character
             char_read = in->get();
@@ -114,7 +114,8 @@ int cmdline_base::read_delimited_stream(istream *in, string& data_read, int deli
             {
                 data_read += (char)char_read;
             }
-        }
+            
+        } while (in->good() and (char_read != delimiter));
         
         // Check if input stream is still ok. If the failbit is set on 
         // the stream then flag an error. If the failbit is set but the
