@@ -124,7 +124,8 @@ void rotor_state::print_help_message(po::options_description *desc)
         allowed_names += *iter + " ";
     }    
     
-    cout << "First parameter has to be machine type. Valid values are: " << allowed_names << endl << endl;
+    cout << "First parameter has to be machine type. Valid values are:" << endl << endl;
+    cout << allowed_names << endl << endl;
     cout << (*desc) << endl;
     cout << "Examples:" << endl << endl;
     cout << "echo vonvonjl | rotorstate M4 --pipe --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | rotorsim encrypt -g 4 -p vjna" << endl;                        
