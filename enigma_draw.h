@@ -66,7 +66,7 @@ latin alphabet ABCDEFGHIJKLMNOPQRSTUVWXYZ.
 On top of that help files in mallard format (http://projectmallard.org/) are included with the simulators that
 desribe how to operate them.
 
-This software was written between 2008 and 2015 between by Martin Grap (rmsk@gmx.de) and is licensed under the
+This software was written between 2008 and 2016 between by Martin Grap (rmsk@gmx.de) and is licensed under the
 Apache 2.0 license (http://www.apache.org/licenses/LICENSE-2.0).
 
 \section idependencies_sec Dependencies
