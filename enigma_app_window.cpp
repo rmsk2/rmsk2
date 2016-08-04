@@ -21,6 +21,7 @@
 #include<enigma_app_window.h>
 #include<boost/lexical_cast.hpp>
 #include<enigma_uhr.h>
+#include<rotorpos_dialog.h>
 
 
 enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
@@ -171,6 +172,7 @@ void enigma_app_window::setup_menus()
     menu_action->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &enigma_app_window::on_quit_activate));
 
     menu_action->add(Gtk::Action::create("MenuSettings", "_Machine settings"));
+    menu_action->add(Gtk::Action::create("rotorpos", "Set rotor pos_itions ..."), sigc::mem_fun(*this, &enigma_app_window::on_set_rotor_positions_activate));    
     menu_action->add(Gtk::Action::create("rotorsettings", "Rotor _settings ..."), sigc::mem_fun(*this, &enigma_app_window::on_settings_activate));
     menu_action->add(Gtk::Action::create("plugboard", "_Plugboard ..."), sigc::mem_fun(*this, &enigma_app_window::on_plugboard_activate));            
     menu_action->add(Gtk::Action::create("reset", "_Reset"), sigc::mem_fun(*this, &enigma_app_window::on_reset_activate));            
@@ -206,6 +208,7 @@ void enigma_app_window::setup_menus()
         "      <menuitem action='Quit'/>"
         "    </menu>"
         "    <menu action='MenuSettings'>"
+        "      <menuitem action='rotorpos'/>"        
         "      <menuitem action='rotorsettings'/>"
         "      <menuitem action='plugboard'/>"
         "      <menuitem action='reset'/>"
@@ -286,6 +289,40 @@ void enigma_app_window::on_save_rotor_set_data_activate()
 {
     file_helper.on_save_rotor_set_activate(enigma, NULL);
 }
+
+void enigma_app_window::on_set_rotor_positions_activate()
+{
+    Glib::ustring current_positions = enigma->visualize_all_positions();    
+    rotorpos_dialog dlg(*this, current_positions);
+    int dlg_result;
+    bool move_result;
+    
+    do
+    {
+        dlg_result = dlg.run();        
+        
+        if (dlg_result == Gtk::RESPONSE_OK)
+        {
+            // User clicked OK
+            
+            // Try to configure machine with the new rotor positions
+            if (!(move_result = enigma->move_all_rotors(current_positions)))
+            {
+                // Success! Correct rotor positions have been entered
+                sync_rotor_pos();
+            }
+            else
+            {
+                messages.error_message("Rotor positions incorrect");
+            }        
+        }
+        // Try again if the user entered wrong rotor positions but left the dialog by clicking OK    
+    } while ((dlg_result == Gtk::RESPONSE_OK) && move_result);                
+
+    // Redraw rotor windows
+    simulator_gui->get_rotor_visualizer()->set_machine(enigma);
+}
+
 
 void enigma_app_window::on_ukwd_activate()
 {
@@ -388,7 +425,7 @@ void enigma_app_window::sync_rotor_pos()
         // Do something only if the rotor slot number count is in use in this machine as determined by conf    
         if (conf.get_desc_at(count).rotor_selection_state)
         {
-            // Determine current rotor position of the unerlying enigma simulator
+            // Determine current rotor position of the underlying enigma simulator
             temp = toupper(enigma->get_enigma_stepper()->get_rotor_pos(conf.get_desc_at(count).wheel_identifier));
             // Store this position in configuration
             conf.get_desc_at(count).rotor_pos = temp;

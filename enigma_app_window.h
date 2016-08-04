@@ -76,6 +76,10 @@ public:
     /*! \brief Callback that is executed, when the "Quit" menu entry is selected.
      */
     virtual void on_quit_activate();
+
+    /*! \brief Callback that is executed, when the "Set rotor positions ..." menu entry is selected.
+     */        
+    virtual void on_set_rotor_positions_activate();
     
     /*! \brief Callback that is executed, when the "Show logs ..." menu entry is selected.
      */    

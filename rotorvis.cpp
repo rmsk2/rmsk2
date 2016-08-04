@@ -34,6 +34,7 @@
 #include<simple_state.h>
 #include<app_helpers.h>
 #include<machine_config.h>
+#include<rotorpos_dialog.h>
 
 #define ROTORVIS "rotorvis"
 
@@ -78,6 +79,10 @@ public:
     /*! \brief Callback that is executed, when the "Configure machine" menu entry is selected.
      */    
     virtual void on_configure_machine();      
+
+    /*! \brief Callback that is executed, when the "Set rotor positions" menu entry is selected.
+     */    
+    virtual void on_set_rotor_positions();      
 
     /*! \brief Callback that is executed, when the "Randomize state" menu entry is selected.
      */    
@@ -285,6 +290,35 @@ void rotor_visual::on_configure_machine()
     {
         messages.info_message("Not yet implemented");
     }    
+}
+
+void rotor_visual::on_set_rotor_positions()
+{
+    Glib::ustring current_positions = the_machine->visualize_all_positions();    
+    rotorpos_dialog dlg(*win, current_positions);
+    int dlg_result;
+    bool move_result;
+    
+    do
+    {
+        dlg_result = dlg.run();        
+        
+        if (dlg_result == Gtk::RESPONSE_OK)
+        {
+            // User clicked OK
+            
+            // Try to configure machine with the new rotor positions
+            move_result = the_machine->move_all_rotors(current_positions);
+            if (move_result)
+            {
+                messages.error_message("Rotor positions incorrect");
+            }        
+        }
+        // Try again if the user entered wrong rotor positions but left the dialog by clicking OK    
+    } while ((dlg_result == Gtk::RESPONSE_OK) && move_result);                
+
+    // Redraw rotor windows
+    simulator_gui->get_rotor_visualizer()->set_machine(the_machine.get());
 }
 
 void rotor_visual::on_randomize_machine()
@@ -710,6 +744,7 @@ void rotor_visual::setup_menus()
     menu_action->add(Gtk::Action::create("savesettings", "Sa_ve settings ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_save));        
 
 
+    menu_action->add(Gtk::Action::create("rotorpos", "Set rotor pos_itions ..."), sigc::mem_fun(*this, &rotor_visual::on_set_rotor_positions));        
     menu_action->add(Gtk::Action::create("configure", "Confi_gure machine ..."), sigc::mem_fun(*this, &rotor_visual::on_configure_machine));        
     log_item = Gtk::ToggleAction::create("showlogs", "Sh_ow logs ...");
     menu_action->add(log_item, sigc::mem_fun(*this, &rotor_visual::on_output_activate));    
@@ -737,7 +772,8 @@ void rotor_visual::setup_menus()
         "    <menu action='MenuFile'>"
         "      <menuitem action='loadsettings'/>"
         "      <menuitem action='savesettingsas'/>"       
-        "      <menuitem action='savesettings'/>"                 
+        "      <menuitem action='savesettings'/>"             
+        "      <menuitem action='rotorpos'/>"            
         "      <menuitem action='configure'/>"                
         "      <menuitem action='showlogs'/>"
         "      <menuitem action='logstyleencrypt'/>"
