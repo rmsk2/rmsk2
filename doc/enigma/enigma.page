@@ -140,6 +140,10 @@ variant.
 <p>The Machine settings menu contains the following entries:</p>
 <terms>
     <item>
+        <title><code>Set rotor positions ...</code></title>
+        <p>Opens a dialog which allows the user to change the current rotor positions of the simulated machine.</p>
+    </item>
+    <item>
         <title><code>Rotor settings ...</code></title>
         <p>Opens a <link type="topic" xref="rotor_settings">dialog</link> which allows the user to choose which rotors to place in the simualated machine and their ring settings.</p>
     </item>

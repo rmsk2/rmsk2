@@ -735,8 +735,8 @@ void rotor_visual::setup_menus()
     menu_action->add(log_item, sigc::mem_fun(*this, &rotor_visual::on_output_activate));    
     enc_dec_item = Gtk::ToggleAction::create("logstyleencrypt", "Mode: Encryption");
     menu_action->add(enc_dec_item, sigc::mem_fun(*this, &rotor_visual::on_enc_state_activate));
-    menu_action->add(Gtk::Action::create("outputreset", "Rip _paper strip "), sigc::mem_fun(*this, &rotor_visual::on_reset));    
-    menu_action->add(Gtk::Action::create("randomize", "Ran_domize state ..."), sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
+    menu_action->add(Gtk::Action::create("outputreset", "Rip _paper strip"), sigc::mem_fun(*this, &rotor_visual::on_reset));    
+    menu_action->add(Gtk::Action::create("randomize", "Ran_domize state"), sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
     menu_action->add(Gtk::Action::create("processclipboard", "Process _clipboard"), sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));    
     
     menu_action->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &rotor_visual::on_quit_activate));

@@ -66,6 +66,46 @@ Here a picture that shows the configuration dialog of Rotorvis' KL7 simulator:
 </terms>
 </section>
 
+<section id="kl7_positions">
+<title>Representing rotor positions</title>
+<p>
+As described above ten positions of the alphabet ring are empty and these empty positions can be referenced by appending a + sign to the marking of the non empty position that precedes any empty position. For reasons of consistency with other rotor machines rotorvis can not use this notation when displaying or setting rotor positions for a KL7. Each of the ten empty positions is assigned a digit instead. The following table shows how one can translate between the two notations.</p>
+
+<table frame="all" rules="all" shade="rows">
+    <tr>
+        <td><p>1</p></td> <td><p>b+</p></td>
+    </tr>
+    <tr>
+        <td><p>2</p></td> <td><p>e+</p></td>
+    </tr>
+    <tr>
+        <td><p>3</p></td> <td><p>g+</p></td>
+    </tr>
+    <tr>
+        <td><p>4</p></td> <td><p>j+</p></td>
+    </tr>
+    <tr>
+        <td><p>5</p></td> <td><p>m+</p></td>
+    </tr>
+    <tr>
+        <td><p>6</p></td> <td><p>o+</p></td>
+    </tr>
+    <tr>
+        <td><p>7</p></td> <td><p>r+</p></td>
+    </tr>
+    <tr>
+        <td><p>8</p></td> <td><p>t+</p></td>
+    </tr>
+    <tr>
+        <td><p>9</p></td> <td><p>w+</p></td>
+    </tr>
+    <tr>
+        <td><p>0</p></td> <td><p>z+</p></td>
+    </tr>
+</table>
+
+</section>
+
 <section id="kl7_differences">
 <title>Differences to the real machine and to other simulators</title>
 <list>

@@ -101,6 +101,10 @@ the simulator has regained the focus.
         current file name then a new one has to be specified.</p>
     </item>    
     <item>
+        <title><code>Set rotor positions ...</code></title>
+        <p>Opens a dialog which allows the user to change the rotor positions of the simulated rotor machine.</p>
+    </item>    
+    <item>
         <title><code>Configure machine ...</code></title>
         <p>Opens a configuration dialog which allows to set all the machine parameters for which there is
         no graphical representation in the simulator's GUI.</p>
