@@ -299,4 +299,36 @@ protected:
     sigc::connection out_log;        
 };
 
+/*! \brief An application class that allows to handle the events that occur when the user opens the dialog which allows
+ *         to set a new rotor position.
+ *
+ *  In order to fulfill its intended tasks an object of this class has to know the simulator object that is actually in use in the application
+ *  (member log_helper::simulator_gui).
+ */    
+class rotor_position_helper : public menu_helper {
+public:
+    /*! \brief Constructor. The parameter name_of_app has to contain the name of the app and is used to set the title
+     *         of any dialog window that is presented to the user while processing the event.
+     */
+    rotor_position_helper(const char *name_of_app) : menu_helper(name_of_app) { ; }
+    
+    /*! \brief This method allows to set the rotor_simulator instances that this log_helper instance is intended
+     *         to manage.
+     */                
+    virtual void set_simulator(rotor_draw *simulator) { simulator_gui = simulator; }
+
+    /*! \brief This method allows to handle calling the rotorpos_dialog in order to change to rotor positions of the machine underlying
+     *         the rotor_position_helper_simulator_gui.
+     */                    
+    virtual void set_rotor_positions(sigc::slot<void> *set_pos_success);    
+
+    /*! \brief Destructor.
+     */                    
+    virtual ~rotor_position_helper() { ; }
+
+protected:
+    /*! \brief Points to the simulator object in use in this application. */    
+    rotor_draw *simulator_gui;
+};
+
 #endif /* __app_helpers_h__ */

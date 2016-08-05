@@ -78,6 +78,11 @@ public:
      */    
     virtual void set_machine(rotor_machine *machine);
 
+    /*! \brief This method syncs the rotor positions displayed in the rotor windows to the rotor positions as they
+     *         currently are in the underlying rotor_machine object.
+     */    
+    virtual void update_all_rotor_windows();
+
     /*! \brief This method asks each of the rotor_window objects that are managed by this instance of rotor_visualizer
      *         whether it wants to handle the click that appeared at (pos_x, pos_y). If it finds one it forwards the
      *         call to that rotor_window.

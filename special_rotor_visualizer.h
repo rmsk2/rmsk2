@@ -41,6 +41,11 @@ public:
     /*! \brief Draws the sub visualizers into the drawing context specified by parameter cr.
      */    
     virtual void draw(Cairo::RefPtr<Cairo::Context> cr);
+    
+    /*! \brief This method syncs the rotor positions displayed in the rotor windows to the rotor positions as they
+     *         currently are in the underlying rotor_machine object.
+     */    
+    virtual void update_all_rotor_windows();    
 
     /*! \brief Syncs the rotor positons of all sub visualizers and subsequently redraws them into the drawing
      *         context speified by the parameter cr.

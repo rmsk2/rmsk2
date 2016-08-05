@@ -22,6 +22,7 @@
 #include<app_helpers.h>
 #include<rmsk_globals.h>
 #include<Enigma.xpm>
+#include<rotorpos_dialog.h>
 
 void menu_helper::message_dialog(Glib::ustring& message, Gtk::MessageType type)
 {
@@ -387,5 +388,43 @@ void log_helper::set_grouping(unsigned int group_type, bool enc_state)
         disp->set_grouping_state_out(FORMAT_NONE);
         disp->set_grouping_state_in(group_type);    
     }   
+}
+
+/* ------------------------------------------------------------------ */
+
+void rotor_position_helper::set_rotor_positions(sigc::slot<void> *set_pos_success)
+{
+    Glib::ustring current_positions = simulator_gui->get_machine()->visualize_all_positions();    
+    rotorpos_dialog dlg(*win, current_positions);
+    int dlg_result;
+    bool move_result;
+    
+    do
+    {
+        dlg_result = dlg.run();        
+        
+        if (dlg_result == Gtk::RESPONSE_OK)
+        {
+            // User clicked OK
+            current_positions = current_positions.lowercase();
+            // Try to configure machine with the new rotor positions
+            if (!(move_result = simulator_gui->get_machine()->move_all_rotors(current_positions)))
+            {
+                // Success! Correct rotor positions have been entered
+                if (set_pos_success != NULL)
+                { 
+                    (*set_pos_success)();
+                }
+            }
+            else
+            {
+                error_message("Rotor positions incorrect");
+            }        
+        }
+        // Try again if the user entered wrong rotor positions but left the dialog by clicking OK    
+    } while ((dlg_result == Gtk::RESPONSE_OK) && move_result);                
+
+    // Redraw rotor windows
+    simulator_gui->get_rotor_visualizer()->update_all_rotor_windows();    
 }
 

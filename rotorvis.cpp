@@ -34,7 +34,6 @@
 #include<simple_state.h>
 #include<app_helpers.h>
 #include<machine_config.h>
-#include<rotorpos_dialog.h>
 
 #define ROTORVIS "rotorvis"
 
@@ -210,7 +209,7 @@ protected:
     /*! \brief Object that manages the events occuring when the user selects entries in the Help menu. */    
     help_menu_helper help_menu_manager;  
     
-    /*! \brief Object that manages the events occuring when the user selects Load or Save settings entries from the menu. */    
+    /*! \brief Object that manages the events occuring when the user selects the Load or Save settings entries from the menu. */    
     file_operations_helper file_helper;
     
     /*! \brief Object that manages the events occuring when the user selects "Process clipboard" from the menu. */    
@@ -221,6 +220,12 @@ protected:
 
     /*! \brief Helper object that is used to display simple messages. */    
     menu_helper messages;
+
+    /*! \brief Helper object that is used to manage the events that occur when the user select the "Set rotor positions" 
+     *         entry from the menu. 
+     */    
+    rotor_position_helper pos_helper;
+
 };
 
 void rotor_visual::set_titles(Glib::ustring& last_file_name)
@@ -294,31 +299,7 @@ void rotor_visual::on_configure_machine()
 
 void rotor_visual::on_set_rotor_positions()
 {
-    Glib::ustring current_positions = the_machine->visualize_all_positions();    
-    rotorpos_dialog dlg(*win, current_positions);
-    int dlg_result;
-    bool move_result;
-    
-    do
-    {
-        dlg_result = dlg.run();        
-        
-        if (dlg_result == Gtk::RESPONSE_OK)
-        {
-            // User clicked OK
-            
-            // Try to configure machine with the new rotor positions
-            move_result = the_machine->move_all_rotors(current_positions);
-            if (move_result)
-            {
-                messages.error_message("Rotor positions incorrect");
-            }        
-        }
-        // Try again if the user entered wrong rotor positions but left the dialog by clicking OK    
-    } while ((dlg_result == Gtk::RESPONSE_OK) && move_result);                
-
-    // Redraw rotor windows
-    simulator_gui->get_rotor_visualizer()->set_machine(the_machine.get());
+    pos_helper.set_rotor_positions(NULL);
 }
 
 void rotor_visual::on_randomize_machine()
@@ -660,7 +641,7 @@ void rotor_visual::on_mode_changed()
 }
 
 rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
-    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS)
+    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS), pos_helper(ROTORVIS)
 {    
     last_file_name_used = "";
     win = main_win;
@@ -725,6 +706,10 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     set_titles(last_file_name_used);
 
     simulator_gui->set_machine(the_machine.get());
+
+    // Setup object to handle Set rotor position menu events
+    pos_helper.set_parent_window(win);    
+    pos_helper.set_simulator(simulator_gui);
 
     // Setup object to manage log menu events
     loghelp.set_parent_window(win);

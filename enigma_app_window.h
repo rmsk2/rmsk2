@@ -267,7 +267,12 @@ protected:
     log_helper loghelp;        
     
     /*! \brief Helper object that is used to display simple messages. */        
-    menu_helper messages;    
+    menu_helper messages;  
+    
+    /*! \brief Helper object that is used to manage the events that occur when the user select the "Set rotor positions" 
+     *         entry from the menu. 
+     */    
+    rotor_position_helper pos_helper;      
 };
 #endif /* __enigma_app_window_h__ */
 

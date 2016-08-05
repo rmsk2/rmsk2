@@ -94,6 +94,17 @@ void rotor_visualizer::draw(Cairo::RefPtr<Cairo::Context> cr)
     }        
 }
 
+void rotor_visualizer::update_all_rotor_windows()
+{
+    // Iterate over the symbolic names of the rotor slots
+    for (unsigned int count = 0; count < rotor_names.size(); count++)
+    {
+        string name_help = rotor_names[count];        
+        rotors[name_help]->update(); // Sync rotor position and redraw           
+    }                                                       
+}
+
+
 void rotor_visualizer::set_machine(rotor_machine *the_machine)
 {
     // Iterate over the symbolic names of the rotor slots

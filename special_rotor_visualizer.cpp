@@ -89,6 +89,17 @@ composite_rotor_visualizer::~composite_rotor_visualizer()
     }        
 }
 
+void composite_rotor_visualizer::update_all_rotor_windows()
+{
+    vector<thin_rotor_visualizer *>::iterator iter;
+    
+    for (iter = sub_visualizers.begin(); iter != sub_visualizers.end(); ++iter)
+    {
+        (*iter)->update_all_rotor_windows();
+    }
+}
+
+
 /* ------------------------------------------------------------------------------- */
 
 sigaba_rotor_visualizer::sigaba_rotor_visualizer(vector<string>& r_names, int r_most_pos, int y_pos)

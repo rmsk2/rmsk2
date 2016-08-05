@@ -21,11 +21,10 @@
 #include<enigma_app_window.h>
 #include<boost/lexical_cast.hpp>
 #include<enigma_uhr.h>
-#include<rotorpos_dialog.h>
 
 
 enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
-    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA)
+    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA), pos_helper(ENIGMA)
 {
     Glib::ustring window_title(" Enigma");
     
@@ -104,6 +103,10 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     simulator_gui->set_machine(enigma);
     update_rotors();
     update_stecker_brett();
+
+    // Setup object to handle Set rotor positions menu events
+    pos_helper.set_parent_window(this);    
+    pos_helper.set_simulator(simulator_gui);
 
     // Setup models of combo boxes in the rotor selection dialog
     ref_xml->get_widget("reflector_wheel", combo_help);
@@ -292,37 +295,10 @@ void enigma_app_window::on_save_rotor_set_data_activate()
 
 void enigma_app_window::on_set_rotor_positions_activate()
 {
-    Glib::ustring current_positions = enigma->visualize_all_positions();    
-    rotorpos_dialog dlg(*this, current_positions);
-    int dlg_result;
-    bool move_result;
+    sigc::slot<void> sync_functor = sigc::mem_fun(*this, &enigma_app_window::sync_rotor_pos);
     
-    do
-    {
-        dlg_result = dlg.run();        
-        
-        if (dlg_result == Gtk::RESPONSE_OK)
-        {
-            // User clicked OK
-            
-            // Try to configure machine with the new rotor positions
-            if (!(move_result = enigma->move_all_rotors(current_positions)))
-            {
-                // Success! Correct rotor positions have been entered
-                sync_rotor_pos();
-            }
-            else
-            {
-                messages.error_message("Rotor positions incorrect");
-            }        
-        }
-        // Try again if the user entered wrong rotor positions but left the dialog by clicking OK    
-    } while ((dlg_result == Gtk::RESPONSE_OK) && move_result);                
-
-    // Redraw rotor windows
-    simulator_gui->get_rotor_visualizer()->set_machine(enigma);
+    pos_helper.set_rotor_positions(&sync_functor);
 }
-
 
 void enigma_app_window::on_ukwd_activate()
 {
