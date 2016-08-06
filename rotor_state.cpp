@@ -49,7 +49,7 @@ protected:
 
     /*! \brief This method prints a message that describes how to use rotorsim.
      */
-    virtual void print_help_message(po::options_description *desc);
+    virtual void print_help_message(po::options_description *desc, string appendix = "");
 
     /*! \brief This method modifies the parameter description stored in this.desc to
      *         include the machine specific configuration options. The parameter type
@@ -65,6 +65,11 @@ protected:
      */    
     virtual int check_machine_specific_options(string& err_message);
 
+    /*! \brief This method returns a message that describes the randomizer parameters which can be used with
+     *         the machines of the type specified by the parameter machine_name. The generated message is returned
+     *         through the parameter randomizer_help.
+     */
+    virtual void generate_randomizer_help(string& machine_name, string& randomizer_help);
 
     /*! \brief Holds the configuration information as specified on the command line. */
     map<string, string> config_map;
@@ -83,6 +88,9 @@ protected:
     
     /*! \brief Holds the output file name as specified on the command line. */    
     string output_file;
+
+    /*! \brief Holds the value of the --randparm parameter. */    
+    string rand_parameter;
     
     /*! \brief Contains a flag that is true if the corresponding command line option is boolean valued. */
     map<string, bool> bool_config_map;     
@@ -94,6 +102,7 @@ rotor_state::rotor_state()
     desc.add_options()
         ("help,h", "Produce help message")    
         ("random", "Generate random machine state. Optional.")
+        ("randparm", po::value<string>(&rand_parameter), "Generate random machine state using the string supplied as the value of this option as a parameter. Optional.")
         ("positions,p", po::value<string>(&rotor_positions)->default_value(ROTORPOS_DEFAULT), "Desired positions of settable rotors.")
         ("input-file,i", po::value<string>(&input_file), "Read input data from this file and pipe it to stdout. Optional. stdin used if missing and --pipe specified.")
         ("stdout", "Force generated state to also be written to stdout. Has no effect if no output file was specified.")
@@ -114,7 +123,7 @@ rotor_state::rotor_state()
     allowed_machine_names.insert("SG39");
 }
 
-void rotor_state::print_help_message(po::options_description *desc)
+void rotor_state::print_help_message(po::options_description *desc, string appendix)
 {
     string allowed_names;
     set<string>::iterator iter;
@@ -127,10 +136,17 @@ void rotor_state::print_help_message(po::options_description *desc)
     cout << "First parameter has to be machine type. Valid values are:" << endl << endl;
     cout << allowed_names << endl << endl;
     cout << (*desc) << endl;
+
+    if (appendix != "")
+    {
+        cout << appendix <<endl;
+        cout << endl;
+    }
+
     cout << "Examples:" << endl << endl;
     cout << "echo vonvonjl | rotorstate M4 --pipe --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | rotorsim encrypt -g 4 -p vjna" << endl;                        
     cout << "rotorstate M4 -o m4_verification_test.ini --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx -p fgtu" << endl;
-    cout << "rotorstate M4 -o m4_verification_test.ini --random" << endl;
+    cout << "rotorstate Services -o services_verification_test.ini --randparm uhr" << endl;
     cout << "rotorstate M4 -i test_data.txt --rotors 11241 --rings aaav --plugs atbldfgjhmnwopqyrzvx | rotorsim encrypt -g 4 -p vjna" << endl;
     cout << "echo thisisatest | rotorstate KL7 --random -o egal.ini --pipe --stdout | rotorsim encrypt -g 5" << endl;
     cout << "rotorstate KL7 -h" << endl;    
@@ -193,6 +209,30 @@ int rotor_state::check_machine_specific_options(string& err_message)
     return return_code;
 }
 
+void rotor_state::generate_randomizer_help(string& machine_name, string& randomizer_help)
+{
+    boost::scoped_ptr<rotor_machine> machine(rmsk::make_default_machine(machine_name));
+    vector<string> parameters;
+    vector<string>::iterator iter;
+    
+    randomizer_help.clear();
+    
+    if (machine.get() != NULL)
+    {                
+        parameters = machine->get_randomizer_params();
+        
+        for (iter = parameters.begin(); iter != parameters.end(); ++iter)
+        {
+            randomizer_help += (*iter + " ");
+        }
+        
+        if (randomizer_help != "")
+        {
+            randomizer_help = "Allowed randomizer parameters: " + randomizer_help;
+        }
+    }
+}
+
 int rotor_state::parse(int argc, char **argv)
 {
     int return_code = RETVAL_OK;
@@ -235,13 +275,16 @@ int rotor_state::parse(int argc, char **argv)
             // Check if -h was specified and if yes show help message
             if (vm.count("help")) 
             {
-                print_help_message(&desc);                
+                string rand_help;
+                
+                generate_randomizer_help(machine_type, rand_help);                
+                print_help_message(&desc, rand_help);                
                 return_code = ERR_WRONG_COMMAND_LINE;
                 break;
             }
             
             // Only check dynamic parameters if a randomized state has not been requested
-            if (vm.count("random") == 0)
+            if ((vm.count("random") == 0) && (vm.count("randparm") == 0))
             {
                 if ((return_code = check_machine_specific_options(err_message)) != RETVAL_OK)
                 {
@@ -268,7 +311,7 @@ int rotor_state::execute_command()
     string data_in;
     const int DONT_CARE = 0x4747;
     ustring new_positions = rotor_positions;
-    string dummy = "dummy";
+    string randomize_parm = "dummy";
     
     do
     {        
@@ -296,10 +339,16 @@ int rotor_state::execute_command()
         }
         
         // Configure state of machine
-        if (vm.count("random"))
+        if ((vm.count("random") != 0) || (vm.count("randparm") != 0))
         {
+            // If user supplied an argument for the random generator use it
+            if (vm.count("randparm") != 0)
+            {
+                randomize_parm = rand_parameter;
+            }
+            
             // Randomize state
-            if (machine->randomize(dummy))
+            if (machine->randomize(randomize_parm))
             {
                 result = ERR_ROTOR_MACHINE;
                 cout << "Unable to randomize rotor machine" << endl;

@@ -313,6 +313,16 @@ bool nema::randomize(string& param)
     vector<unsigned int> rings;
     string rotors, selected_rings, positions;
     
+    if (param == "training")
+    {
+        is_war_machine = false;
+    }
+
+    if (param == "war")
+    {
+        is_war_machine = true;
+    }
+    
     rings.push_back(12); rings.push_back(13); rings.push_back(14); rings.push_back(15);
     rings.push_back(17); rings.push_back(18);
     
@@ -409,6 +419,9 @@ nema::nema(vector<rotor_assembly>& rotor_settings, unsigned int left_red_drive_w
     // Set up keyboard    
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("ijklmnopqrstuvwxyzabcdefgh")));
     set_keyboard(kbd); 
+    
+    randomizer_params.push_back("war");
+    randomizer_params.push_back("training");        
     
     unvisualized_rotor_names.insert(ETW);                          
         

@@ -184,6 +184,10 @@ public:
      */
     virtual bool randomize(string& param) { return false; }
 
+    /*! \brief Returns a vector of strings that can be used as a parameter to the randomize() nethod.
+     */                  
+    virtual vector<string> get_randomizer_params() { return randomizer_params; }
+
     /*! \brief Returns the input transform in use in this rotor_machine.
      */
     virtual boost::shared_ptr<encryption_transform> get_input_transform() {return input_transform; }
@@ -420,6 +424,10 @@ protected:
     /*! \brief Holds the symbolic rotor identifiers which are excluded from visualization by rotor_machine::visualize_all_positions.
      */                                
     set<string> unvisualized_rotor_names;
+
+    /*! \brief Holds the parameters that can be given to the randomize method of this machine.
+     */                                
+    vector<string> randomizer_params;
 };
 
 #endif /* __rotor_machine_h__ */

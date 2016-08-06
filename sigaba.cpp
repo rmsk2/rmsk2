@@ -640,10 +640,21 @@ bool sigaba::randomize(string& param)
     bool result = false;
     random_bit_source reverse_rotors(15);
     urandom_generator rand;    
+    bool is_csp2900 = get_sigaba_stepper()->is_2900();
     map<string, string> machine_conf;
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));    
     string cipher_rotors, control_rotors, index_rotors;
     vector<unsigned int> cipher_displacements, control_displacements, index_displacements;
+    
+    if (param == "csp2900")
+    {
+        is_csp2900 = true;
+    }
+
+    if (param == "csp889")
+    {
+        is_csp2900 = false;
+    }
     
     try
     {
@@ -671,7 +682,7 @@ bool sigaba::randomize(string& param)
         machine_conf[KW_CIPHER_ROTORS] = cipher_rotors;
         machine_conf[KW_CONTROL_ROTORS] = control_rotors;
         machine_conf[KW_INDEX_ROTORS] = index_rotors;
-        machine_conf[KW_CSP_2900_FLAG] = (get_sigaba_stepper()->is_2900() ? CONF_TRUE : CONF_FALSE);
+        machine_conf[KW_CSP_2900_FLAG] = (is_csp2900 ? CONF_TRUE : CONF_FALSE);
 
         c->configure_machine(machine_conf, this); 
         
@@ -746,7 +757,10 @@ sigaba::sigaba(vector<rotor_id>& r_ids, bool csp_2900_flag)
     prepare_rotor(r_ids[1], R_ONE);
     prepare_rotor(r_ids[2], R_TWO);
     prepare_rotor(r_ids[3], R_THREE);
-    prepare_rotor(r_ids[4], R_FOUR);            
+    prepare_rotor(r_ids[4], R_FOUR);
+    
+    randomizer_params.push_back("csp2900");
+    randomizer_params.push_back("csp889");                        
     
     get_stepping_gear()->reset();        
 }

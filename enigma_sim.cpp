@@ -154,6 +154,19 @@ bool enigma_base::randomize(string& param)
         // Is Uhr in use?
         rand_conf.get_uses_uhr() = e->uses_uhr();        
     }
+    
+    if (rand_conf.get_uhr_capable())
+    {
+        if (param == "uhr")
+        {
+            rand_conf.get_uses_uhr() = true;
+        }
+
+        if (param == "nouhr")
+        {
+            rand_conf.get_uses_uhr() = false;
+        }
+    }
         
     result = rand_conf.randomize();
     
@@ -385,6 +398,9 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     {
         machine_type = "Services";
     }
+    
+    randomizer_params.push_back("uhr");
+    randomizer_params.push_back("nouhr");    
     
     // Set names of rotor slots
     rotor_names.push_back(FAST);
