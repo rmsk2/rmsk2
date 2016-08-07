@@ -245,6 +245,7 @@ int rotor_state::parse(int argc, char **argv)
             if (argc < 2)
             {
                 print_help_message(&desc);                
+                cout << "Use rotorstate <machine_type> -h to also get additional information about machine specific options." << endl << endl;
                 return_code = ERR_WRONG_COMMAND_LINE;
                 break;
             }
@@ -260,7 +261,9 @@ int rotor_state::parse(int argc, char **argv)
                     cout << "Unknown machine type " << machine_type << endl << endl;
                 }
                 
-                print_help_message(&desc);                
+                print_help_message(&desc);                           
+                cout << "Use rotorstate <machine_type> -h to also get additional information about machine specific options." << endl << endl;
+                     
                 return_code = ERR_WRONG_COMMAND_LINE;
                 break;
             }
