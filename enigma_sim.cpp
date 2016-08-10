@@ -163,7 +163,7 @@ bool enigma_base::randomize(string& param)
             rand_conf.get_uses_uhr() = true;
         }
 
-        if ((param == "nouhr") || (param == "basic"))
+        if ((param == "nouhr") || (param == "basic") || (param == "ukwdonly"))
         {
             rand_conf.get_uses_uhr() = false;
         }
@@ -181,9 +181,16 @@ bool enigma_base::randomize(string& param)
             continue;
         }
         
-        if (rand_conf.is_ukw_d_capable() && (machine_type != "KD") && ((param == "basic") || (param == "uhronly")))        
+        if (rand_conf.is_ukw_d_capable() && (machine_type != "KD") && ((param == "basic") || (param == "uhronly")|| (param == "ukwdonly")))        
         {            
-            suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id != UKW_D;
+            if (param != "ukwdonly")
+            {
+                suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id != UKW_D;
+            }
+            else
+            {
+                suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id == UKW_D;
+            }
         }            
         
     } while((!suitable_config_found) && (!result));
@@ -415,6 +422,7 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     randomizer_params.push_back("uhr");
     randomizer_params.push_back("nouhr");    
     randomizer_params.push_back("uhronly");
+    randomizer_params.push_back("ukwdonly");    
     randomizer_params.push_back("basic");
     
     // Set names of rotor slots
