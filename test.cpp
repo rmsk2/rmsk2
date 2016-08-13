@@ -225,12 +225,12 @@ bool alles_andere::test()
         machine_config test_conf2;
         
         map<string, string> kw;
-        string enigma_model = "M3";
+        string enigma_model = "Services";
         boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
-        kw[KW_ENIG_ROTOR_SELECTION] = "1168";
+        kw[KW_ENIG_ROTOR_SELECTION] = "1153";
         kw[KW_ENIG_RINGSTELLUNG] = "abc";
-        kw[KW_ENIG_STECKERBRETT] = "adcnetflgijvkzpuqywx";
-        kw[KW_USES_UHR] = CONF_FALSE;
+        kw[KW_ENIG_STECKERBRETT] = "17:adcnetflgijvkzpuqywx";
+        kw[KW_USES_UHR] = CONF_TRUE;
         kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
         boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
         
