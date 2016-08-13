@@ -2405,6 +2405,20 @@ class RotorMachine(tlvobject.TlvProxy):
         res = self.do_method_call(self._handle, 'getdescription', param)
         return res[0]
 
+    ## \brief Returns a list of all randomizer parameters supported by the underlying machine.
+    #
+    #  \returns A vector of strings containing the supported randomizer parameters. Can be empty if the underlying
+    #           machine does not support any randomizer parameters.
+    #                
+    def get_randomizer_params(self):
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getrandparm', param)
+        
+        if (len(res) == 1) and (res[0] == ''):
+            res = []
+
+        return res
+
     ## \brief Returns a visualization of the rotor positions of the machine proxied by this rotorsim.RotorMachine
     #         instance.
     #

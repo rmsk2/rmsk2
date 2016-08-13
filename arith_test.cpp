@@ -613,6 +613,39 @@ unsigned int rotor_machine_proxy::step_processor(tlv_entry& params, tlv_stream *
     return result;
 }
 
+unsigned int rotor_machine_proxy::get_randparm_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry current_pos_tlv;
+    ustring current_pos;
+    vector<string> randomizer_params = machine->get_randomizer_params();
+    vector<string>::iterator iter;
+    
+    if (randomizer_params.size() != 0)
+    {        
+        for (iter = randomizer_params.begin(); (iter != randomizer_params.end()) and (result == ERR_OK); ++iter)
+        {
+            current_pos = *iter;
+            current_pos_tlv.to_string(current_pos.raw());
+            // Transmit parameter to client
+            result = out_stream->write_tlv(current_pos_tlv);
+        }
+    }
+    else
+    {
+        current_pos = "";
+        current_pos_tlv.to_string(current_pos.raw());
+        // Transmit parameter to client
+        result = out_stream->write_tlv(current_pos_tlv);        
+    }
+    
+    // Write end of result stream marker.
+    (void)out_stream->write_error_tlv(result);
+    
+    return result;
+}
+
+
 unsigned int rotor_machine_proxy::get_permutations_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
@@ -685,7 +718,8 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["randomizestate"] = &rotor_machine_proxy::randomize_state_processor;
     rotor_proxy_proc["setpositions"] = &rotor_machine_proxy::set_positions_processor;
     rotor_proxy_proc["getconfig"] = &rotor_machine_proxy::get_config_processor;
-    rotor_proxy_proc["setconfig"] = &rotor_machine_proxy::set_config_processor;    
+    rotor_proxy_proc["setconfig"] = &rotor_machine_proxy::set_config_processor;
+    rotor_proxy_proc["getrandparm"] = &rotor_machine_proxy::get_randparm_processor;    
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

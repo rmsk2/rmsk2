@@ -729,6 +729,52 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
         return result
 
 
+## \brief This class tests whether retrieving randomizer parameters works as expected.
+#        
+class RandParmTest(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    # \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.   
+    #
+    def __init__(self, name):
+        super().__init__(name)
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #    
+    def test(self):
+        result = super().test()
+        
+        machine_state = M4EnigmaState.get_default_state().render_state()
+
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(machine_state, server.address) as machine:
+            try:  
+                randomizer_params = machine.get_randomizer_params()
+                
+                result = result and (randomizer_params == [])
+                if not result:
+                    self.append_note("Incorrect list of randomizer parameters returned for M4: {}".format(str(randomizer_params)))
+                    
+                machine_state = SG39State.get_default_state().render_state()
+                machine.set_state(machine_state)
+                
+                randomizer_params = machine.get_randomizer_params()
+                this_result = (randomizer_params == ['one', 'two', 'three'])
+                result = result and this_result
+                if not this_result:
+                    self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))                                            
+                
+                if result:        
+                    self.append_note('OK')
+            except:
+                self.append_note("EXCEPTION!!!!")
+                result = False
+        
+        return result
+
+
 ## \brief This class tests whether state randomization is possible and ensures that loading and parsing state information
 #         is done correctly.
 #        
@@ -847,10 +893,12 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
         test_states.append(SG39State.get_default_state())
         test_states.append(TypexState.get_default_state())
         test_states.append(NemaState.get_default_state())        
-        rand_test = RandomizeTest('State randomization test', test_states)    
+        rand_test = RandomizeTest('State randomization test', test_states)
+        rand_parm_test = RandParmTest('Randomizer parameter test')    
         all_tests.add(functional_test)
         all_tests.add(performance_test)
         all_tests.add(rand_test)
+        all_tests.add(rand_parm_test)
     
     all_tests.add(enigma_verification_test)
     all_tests.add(sigaba_verification_test)

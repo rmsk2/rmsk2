@@ -291,18 +291,25 @@ bool schluesselgeraet39::randomize(string& param)
         
         key_gen_selector = stepping_selection_perm.encrypt(0);
         
-        try
+        if (param == "one")
         {
-            if (param != "")
+            key_gen_selector = 1;
+        }
+        else
+        {
+            if (param == "two")
             {
-                key_gen_selector = boost::lexical_cast<unsigned int>(param);
+                key_gen_selector = 0;
+            }
+            else
+            {
+                if (param == "three")
+                {
+                    key_gen_selector = 2;
+                }
             }
         }
-        catch(...)
-        {
-            ;
-        }
-        
+                
         // Determine stepping motion
         switch(key_gen_selector)
         {
@@ -500,6 +507,10 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     set_keyboard(kbd);        
 
 #endif
+    
+    randomizer_params.push_back("one");
+    randomizer_params.push_back("two");
+    randomizer_params.push_back("three");
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

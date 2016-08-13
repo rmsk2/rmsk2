@@ -216,6 +216,15 @@ public:
      */
     virtual unsigned int step_processor(tlv_entry& params, tlv_stream *out_stream);
 
+    /*! \brief This method calls machine->get_randomizer_params() and returns a list of supported randomizer parameters back to
+     *         the client. The parameter params is ignored. If the underlying machine does not support any ramdomizer parameters
+     *         then a one element vector containing an empty string is returned. Communication with the client is done via the
+     *         object to which parameter out_stream points.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.     
+     */
+    virtual unsigned int get_randparm_processor(tlv_entry& params, tlv_stream *out_stream);
+
     /*! \brief This method returns the result of machine->get_description() to the client. The parameter params is ignored.
      *         The parameter out_stream is used to talk to the client.
      *
