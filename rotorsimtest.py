@@ -99,7 +99,7 @@ class M4EnigmaTest(EnigmaFuncTest):
 
 ## \brief This class implements a verification test for the M3 or Services Enigma with Uhr.
 #
-class M3UhrTest(EnigmaFuncTest):
+class ServicesUhrTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
     #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
@@ -109,7 +109,7 @@ class M3UhrTest(EnigmaFuncTest):
     #         the decryption operations during the verification tests.
     #
     def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("M3 Uhr Test", enig_rotor_set, proc)
+        super().__init__("Services Uhr Test", enig_rotor_set, proc)
 
     ## \brief Performs the verification test.
     #
@@ -860,7 +860,7 @@ class RandomizeTest(simpletest.SimpleTest):
 def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_iterations = 2500, context = tlv_context, verification_only = False):
     enigma_verification_test = VerificationTests("Enigma verification test", RotorSet.get_std_set('enigma'), None, context)
     enigma_verification_test.add(M4EnigmaTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(M3UhrTest(enigma_verification_test.rotor_set))    
+    enigma_verification_test.add(ServicesUhrTest(enigma_verification_test.rotor_set))    
     enigma_verification_test.add(KDTest(enigma_verification_test.rotor_set))
     enigma_verification_test.add(TirpitzTest(enigma_verification_test.rotor_set))    
     enigma_verification_test.add(AbwehrTest(enigma_verification_test.rotor_set))

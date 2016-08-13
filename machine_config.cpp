@@ -266,7 +266,7 @@ void machine_config::make_config(Glib::ustring& machine_name)
             inserted_plugs.push_back(pair<char, char>('s', 'w'));
             inserted_plugs.push_back(pair<char, char>('u', 'x')); 
             
-            uhr_capable = true;       
+            //uhr_capable = true;       
                         
             machine_type = machine_name;
             break;

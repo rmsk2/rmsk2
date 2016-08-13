@@ -2153,7 +2153,7 @@ class ServicesEnigmaState(SteckeredEnigmaState):
         slots = ['fast', 'middle', 'slow', 'umkehrwalze']
         super().__init__('Enigma', machine_type, slots, rotor_set)
 
-    ## \brief This static method returns the default machine state for an M4 Enigma
+    ## \brief This static method returns the default machine state for an Services/M3 Enigma
     #
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the rotor
     #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
@@ -2166,7 +2166,7 @@ class ServicesEnigmaState(SteckeredEnigmaState):
         if rotor_set == None:
             rotor_set = RotorSet.get_std_set('enigma')
         
-        enigma_I_state = ServicesEnigmaState('M3', rotor_set)
+        enigma_I_state = ServicesEnigmaState('Services', rotor_set)
         enigma_I_state.insert_enigma_rotor('fast', es.WALZE_III, 'h', 'z')
         enigma_I_state.insert_enigma_rotor('middle', es.WALZE_IV, 'z', 't')        
         enigma_I_state.insert_enigma_rotor('slow', es.WALZE_I, 'p', 'r')  

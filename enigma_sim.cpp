@@ -182,14 +182,32 @@ bool enigma_base::randomize(string& param)
         }
         
         if (rand_conf.is_ukw_d_capable() && (machine_type != "KD") && ((param == "basic") || (param == "uhronly") || (param == "ukwdonly") || (param == "fancy")))        
-        {            
-            if ((param == "basic") || (param == "uhronly"))
-            {
-                suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id != UKW_D;
+        {
+            if (machine_type == "Services")
+            {            
+                if ((param == "basic") || (param == "uhronly"))
+                {
+                    suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id != UKW_D;
+                }
+                else
+                {
+                    suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id == UKW_D;
+                }
             }
-            else
-            {
-                suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id == UKW_D;
+
+            if (machine_type == "M3")
+            {            
+                if (param == "basic")
+                {
+                    suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id != UKW_D;
+                }
+                else
+                {
+                    if (param == "ukwdonly")
+                    {
+                        suitable_config_found = get_stepping_gear()->get_descriptor(UMKEHRWALZE).id.r_id == UKW_D;
+                    }
+                }
             }
         }            
         
@@ -413,18 +431,20 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     if (type_m3)
     {
         machine_type = "M3";
+        randomizer_params.push_back("ukwdonly");    
+        randomizer_params.push_back("basic");
     }
     else
     {
         machine_type = "Services";
+        randomizer_params.push_back("uhr");
+        randomizer_params.push_back("nouhr");    
+        randomizer_params.push_back("uhronly");
+        randomizer_params.push_back("ukwdonly");    
+        randomizer_params.push_back("basic");
+        randomizer_params.push_back("fancy");    
     }
     
-    randomizer_params.push_back("uhr");
-    randomizer_params.push_back("nouhr");    
-    randomizer_params.push_back("uhronly");
-    randomizer_params.push_back("ukwdonly");    
-    randomizer_params.push_back("basic");
-    randomizer_params.push_back("fancy");    
     
     // Set names of rotor slots
     rotor_names.push_back(FAST);

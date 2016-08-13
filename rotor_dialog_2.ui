@@ -1113,7 +1113,7 @@
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkCheckButton" id="uhrcheckbutton">
-                                    <property name="label" translatable="yes">Use Enigma-Uhr (M4 was not Uhr capable)</property>
+                                    <property name="label" translatable="yes">Use Uhr (M3/M4 were not Uhr capable)</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
