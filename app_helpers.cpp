@@ -351,8 +351,8 @@ void log_helper::display_log_window(bool is_visible)
         out_log.unblock();
         in_log.unblock();        
         // Show log dialog twenty pixels to the right of the main window.
-        disp->get_window()->show();
         disp->get_window()->move(current_x + current_width + 20, current_y);
+        disp->get_window()->show();
     }
     else
     {

@@ -756,6 +756,8 @@ class RandParmTest(simpletest.SimpleTest):
                 result = result and (randomizer_params == [])
                 if not result:
                     self.append_note("Incorrect list of randomizer parameters returned for M4: {}".format(str(randomizer_params)))
+                else:
+                    self.append_note("Randomizer parameters returned for M4: {}".format(str(randomizer_params)))
                     
                 machine_state = SG39State.get_default_state().render_state()
                 machine.set_state(machine_state)
@@ -764,7 +766,9 @@ class RandParmTest(simpletest.SimpleTest):
                 this_result = (randomizer_params == ['one', 'two', 'three'])
                 result = result and this_result
                 if not this_result:
-                    self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))                                            
+                    self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
+                else:
+                    self.append_note("Randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
                 
                 if result:        
                     self.append_note('OK')

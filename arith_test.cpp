@@ -616,8 +616,8 @@ unsigned int rotor_machine_proxy::step_processor(tlv_entry& params, tlv_stream *
 unsigned int rotor_machine_proxy::get_randparm_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
-    tlv_entry current_pos_tlv;
-    ustring current_pos;
+    tlv_entry current_param_tlv;
+    ustring current_param;
     vector<string> randomizer_params = machine->get_randomizer_params();
     vector<string>::iterator iter;
     
@@ -625,18 +625,18 @@ unsigned int rotor_machine_proxy::get_randparm_processor(tlv_entry& params, tlv_
     {        
         for (iter = randomizer_params.begin(); (iter != randomizer_params.end()) and (result == ERR_OK); ++iter)
         {
-            current_pos = *iter;
-            current_pos_tlv.to_string(current_pos.raw());
+            current_param = *iter;
+            current_param_tlv.to_string(current_param.raw());
             // Transmit parameter to client
-            result = out_stream->write_tlv(current_pos_tlv);
+            result = out_stream->write_tlv(current_param_tlv);
         }
     }
     else
     {
-        current_pos = "";
-        current_pos_tlv.to_string(current_pos.raw());
+        current_param = "";
+        current_param_tlv.to_string(current_param.raw());
         // Transmit parameter to client
-        result = out_stream->write_tlv(current_pos_tlv);        
+        result = out_stream->write_tlv(current_param_tlv);        
     }
     
     // Write end of result stream marker.
