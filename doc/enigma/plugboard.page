@@ -18,13 +18,18 @@ a plug select it in the "Current plugs" list and press the "Remove selected plug
 all plugs" button to clear the list. Each time a plug is deleted the corresponding check boxes are reactivated
 (i.e. are not grayed anymore).
 </p>
+<note><p>
+The naval Enigmas M3 and M4 were not able to use the Uhr because the pins of their plugs were a couple of
+millimeters longer than the pins on the Services Enigma plugs.
+</p></note>
+
 </section>
 
 <section id="plugboard_general">
 <title>Using the Enigma Uhr</title>
 <p>
 The Uhr was a device that could be used to change the plugboard permutation by turning a dial. The dial had
-40 positions. If the Uhr is to be used with a compatible Enigma variant (i.e. M3 and Services) the corresponding
+40 positions. If the Uhr is to be used with a Services Enigma the corresponding
 checkbox has to be checked. It is important to keep in mind that the Uhr requires exactly ten plugs. The dial 
 position can be set by moving the corresponding slider. Its current position is shown above the slider.
 </p>
