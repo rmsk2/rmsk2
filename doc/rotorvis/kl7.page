@@ -123,6 +123,11 @@ As described above ten positions of the alphabet ring are empty and these empty 
     <item><p>When the mode switch is moved from P to E or from E to P the real machine and Mr. Rijmenants simulator print a space character and the counter is incremented. Clicking 
     on the Rotorvis' STEP button only moves the rotors but neither generates an output character nor increments the counter.
     </p></item>
+    <item><p>When you are in encryption mode and you are using the Z key on the machine's simulated keyboard then rotorvis actually encrypts a space character. In the real
+    machine and in Dirk Rijmenants simulator an X is processed in this situation. If you strive for compatibility with a real machine or Mr. Rijmenants simulator and you want
+    to use the simulated keyboard you have to manually replace any Z in the plaintext by X. If you use your computer's keyboard to provide input to rotorvis then the Z key does
+    not work when doing encryptions. 
+    </p></item>    
     
 </list>
 </section>
@@ -133,6 +138,7 @@ As described above ten positions of the alphabet ring are empty and these empty 
 Rotorvis configuration information is very similar to the format used by Mr. Rijmenant's simulator and can be translated back and forth in the obvious way.</p>
 <note><p>It is important to remember to click the STEP button in Rotorvis before beginning to process a message in order to trigger the additional rotor stepping
 which appears in the real machine whenever the mode switch is moved from P to E or from E to P.</p></note> 
+<note><p>Please keep in mind that the Z key in encryption mode actually encrypts a blank character. See also last topic in previous section. </p></note> 
 </section>
 
 </page>
