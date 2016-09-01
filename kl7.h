@@ -214,9 +214,10 @@ public:
      */
     virtual bool randomize(string& param);
     
-    /*! \brief The string new_positions has to contain 8 characters from the alphabet "ab1cde2fg3hij4klm5no6pqr7st8uvw9xyz0".
+    /*! \brief The string new_positions has to contain 7 or 8 characters from the alphabet "ab1cde2fg3hij4klm5no6pqr7st8uvw9xyz0".
      *         The sequence in which the characters appear in the string new_positions has to match the sequence of rotors
-     *         as seen by the user in the graphical simulator.
+     *         as seen by the user in the graphical simulator. In case only 7 characters are given the position of the staionary
+     *         rotor is not modified.
      *
      *  Returns true if an error was encountered else false.
      */

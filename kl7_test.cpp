@@ -69,6 +69,8 @@ void register_tests(composite_test_case *container)
     enc = dynamic_cast<kl7 *>(c->make_machine(kl7_conf));
     
     enc->move_all_rotors("faamaaaa");
+    // Test that a 7 character position also works and does not change the position of the stationary rotor.
+    enc->move_all_rotors("faaaaaa");
     enc->step_rotors();
 
     // Set up verification data

@@ -334,7 +334,7 @@ bool kl7::move_all_rotors(ustring& new_positions)
     get_kl7_stepper()->get_rotor_identifiers(rotor_names);
     
     // Check new_positions has correct length
-    result = (new_positions.length() != 8);
+    result = (new_positions.length() > 8) || (new_positions.length() < 7);
     
     // Convert alphabetic specification into numeric form
     for (unsigned int count = 0; (count < new_positions.length()) && (!result); count++)
@@ -350,17 +350,24 @@ bool kl7::move_all_rotors(ustring& new_positions)
     // Now set all positions using the numeric form
     if (!result)
     {
-        for (int count = get_stepping_gear()->get_num_rotors() - 1; count >= 0; count--)
+        int pos_count = new_positions.length() - 1;
+        
+        for (int rotor_slot_count = get_stepping_gear()->get_num_rotors() - 1; rotor_slot_count >= 0; rotor_slot_count--)
         {
-            string identifier = rotor_names[count];
+            string identifier = rotor_names[rotor_slot_count];
             
             if (identifier == KL7_ROT_4)
             {
-                get_kl7_stepper()->set_stationary_rotor_ring_pos(new_pos[count]);
+                if (new_positions.length() == 8)
+                {
+                    get_kl7_stepper()->set_stationary_rotor_ring_pos(new_pos[pos_count]);
+                    pos_count--;
+                }
             }
             else
             {
-                get_kl7_stepper()->move_to_letter_ring_pos(identifier.c_str(), new_pos[count]);
+                get_kl7_stepper()->move_to_letter_ring_pos(identifier.c_str(), new_pos[pos_count]);
+                pos_count--;
             }
         }        
     }    

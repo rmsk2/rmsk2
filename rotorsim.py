@@ -2155,24 +2155,30 @@ class ServicesEnigmaState(SteckeredEnigmaState):
 
     ## \brief This static method returns the default machine state for an Services/M3 Enigma
     #
+    #  \param [machine_name] Is a string. If the value of machine_name is 'M3' an M3 state is created. Else
+    #         a Services Enigma state.
+    #
     #  \param [rotor_set] Is an object with the same interface as EnigmaRotorSet. It has to specify the rotor
     #         set which is to be used to determine rotor permutations and ring data. If rotor_set is None then
     #         the default Enigma rotor set is used.
     #
-    #  \returns A ServicesEnigmaState object. The returned machine state makes use of the Uhr.
+    #  \returns A ServicesEnigmaState object. The returned machine state does not use the Uhr.
     #
     @staticmethod
-    def get_default_state(rotor_set = None):
+    def get_default_state(machine_name, rotor_set = None):
         if rotor_set == None:
             rotor_set = RotorSet.get_std_set('enigma')
         
-        enigma_I_state = ServicesEnigmaState('Services', rotor_set)
+        if machine_name != 'M3':
+            machine_name = 'Services'
+        
+        enigma_I_state = ServicesEnigmaState(machine_name, rotor_set)
         enigma_I_state.insert_enigma_rotor('fast', es.WALZE_III, 'h', 'z')
         enigma_I_state.insert_enigma_rotor('middle', es.WALZE_IV, 'z', 't')        
         enigma_I_state.insert_enigma_rotor('slow', es.WALZE_I, 'p', 'r')  
         enigma_I_state.insert_enigma_rotor('umkehrwalze', es.UKW_B, 'a', 'a')
-        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)                      
-
+        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx')
+        
         return enigma_I_state
 
 

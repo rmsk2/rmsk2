@@ -117,7 +117,8 @@ class ServicesUhrTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        enigma_I_state = ServicesEnigmaState.get_default_state(self._rotor_set)                
+        enigma_I_state = ServicesEnigmaState.get_default_state('Services', self._rotor_set) 
+        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)               
         self._proc.set_state(enigma_I_state.render_state())
         
         decryption_result = self._proc.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx')
@@ -887,7 +888,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
         functional_test = RotorMachineFuncTests("rotorsim functional test")
         test_states = []
         test_states.append(M4EnigmaState.get_default_state())
-        test_states.append(ServicesEnigmaState.get_default_state())        
+        test_states.append(ServicesEnigmaState.get_default_state('Services'))        
         test_states.append(UnsteckeredEnigmaState.get_default_state('AbwehrEnigma'))
         test_states.append(UnsteckeredEnigmaState.get_default_state('KDEnigma'))
         test_states.append(UnsteckeredEnigmaState.get_default_state('TirpitzEnigma'))

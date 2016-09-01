@@ -241,7 +241,7 @@ class CLIRotorState:
     #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
     #  \param [configuration_params] Is a string to string dictionary that specifies the command line parameters and their
     #                                values which are used to determine the machine state.
-    #  \params [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
+    #  \param [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
     #                            state.
     #  \param [additional_params] Is a list of strings. Each element of the list is appended to the command line
     #                             when "calling" the C++ rotorstate program.    
@@ -290,7 +290,7 @@ class CLIRotorState:
     #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
     #  \param [configuration_params] Is a string to string dictionary that specifies the command line parameters and their
     #                                values which are used to determine the machine state.
-    #  \params [rotor_positions] Is a string. It has to specify the rotor positions whcih are to be used in the newly created
+    #  \param [rotor_positions] Is a string. It has to specify the rotor positions whcih are to be used in the newly created
     #                            state.
     #
     #  \returns A byte array which contains the generated state.
@@ -301,7 +301,7 @@ class CLIRotorState:
     ## \brief Creates a new random rotor machine state.
     #
     #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
-    #  \params [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
+    #  \param [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
     #                            state.
     #
     #  \returns A byte array which contains the generated state.
