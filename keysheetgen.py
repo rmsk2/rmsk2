@@ -517,7 +517,7 @@ class KenngruppenColumn(ColumnBase):
         return result.rstrip()
 
 
-## \brief A class that knows how to retrieve and format the rotor information of an Enigma machine.
+## \brief A class that knows how to retrieve and format the rotor settings information of an Enigma machine.
 #
 class RotorColumn(Column):
     ## \brief Constructor
@@ -873,6 +873,8 @@ class KeySheetRendererBase:
         self._day_eng = 'Day'
         ## \brief Language used in key sheet. Default is German.
         self.german = True
+        ## \brief File extension used for saved sheets.        
+        self._file_extension = ''
 
     ## \brief This property returns True if the key sheet language is German.
     #
@@ -881,6 +883,22 @@ class KeySheetRendererBase:
     @property
     def german(self):
         return self._german
+
+    ## \brief This property returns the file extension that is to be used for saved rendered sheets.
+    #
+    #  \returns A string.
+    #                        
+    @property
+    def file_extension(self):
+        return self._file_extension
+
+    ## \brief This property setter allows to change the file extension that is to be used for saved rendered sheets.
+    #
+    #  \param [new_value] A string. The new file extension without the '.' at the beginning.
+    #                        
+    @file_extension.setter
+    def file_extension(self, new_value):
+        self._file_extension = new_value
 
     ## \brief This property setter allows to change the language used in the sheet. This method also
     #         sets up the values self._for, self._monate and self._day which are actually used to render
@@ -952,6 +970,12 @@ class KeySheetRendererBase:
 #         text file.
 #
 class TextKeysheetRenderer(KeySheetRendererBase):
+    ## \brief Constructor
+    #
+    def __init__(self):
+        super().__init__()
+        self.file_extension = 'txt'
+        
     ## \brief This method can be used to append a number of blank characters to a given string in order to
     #         ensure that the returned string has a fixed length as specified by parameter length.
     #
@@ -1048,6 +1072,12 @@ class TextKeysheetRenderer(KeySheetRendererBase):
 ## \brief A class that abstracts a thing that knows how to transform a Keysheet object into an HTML file.
 #        
 class HTMLKeysheetRenderer(KeySheetRendererBase):
+    ## \brief Constructor
+    #
+    def __init__(self):
+        super().__init__()
+        self.file_extension = 'html'
+        
     ## \brief This method renders a sheet or subsheet as an HTML document and writes the result to the file like object
     #         specified in parameter file_out.
     #
@@ -1450,6 +1480,17 @@ class KeysheetGeneratorMain:
         
         return value
 
+    ## \brief This method checks whether the file like object is a "real" file and if yes closes it.
+    #  
+    #  \param [out] Is a file like object.
+    #
+    #  \returns Nothing.
+    #
+    @staticmethod
+    def check_close(out):
+        if (out != sys.stdout) and (out != None):
+            out.close()                            
+
     ## \brief This is the main method.
     #
     #  \returns Nothing.
@@ -1462,11 +1503,12 @@ class KeysheetGeneratorMain:
                                              'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39'], \
                                     help="Type of machine to generate a keysheet for")
         parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="year to appear on sheet")
-        parser.add_argument("-m", "--month",  type=int, required=True, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], help="Month to appear on sheet")
+        parser.add_argument("-m", "--month",  type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], \
+                                              help="Month to appear on sheet. Sheets for a whole year are generated when this option is not specified.")
         parser.add_argument("-n", "--net", required=True, help="Net name to appear on sheet")
         parser.add_argument("-c", "--classification", required=True, help="Classification to appear on sheet")
-        parser.add_argument("-s", "--save-states", metavar='FILE NAME PREFIX', help="Prefix to use for saving the machine states for each day of the month")
-        parser.add_argument("-o", "--out", metavar='FILE NAME',help="Store keysheet in file as named by this option and not stdout")
+        parser.add_argument("-s", "--save-states", metavar='FILE NAME PREFIX', help="Prefix to use for saving the machine states for each day of the month.")
+        parser.add_argument("-o", "--out", metavar='FILE NAME',help="Store keysheet in file as named by this option and not stdout. Is used as a prefix if sheets for a whole year are generated.")
         parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
         parser.add_argument("--tlv-server", help="Path to TLV server binary", default=TLV_SERVER_BINARY)
         
@@ -1485,16 +1527,40 @@ class KeysheetGeneratorMain:
             # Cleanup any potential remnants of a previous run
             if os.path.exists(UXDOMAIN_SOCKET):
                 os.unlink(UXDOMAIN_SOCKET)
-            
-            if args.out != None:
-                out = open(args.out, 'w')            
-            
+                        
             with rotorsim.tlvobject.TlvServer(binary = args.tlv_server, server_address = UXDOMAIN_SOCKET) as serv:
                 serv.start()
-                
+
                 ctrl = RenderController(serv, args.type, args.net, args.classification)
                 ctrl.renderer = renderer
-                ctrl.generate_sheet(args.year, args.month, out, args.save_states)
+
+                try:                                
+                    if args.month != None:
+                        # Generate keyheet for a single month
+                        
+                        if args.out != None:
+                            out = open(args.out, 'w')
+                                        
+                        ctrl.generate_sheet(args.year, args.month, out, args.save_states)
+                    else:
+                        # Generate keyheets for a whole year
+
+                        for i in range(12):
+                            helper = KeySheetRendererBase()
+                            helper.german = renderer.german
+                            
+                            if args.out != None:
+                                out = open('{}_{}_{}.{}'.format(args.out, args.year, i + 1, renderer.file_extension), 'w')
+                            
+                            if out != sys.stdout:
+                                print("Generating keysheet for: {}".format(helper.get_month(i + 1)))
+                            
+                            ctrl.generate_sheet(args.year, i + 1, out, args.save_states)
+                            KeysheetGeneratorMain.check_close(out)
+                            
+                        out = None # It makes no sense to close out another time in finally clause
+                finally:
+                    KeysheetGeneratorMain.check_close(out)
 
         except KeysheetException as e:
             print('Unable to generate keysheet: {}'.format(e))        
@@ -1506,10 +1572,6 @@ class KeysheetGeneratorMain:
             print('Operating system error: {}'.format(e))
         except:
             print('Unable to generate keysheet')
-        finally:            
-            if (out != sys.stdout) and (out != None):
-                out.close()                        
-
 
 if __name__ == "__main__":
     KeysheetGeneratorMain.execute()
