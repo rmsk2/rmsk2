@@ -35,6 +35,18 @@ UXDOMAIN_SOCKET = './keygen_tlvsock'
 TLV_SERVER_BINARY = rotorsim.tlvobject.SERVER_BINARY
 
 
+## \brief An excpetion class that is used for constructing exception objects in this module. 
+#
+class KeysheetException(Exception):
+    ## \brief An excpetion class that is used for constructing exception objects in this module. 
+    #
+    #  \param [error_message] Is a string. It has to contain an error message that is to be conveyed to 
+    #         receiver of the corresponding exception.
+    #
+    def __init__(self, error_message):
+        Exception.__init__(self, error_message)
+
+
 ## \brief A class that serves as the base class for all Column classes. All these classes know how to
 #         calculate and format the contents or payload of an entry or cell in the keysheet. Column classes  
 #         are not intended to know how to format the sheet itself.
@@ -790,6 +802,8 @@ class Keysheet:
                 count -= 1
         except:
             result = True
+        
+        return result
 
     ## \brief This method generates the machine settings for a whole month consisting of 31 days. The machine states
     #         used for this are not randomly generated but taken from another Keysheet object.
@@ -848,7 +862,7 @@ class KeySheetRendererBase:
         ## \brief Contains the months of the year in English.
         self._monate_deu = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
         ## \brief Contains the months of the year in German.        
-        self._monate_eng = ['January', 'February', 'March', 'April', 'May', 'June', 'Juli', 'August', 'September', 'October', 'November', 'December']
+        self._monate_eng = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         ## \brief German version of 'for'.        
         self._for_deu = 'für'
         ## \brief English verison of 'for'        
@@ -1107,9 +1121,91 @@ class HTMLKeysheetRenderer(KeySheetRendererBase):
         file_out.write('</body>\n</html>\n')
 
 
-## \brief A class that implements the main program for the key sheet generator.
+## \brief A class that knows how to control a renderer in order to a create a key sheet for a specific year and month.
 #        
-class KeysheetGeneratorMain:    
+class RenderController:
+    ## \brief Constructor
+    #
+    #  \param [serv] Is an rotorsim.tlvobject.TlvServer object. It is used to generate the rotorsim.RotorMachine and
+    #         rotorrandom.RotorRandom needed by the fill() method.
+    #
+    #  \param [machine_type] Is a string. It specifies the type of machine for which key sheets are to be generated.
+    #
+    #  \param [net_name] Is a string. It specifies the name of the crypto net or key for which the generated sheets
+    #         are valid.
+    #
+    #  \param [classification] Is a string. It specifies the classification level of the generated key sheets.    
+    #
+    def __init__(self, serv, machine_type, net_name, classification):
+        self._server = serv
+        self._machine_type = machine_type
+        self._net_name = net_name
+        self._classification = classification
+        self._renderer = TextKeysheetRenderer()
+
+    ## \brief This property returns the renderer object which is used to generate the key sheet.
+    #
+    #  \returns An object of type KeySheetRendererBase.
+    #    
+    @property    
+    def renderer(self):
+        return self._renderer
+
+    ## \brief This property setter allows to change the renderer object which is used to generate the key sheet.
+    #
+    #  \param [new_val] An object of type KeySheetRendererBase.
+    #        
+    @renderer.setter
+    def renderer(self, new_val):
+        self._renderer = new_val
+
+    ## \brief This method generates a key sheet and writes it to the specified output object.
+    #
+    #  \param [year] Is an integer. Specifies the year which is to appear on the sheet.
+    #
+    #  \param [month] Is an integer. Specifies the month which is to appear on the sheet.
+    #
+    #  \param [out_file] Is a file like object. Output is written to this object.
+    #
+    #  \param [state_file_prefix] Is a string or None. Specifies the file name prefix which is used to save the
+    #         machine states that have been generated for the key sheet. If this value is None then state files are
+    #         not written.
+    #
+    #  \returns Nothing.
+    #                                
+    def generate_sheet(self, year, month, out_file, state_file_prefix = None):        
+        state_and_param = RenderController.configure_key_sheet(self._server, self._machine_type, year, month, self._net_name, self._classification)
+
+        if state_and_param['state'] != None:
+            try:
+                self._renderer.render_start(out_file)                
+                
+                # Fill main sheet
+                main_sheet = state_and_param['sheets'][0]
+                main_sheet.fill(state_and_param['randparm'], state_and_param['state'])
+                self._renderer.german = state_and_param['isgerman']                                        
+                            
+                # Render main sheet
+                self._renderer.render_sheet(main_sheet, out_file)
+                
+                # Optionally save machine states of main sheet
+                if state_file_prefix != None:
+                    if main_sheet.save_states(state_file_prefix):
+                        raise KeysheetException('Unable to save state files')
+                
+                # Iterate over subsheets
+                for i in state_and_param['sheets'][1:]:
+                    # Fill subsheet from main sheet
+                    i.fill_from_sheet(main_sheet, state_and_param['state'])
+                    self._renderer.german = state_and_param['isgerman']
+                    self._renderer.render_sheet(i, out_file)                                
+            finally:        
+                # End rendering
+                self._renderer.render_stop(out_file)                            
+        else:
+            raise KeysheetException('Unknown machine name: {}'.format(self._machine_type))
+    
+
     ## \brief This method uses the machine name and other parameters specified on the command line to generate
     #         an appropriately configured Keysheet object.
     #
@@ -1126,7 +1222,7 @@ class KeysheetGeneratorMain:
     #  \param [classification] Is a string. Specifies the classification level of the sheet.
     #
     #  \returns A dictionary containing the string keys:
-    #           'state': Maps to a rotorsim.GenericRotorMacineState object that represents the default state for
+    #           'state': Maps to a rotorsim.GenericRotorMachineState object that represents the default state for
     #                    the given machine type.
     #           'randparam': Maps to a string object that serves as a randomizer parameter in Keysheet.fill().
     #           'isgerman': Maps to a boolean that is True if the language on the sheet is German.
@@ -1328,6 +1424,12 @@ class KeysheetGeneratorMain:
         result['sheets'].append(keysheet)
                 
         return result
+
+        
+
+## \brief A class that implements the main program for the key sheet generator.
+#        
+class KeysheetGeneratorMain:    
         
     ## \brief This method checks whether a given string represents a nonegative integer and raises an appropriate
     #         exception if it is not.
@@ -1369,13 +1471,12 @@ class KeysheetGeneratorMain:
         parser.add_argument("--tlv-server", help="Path to TLV server binary", default=TLV_SERVER_BINARY)
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
-        args = parser.parse_args()
-        
+        args = parser.parse_args()        
         out = sys.stdout
     
         try:            
             renderer = None            
-
+            
             if args.html:
                 renderer = HTMLKeysheetRenderer()
             else:
@@ -1385,44 +1486,18 @@ class KeysheetGeneratorMain:
             if os.path.exists(UXDOMAIN_SOCKET):
                 os.unlink(UXDOMAIN_SOCKET)
             
+            if args.out != None:
+                out = open(args.out, 'w')            
+            
             with rotorsim.tlvobject.TlvServer(binary = args.tlv_server, server_address = UXDOMAIN_SOCKET) as serv:
                 serv.start()
-                error = False
                 
-                state_and_param = KeysheetGeneratorMain.configure_key_sheet(serv, args.type, args.year, args.month, args.net, args.classification)
+                ctrl = RenderController(serv, args.type, args.net, args.classification)
+                ctrl.renderer = renderer
+                ctrl.generate_sheet(args.year, args.month, out, args.save_states)
 
-                if state_and_param['state'] != None:
-                    # Fill main sheet
-                    main_sheet = state_and_param['sheets'][0]
-                    main_sheet.fill(state_and_param['randparm'], state_and_param['state'])
-                    renderer.german = state_and_param['isgerman']                                        
-                    
-                    if args.out != None:
-                        out = open(args.out, 'w')
-                    
-                    # Render main sheet
-                    renderer.render_start(out)
-                    renderer.render_sheet(main_sheet, out)
-                    
-                    # Optionally save machine states of main sheet
-                    if args.save_states != None:
-                        if main_sheet.save_states(args.save_states):
-                            error = True
-                            print('Unable to save state files')
-                    
-                    if not error:
-                        # Iterate over subsheets
-                        for i in state_and_param['sheets'][1:]:
-                            # Fill subhsheet from main sheet
-                            i.fill_from_sheet(main_sheet, state_and_param['state'])
-                            renderer.german = state_and_param['isgerman']
-                            renderer.render_sheet(i, out)
-                    
-                    # End rendering        
-                    renderer.render_stop(out)                            
-                else:
-                    print('Unknown machine name: {}'.format(machine_name))
-        
+        except KeysheetException as e:
+            print('Unable to generate keysheet: {}'.format(e))        
         except rotorsim.tlvobject.TlvException as e:
             print('Problem talking to TLV server: {}'.format(e))
         except IOError as e:
