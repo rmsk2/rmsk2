@@ -66,7 +66,7 @@ class TlvFuncTest(simpletest.SimpleTest):
     #
     def test(self):
         result = super().test()
-        with TlvServer('./tlv_rotorsim', 'sock_tmpjffdfkdfgj') as s:
+        with TlvServer(SERVER_BINARY, 'sock_tmpjffdfkdfgj') as s:
             with TestArithmetic(s.address) as a, TestEcho(s.address) as e:
                 try:
                     # Perform add operation
@@ -142,7 +142,7 @@ class TlvPerfTest(simpletest.SimpleTest):
     def test(self):
         result = super().test()
 
-        with TlvServer('./tlv_rotorsim', 'sock_tmpjffdfkdfgj') as s, TestArithmetic(s.address) as a:
+        with TlvServer(server_address = 'sock_tmpjffdfkdfgj') as s, TestArithmetic(s.address) as a:
             try:
                 jetzt = datetime.datetime.now()
                 

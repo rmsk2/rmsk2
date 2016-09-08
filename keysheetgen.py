@@ -26,12 +26,13 @@ import sys
 import os
 import re
 import argparse
+import binascii
 import rotorsim
 import rotorrandom
 
-## \brief Specifies the name of the UNIX domain socket file which is used to talk to the TLV server
-UXDOMAIN_SOCKET = './keygen_tlvsock'
-## \brief Specifies the path to the TLV server binary to use
+## \brief Specifies the default name of the UNIX domain socket file which is used to talk to the TLV server
+UXDOMAIN_SOCKET_DEFAULT = './keygen_tlvsock'
+## \brief Specifies the default path to the TLV server binary to use
 TLV_SERVER_BINARY = rotorsim.tlvobject.SERVER_BINARY
 
 
@@ -601,7 +602,11 @@ class Keysheet:
     #  \param [server] Is an rotorsim.tlvobject.TlvServer object. It is used to generate the rotorsim.RotorMachine and
     #         rotorrandom.RotorRandom needed by the fill() method.
     #
-    def __init__(self, server):
+    #  \param [file_name_formatter] Is a callable object which allows to generate the file name of state files. Signature
+    #         has to be file_name_formatter(dir_name, net_name, year, month, day). The file_name_formatter has to return
+    #         a string.    
+    #
+    def __init__(self, server, file_name_formatter):
         ## \brief Contains the TLV server object specified in the constructor call.
         self._server = server
         ## \brief Is a string that contains the name of the machine type for which a key sheet is to be generated.
@@ -629,6 +634,7 @@ class Keysheet:
         self._machine_states = []
         ## \brief Is a string. Contains the name of the subsheet as it should appear on the sheet.
         self._subsheet = ''
+        self._formatter = file_name_formatter
 
     ## \brief This property returns the year for which the sheet is valid.
     #
@@ -796,7 +802,7 @@ class Keysheet:
         
         try:
             for i in self.machine_states:
-                file_name = '{}{}_{}_{}_{}.ini'.format(file_name_prefix, self.net_name, self.year, self.month, count)
+                file_name = self._formatter(file_name_prefix, self.net_name, self.year, self.month, count)
                 with open(file_name, 'wb') as file_out:
                     file_out.write(i)
                 count -= 1
@@ -1093,12 +1099,14 @@ class HTMLKeysheetRenderer(KeySheetRendererBase):
         if key_sheet.subsheet != '':
             subsheet_name = '({})'.format(key_sheet.subsheet)
         
-        # Output classification level, crypto net name and subsheet name    
-        file_out.write('<h4>{} {} {}</h4>\n'.format(key_sheet.classification, key_sheet.net_name, subsheet_name))
-        # Output month and year
-        file_out.write('<h4>{} {} {}</h4>\n'.format(self._for, self.get_month(key_sheet.month), key_sheet.year))
         # Write table header
         file_out.write('<table>\n')
+
+        # Output classification level, crypto net name and subsheet name    
+        file_out.write('<caption><h4>{} {} {}</h4>\n'.format(key_sheet.classification, key_sheet.net_name, subsheet_name))
+        # Output month and year
+        file_out.write('<h4>{} {} {}</h4></caption>\n'.format(self._for, self.get_month(key_sheet.month), key_sheet.year))
+
         file_out.write('<tr>\n')
         file_out.write('<th>{}</th>\n'.format(self._day))    
             
@@ -1166,12 +1174,16 @@ class RenderController:
     #
     #  \param [classification] Is a string. It specifies the classification level of the generated key sheets.    
     #
-    def __init__(self, serv, machine_type, net_name, classification):
+    #  \param [formatter] Is a callable object which allows to generate the file name of state files. Signature
+    #         has to be formatter(dir_name, net_name, year, month, day). The formatter has to return a string.
+    #    
+    def __init__(self, serv, machine_type, net_name, classification, formatter):
         self._server = serv
         self._machine_type = machine_type
         self._net_name = net_name
         self._classification = classification
         self._renderer = TextKeysheetRenderer()
+        self._formatter = formatter
 
     ## \brief This property returns the renderer object which is used to generate the key sheet.
     #
@@ -1204,7 +1216,7 @@ class RenderController:
     #  \returns Nothing.
     #                                
     def generate_sheet(self, year, month, out_file, state_file_prefix = None):        
-        state_and_param = RenderController.configure_key_sheet(self._server, self._machine_type, year, month, self._net_name, self._classification)
+        state_and_param = self.configure_key_sheet(self._server, self._machine_type, year, month, self._net_name, self._classification)
 
         if state_and_param['state'] != None:
             try:
@@ -1250,7 +1262,7 @@ class RenderController:
     #  \param [net_name] Is a string. Specifies the name of the crypto net or key for which the sheet is valid.
     #
     #  \param [classification] Is a string. Specifies the classification level of the sheet.
-    #
+    #        
     #  \returns A dictionary containing the string keys:
     #           'state': Maps to a rotorsim.GenericRotorMachineState object that represents the default state for
     #                    the given machine type.
@@ -1258,10 +1270,9 @@ class RenderController:
     #           'isgerman': Maps to a boolean that is True if the language on the sheet is German.
     #           'sheets': Maps to a vector of Keysheet objects. The first object is the "main sheet" 
     #                        
-    @staticmethod
-    def configure_key_sheet(tlv_server, machine_name, year, month, net_name, classification):
+    def configure_key_sheet(self, tlv_server, machine_name, year, month, net_name, classification):
         result = {'state':None, 'randparm':'', 'isgerman':True, 'sheets':[]}
-        keysheet = Keysheet(tlv_server)
+        keysheet = Keysheet(tlv_server, self._formatter)
         
         keysheet.year = year
         keysheet.month = month
@@ -1429,7 +1440,7 @@ class RenderController:
             result['sheets'].append(keysheet)
             
             # Stifte subsheet            
-            keysheet = Keysheet(tlv_server)
+            keysheet = Keysheet(tlv_server, self._formatter)
             
             keysheet.year = year
             keysheet.month = month
@@ -1455,7 +1466,36 @@ class RenderController:
                 
         return result
 
-        
+
+## \brief A class that serves as a base class for a thing that knows how to report certain events to the user. The base
+#         class is very simple but this may get more complex when called from a GUI program.
+# 
+class ReporterBase:
+    ## \brief This method reports an error to the user.
+    #
+    #  \param [message] Is a string. Holds the message which is intended to be displayed to the user.
+    #
+    #  \returns Nothing.
+    #
+    def report_error(self, message):
+        print(message)
+
+    ## \brief This method reports a progress to the user.
+    #
+    #  \param [message] Is a string. Holds the message which is intended to be displayed to the user.
+    #
+    #  \returns Nothing.
+    #
+    def report_progress(self, message):
+        print(message)
+
+    ## \brief This method can be used to signal that processing has been finished.
+    #
+    #  \returns Nothing.
+    #    
+    def all_done(self):
+        pass
+
 
 ## \brief A class that implements the main program for the key sheet generator.
 #        
@@ -1482,14 +1522,156 @@ class KeysheetGeneratorMain:
 
     ## \brief This method checks whether the file like object is a "real" file and if yes closes it.
     #  
-    #  \param [out] Is a file like object.
+    #  \param [out_file] Is a file like object.
     #
     #  \returns Nothing.
     #
     @staticmethod
-    def check_close(out):
-        if (out != sys.stdout) and (out != None):
-            out.close()                            
+    def check_close(out_file):
+        if (out_file != sys.stdout) and (out_file != None):
+            out_file.close()                            
+
+    ## \brief This method generates the (randomized) UNIX domain socket name which is used to talk to the TLV server.
+    #  
+    #  \returns A string. The UNIX domain socket name.
+    #
+    @staticmethod
+    def get_socket_name():
+        uxdomain_socket = UXDOMAIN_SOCKET_DEFAULT
+        
+        try:
+            with open('/dev/urandom', 'rb') as urand:
+                uxdomain_socket += binascii.hexlify(urand.read(5)).decode()
+        except Exception as e:
+            pass
+        
+        return uxdomain_socket    
+
+    ## \brief This method generates the file name which is used to save a key sheet.
+    #  
+    #  \param [dir_name] Is a string. It has to contain the path of the directory in which the sheet is to be stored.
+    #
+    #  \param [net_name] Is a string. It has to contain the name of the key or crypto net.
+    #
+    #  \param [year] Is an integer. It has to contain the year for which the sheet is to be generated.
+    #
+    #  \param [month] Is an integer. It has to contain the month for which the sheet is to be generated.
+    #   
+    #  \param [extension] Is a string. It has to contain the file extension which is to be used to save the sheet.
+    #     
+    #  \returns A string. The file name.
+    #
+    @staticmethod
+    def format_sheet_name(dir_name, net_name, year, month, extension):
+        if not dir_name.endswith('/'):
+            dir_name = dir_name + '/'
+            
+        return '{}{}_{}.{}'.format(dir_name, year, month, extension)
+
+    ## \brief This method generates the file name which is used to save a machine state.
+    #  
+    #  \param [dir_name] Is a string. It has to contain the path of the directory in which the state file is to be stored.
+    #
+    #  \param [net_name] Is a string. It has to contain the name of the key or crypto net.
+    #
+    #  \param [year] Is an integer. It has to contain the year for which the state file is to be saved.
+    #
+    #  \param [month] Is an integer. It has to contain the month for which the state file is to be saved.
+    #   
+    #  \param [day] Is an integer. It has to contain the day number in the month for which the state file is to be saved.
+    #     
+    #  \returns A string. The file name.
+    #
+    @staticmethod
+    def format_state_name(dir_name, net_name, year, month, day):
+        if not dir_name.endswith('/'):
+            dir_name = dir_name + '/'
+            
+        return '{}{}_{}_{}.ini'.format(dir_name, year, month, day)
+
+    ## \brief This method brings together all puzzle pieces in order to actually generate the key sheets.
+    #  
+    #  \param [args] Is an object having the following attributes:
+    #         type           A string. The machine type.
+    #         year           An integer. The year for which the sheets are valid.
+    #         month          An integer or None. Specifies the month for which the sheet is to be valid. None means valid for a whole year.
+    #         classification A string. Classification level which appears on sheet.
+    #         net            A string. Key or crypto net name wjich appears on sheet.
+    #         save_states    A boolean or None. Is True of state file are to be saved.
+    #         out            A string or None. Output directory for all sheet or state files.
+    #         html           A boolean. True if HTML output is to be generated.
+    #         tlv_server     A string. Full path of the tlv_server binary. 
+    #
+    #  \param [reporter] An object with the same interface as ReporterBase.
+    #
+    #  \returns Nothing.
+    #
+    @staticmethod
+    def generate_sheets(args, reporter):
+        try:
+            out = sys.stdout
+            renderer = None            
+            
+            if args.html:
+                renderer = HTMLKeysheetRenderer()
+            else:
+                renderer = TextKeysheetRenderer()
+                
+            save_state_dir = None
+            
+            if args.save_states:
+                if args.out != None:
+                    save_state_dir = args.out
+                else:
+                    reporter.report_error("No output directory specified!")
+                    reporter.all_done()
+                    return
+            
+            uxdomain_socket = KeysheetGeneratorMain.get_socket_name()
+                                                
+            with rotorsim.tlvobject.TlvServer(binary = args.tlv_server, server_address = uxdomain_socket) as serv:
+                
+                ctrl = RenderController(serv, args.type, args.net, args.classification, KeysheetGeneratorMain.format_state_name)
+                ctrl.renderer = renderer
+
+                try:                                
+                    if args.month != None:
+                        # Generate keyheet for a single month
+                        
+                        if args.out != None:
+                            out = open(KeysheetGeneratorMain.format_sheet_name(args.out, args.net, args.year, args.month, renderer.file_extension), 'w')
+                                        
+                        ctrl.generate_sheet(args.year, args.month, out, save_state_dir)
+                    else:
+                        # Generate keyheets for a whole year
+
+                        helper = KeySheetRendererBase()
+                        helper.german = False
+
+                        for i in range(12):                            
+                            if args.out != None:
+                                out = open(KeysheetGeneratorMain.format_sheet_name(args.out, args.net, args.year, i + 1, renderer.file_extension), 'w')
+                                reporter.report_progress("Generating keysheet for: {}".format(helper.get_month(i + 1)))
+                                                        
+                            ctrl.generate_sheet(args.year, i + 1, out, save_state_dir)
+                            KeysheetGeneratorMain.check_close(out)
+                            
+                        out = None # It makes no sense to close out a second time in finally clause
+                finally:
+                    KeysheetGeneratorMain.check_close(out)
+
+        except KeysheetException as e:
+            reporter.report_error('Unable to generate keysheet: {}'.format(e))        
+        except rotorsim.tlvobject.TlvException as e:
+            reporter.report_error('Problem talking to TLV server: {}'.format(e))
+        except IOError as e:
+            reporter.report_error('Problem opening or writing to output file: {}'.format(e))
+        except OSError as e:
+            reporter.report_error('Operating system error: {}'.format(e))
+        except:
+            reporter.report_error('Unable to generate keysheet')
+        
+        reporter.all_done()
 
     ## \brief This is the main method.
     #
@@ -1502,76 +1684,21 @@ class KeysheetGeneratorMain:
         parser.add_argument("type", choices=['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
                                              'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39'], \
                                     help="Type of machine to generate a keysheet for")
-        parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="year to appear on sheet")
+        parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="Year to appear on sheet")
         parser.add_argument("-m", "--month",  type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], \
                                               help="Month to appear on sheet. Sheets for a whole year are generated when this option is not specified.")
         parser.add_argument("-n", "--net", required=True, help="Net name to appear on sheet")
-        parser.add_argument("-c", "--classification", required=True, help="Classification to appear on sheet")
-        parser.add_argument("-s", "--save-states", metavar='FILE NAME PREFIX', help="Prefix to use for saving the machine states for each day of the month.")
-        parser.add_argument("-o", "--out", metavar='FILE NAME',help="Store keysheet in file as named by this option and not stdout. Is used as a prefix if sheets for a whole year are generated.")
+        parser.add_argument("-c", "--classification", required=True, help="Classification level to appear on sheet")
+        parser.add_argument("-s", "--save-states", action='store_true', help="Save machine states for each day of the month in output directory.")
+        parser.add_argument("-o", "--out", metavar='DIRECTORY NAME', \
+                            help="Store keysheet and optionally state files in directory as named by this option and not stdout.")
         parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
         parser.add_argument("--tlv-server", help="Path to TLV server binary", default=TLV_SERVER_BINARY)
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
         args = parser.parse_args()        
-        out = sys.stdout
     
-        try:            
-            renderer = None            
-            
-            if args.html:
-                renderer = HTMLKeysheetRenderer()
-            else:
-                renderer = TextKeysheetRenderer()
-            
-            # Cleanup any potential remnants of a previous run
-            if os.path.exists(UXDOMAIN_SOCKET):
-                os.unlink(UXDOMAIN_SOCKET)
-                        
-            with rotorsim.tlvobject.TlvServer(binary = args.tlv_server, server_address = UXDOMAIN_SOCKET) as serv:
-                serv.start()
-
-                ctrl = RenderController(serv, args.type, args.net, args.classification)
-                ctrl.renderer = renderer
-
-                try:                                
-                    if args.month != None:
-                        # Generate keyheet for a single month
-                        
-                        if args.out != None:
-                            out = open(args.out, 'w')
-                                        
-                        ctrl.generate_sheet(args.year, args.month, out, args.save_states)
-                    else:
-                        # Generate keyheets for a whole year
-
-                        for i in range(12):
-                            helper = KeySheetRendererBase()
-                            helper.german = renderer.german
-                            
-                            if args.out != None:
-                                out = open('{}_{}_{}.{}'.format(args.out, args.year, i + 1, renderer.file_extension), 'w')
-                            
-                            if out != sys.stdout:
-                                print("Generating keysheet for: {}".format(helper.get_month(i + 1)))
-                            
-                            ctrl.generate_sheet(args.year, i + 1, out, args.save_states)
-                            KeysheetGeneratorMain.check_close(out)
-                            
-                        out = None # It makes no sense to close out another time in finally clause
-                finally:
-                    KeysheetGeneratorMain.check_close(out)
-
-        except KeysheetException as e:
-            print('Unable to generate keysheet: {}'.format(e))        
-        except rotorsim.tlvobject.TlvException as e:
-            print('Problem talking to TLV server: {}'.format(e))
-        except IOError as e:
-            print('Problem opening or writing to output file: {}'.format(e))
-        except OSError as e:
-            print('Operating system error: {}'.format(e))
-        except:
-            print('Unable to generate keysheet')
+        KeysheetGeneratorMain.generate_sheets(args, ReporterBase())
 
 if __name__ == "__main__":
     KeysheetGeneratorMain.execute()
