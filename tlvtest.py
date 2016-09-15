@@ -66,7 +66,7 @@ class TlvFuncTest(simpletest.SimpleTest):
     #
     def test(self):
         result = super().test()
-        with TlvServer(SERVER_BINARY, 'sock_tmpjffdfkdfgj') as s:
+        with TlvServer(get_tlv_server_path(), 'sock_tmpjffdfkdfgj') as s:
             with TestArithmetic(s.address) as a, TestEcho(s.address) as e:
                 try:
                     # Perform add operation

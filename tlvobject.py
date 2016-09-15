@@ -60,6 +60,27 @@ TAG_NULL = 5
 ## \brief A TLV result code is a 32 bit unsigned integer
 TAG_RESULT_CODE = 6
 
+## \brief This function allows to retrieve the default path to the TLV server binary
+def get_tlv_server_path():
+    # Default is value in this module
+    result = SERVER_BINARY
+    
+    # If there is an environment variable use that
+    try:
+        result = os.environ['TLVSERVER']
+    except:
+        pass
+    
+    # If there is a config file use that
+    try:
+        file_name = os.environ['HOME'] + '/.tlvserverpath'
+        with open(file_name, 'r') as f:
+            result = f.read()        
+    except:
+        pass
+    
+    result = result.strip()
+    return result
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
 #
@@ -489,7 +510,7 @@ class TlvServer:
     #  \param [server_address] Is a string. Has to specify the address via which the TLV server is
     #         to be reached.
     #
-    def __init__(self, binary = SERVER_BINARY, server_address = SERVER_ADDRESS):
+    def __init__(self, binary = get_tlv_server_path(), server_address = SERVER_ADDRESS):
         ## \brief Holds the the server address
         self.address = server_address
         ## \brief Holds the file name of the server binary

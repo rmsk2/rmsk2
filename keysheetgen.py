@@ -32,8 +32,9 @@ import rotorrandom
 
 ## \brief Specifies the default name of the UNIX domain socket file which is used to talk to the TLV server
 UXDOMAIN_SOCKET_DEFAULT = './keygen_tlvsock'
-## \brief Specifies the default path to the TLV server binary to use
-TLV_SERVER_BINARY = rotorsim.tlvobject.SERVER_BINARY
+
+MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
+                 'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
 
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
@@ -1681,9 +1682,7 @@ class KeysheetGeneratorMain:
     def execute():
         # Set up command line parser        
         parser = argparse.ArgumentParser()
-        parser.add_argument("type", choices=['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
-                                             'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39'], \
-                                    help="Type of machine to generate a keysheet for")
+        parser.add_argument("type", choices=MACHINE_NAMES, help="Type of machine to generate a keysheet for")
         parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="Year to appear on sheet")
         parser.add_argument("-m", "--month",  type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], \
                                               help="Month to appear on sheet. Sheets for a whole year are generated when this option is not specified.")
@@ -1693,7 +1692,7 @@ class KeysheetGeneratorMain:
         parser.add_argument("-o", "--out", metavar='DIRECTORY NAME', \
                             help="Store keysheet and optionally state files in directory as named by this option and not stdout.")
         parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
-        parser.add_argument("--tlv-server", help="Path to TLV server binary", default=TLV_SERVER_BINARY)
+        parser.add_argument("--tlv-server", help="Path to TLV server binary", default=rotorsim.tlvobject.get_tlv_server_path())
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
         args = parser.parse_args()        
