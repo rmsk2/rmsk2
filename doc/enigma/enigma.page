@@ -22,7 +22,7 @@ following variants are provided:
 <p>The links above lead to the very interesting site <link href="http://www.cryptomuseum.com">Cryptomuseum.com</link> which is a great
 resource for all things dealing with Enigma machines and other historic crypto equipment. While the author of Enigma recommends this and the
 other great web sites mentioned in this document (<link href="http://users.telenet.be/d.rijmenants/">Homepage of Dirk Rijmenants</link>
-and <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">Homepage of the Crypto Simulation Group</link>), it has to be stressed
+and <link href="http://cryptocellar.org/simula/index.html">Homepage of the Crypto Simulation Group</link>), it has to be stressed
 that the author of this software is not affialiated in any way with either of these sites.
 </p>
 <p>Enigma comes with full source code which allows everbody
@@ -79,7 +79,7 @@ cryptographically accurate results. The reference implementations used for verif
 </p>
 <list>
     <item><p><link href="http://users.telenet.be/d.rijmenants/en/enigmasim.htm">Enigma simulator of Dirk Rijmenants</link></p></item>
-    <item><p><link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">Enigma simulators of the Crypto Simulation Group</link></p></item>
+    <item><p><link href="http://cryptocellar.org/simula/index.html">Enigma simulators of the Crypto Simulation Group</link></p></item>
 </list>
 <p>These simulators have been used to verify the implementation of the following Enigma variants in this simulator: M3, Abwehr, Tirpitz Services with Uhr
 and Railway. In some instances (Services, M4) plain- and ciphertext of messages that have been prepared with the real machines are available and have been 

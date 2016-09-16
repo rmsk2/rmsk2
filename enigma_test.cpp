@@ -205,7 +205,7 @@ void register_tests(composite_test_case *container)
 /* ----------------------------------------------------------------- */    
     
     // Abwehr Enigma verification test
-    // Test message created with the Abwehr Enigma simulator of the CSG http://cryptocellar.web.cern.ch/cryptocellar/simula/abwehr/index.html
+    // Test message created with the Abwehr Enigma simulator of the CSG http://cryptocellar.org/simula/abwehr/index.html
     
     abwehr_enigma *enigma_abw = new abwehr_enigma(WALZE_ABW_III, WALZE_ABW_II, WALZE_ABW_I);
     expected_plain = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -219,7 +219,7 @@ void register_tests(composite_test_case *container)
 /* ----------------------------------------------------------------- */    
     
     // Railway Enigma verification test
-    // Test message created with the Railway Enigma simulator of CSG http://cryptocellar.web.cern.ch/cryptocellar/simula/enigma/index.html
+    // Test message created with the Railway Enigma simulator of CSG http://cryptocellar.org/simula/enigma/index.html
 
     railway_enigma *enigma_rb = new railway_enigma(WALZE_RB_I, WALZE_RB_II, WALZE_RB_III);
     expected_plain = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -233,7 +233,7 @@ void register_tests(composite_test_case *container)
 /* ----------------------------------------------------------------- */    
     
     // Tirpitz Enigma verification test
-    // Test message contained in simulator of CSG http://cryptocellar.web.cern.ch/cryptocellar/simula/tirpitz/index.html
+    // Test message contained in simulator of CSG http://cryptocellar.org/simula/tirpitz/index.html
     // Apparently created with a real Tirpitz Enigma
     
     tirpitz_enigma *enigma_t = new tirpitz_enigma(WALZE_T_VII, WALZE_T_VIII, WALZE_T_V);

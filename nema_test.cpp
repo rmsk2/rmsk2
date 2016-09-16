@@ -32,7 +32,7 @@ namespace test_nema {
 
 void register_tests(composite_test_case *container)
 {
-    // Reference values have been created using the Nema simulator available at http://cryptocellar.web.cern.ch/cryptocellar/simula/nema/index.html
+    // Reference values have been created using the Nema simulator available at http://cryptocellar.org/simula/nema/index.html
     vector<rotor_assembly> settings, settings_l;
     
     // Create first machine using the confifurator interface

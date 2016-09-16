@@ -435,7 +435,7 @@ class KeyGenWindow(Gtk.Window):
     #  be the fastest, most sensible or even the most stable way to do this, but I like the fact that this facilitates
     #  using the exact same code as the command line version of the key sheet generator.
     #
-    #  \param [args] Is an object of type SheetGenArgs. It contains the arguments used or key sheet generation.
+    #  \param [args] Is an object of type SheetGenArgs. It contains the arguments used for key sheet generation.
     #
     #  \returns Nothing.
     #        

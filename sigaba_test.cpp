@@ -88,7 +88,7 @@ void register_tests(composite_test_case *container)
     
     // CSP 889 test case
     
-    // Verification data created with CSG simulator available at http://cryptocellar.web.cern.ch/cryptocellar/simula/sigaba/index.html
+    // Verification data created with CSG simulator available at http://cryptocellar.org/simula/sigaba/index.html
     plain =  "dies ist ein toller test fuer die sigaba punkt die amis haben damals glatt mit leerxeichen verschluesselt";
     spruch = "hhhtitjpthjbzlqrgncbzikagmfxzuxgjpwpejpuhcswgkblhjkgxhheshmxnxszaxpihzccyfnziodorlpgidxbwrcjkpmomiugxszci";
     
@@ -113,7 +113,7 @@ void register_tests(composite_test_case *container)
     
     // CSP 2900 test case
 
-    // Verification data created with CSG simulator available at http://cryptocellar.web.cern.ch/cryptocellar/simula/sigaba/index.html    
+    // Verification data created with CSG simulator available at http://cryptocellar.org/simula/sigaba/index.html    
     plain =  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     spruch = "bsfzeppcipicwhynfpnjxpnqmcleywutmhrhojypwwsflifobk";
     
