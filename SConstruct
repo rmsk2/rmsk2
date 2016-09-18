@@ -97,5 +97,8 @@ rmsk.Install('dist', Glob('tlvobject.py'))
 rmsk.Install('dist', Glob('enigrotorset.py'))
 rmsk.Install('dist', Glob('rotorsetdata.py'))
 rmsk.Install('dist', Glob('rotorrandom.py'))
+rmsk.Install('dist', Glob('keysheetgen.py'))
+rmsk.Install('dist', Glob('keygen.py'))
+rmsk.Install('dist', Glob('keygenicon.py'))
 Alias('install', 'dist')
 

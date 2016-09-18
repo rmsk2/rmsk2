@@ -16,14 +16,15 @@
 
 ## @package keygen A Python3 GUI program which allows to generate key sheets for all machines provided by rmsk2 and rotorsim.
 #           
-# \file rmsk2/keysheetgen.py
+# \file rmsk2/keygen.py
 # \brief This file imlements a keysheet generator with a GUI for all rotor machines provided by rmsk2 and rotorsim.
 
 import multiprocessing
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, Gio, GdkPixbuf, GObject
 import keysheetgen
+import keygenicon
 
 ## \brief Type-ID for progress messages.
 TAG_MESSAGE = 1
@@ -31,6 +32,51 @@ TAG_MESSAGE = 1
 TAG_DONE = 2
 ## \brief Type-ID for error messages.
 TAG_ERROR = 3
+
+## \brief Text of Apache 2.0 license for about dialog.
+LICENSE_TEXT = """
+Copyright 2016 Martin Grap
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+## \brief XML specification of the structure of the main menu.
+MENU_XML="""
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <menu id="menubar">
+    <submenu>
+      <attribute name="label" translatable="no">_Help</attribute>
+      <section>
+      <item>
+        <attribute name="action">keygen.help</attribute>
+        <attribute name="label" translatable="no">_Help</attribute>
+      </item>
+      <item>
+        <attribute name="action">keygen.about</attribute>
+        <attribute name="label" translatable="no">_About</attribute>
+      </item>
+      </section>
+      <section>
+      <item>
+        <attribute name="action">keygen.quit</attribute>
+        <attribute name="label" translatable="no">_Quit</attribute>
+      </item>
+      </section>
+    </submenu>
+  </menu>
+</interface>
+"""
 
 ## \brief A class that is used to communicate progress and error messages between the main program and
 #         the process ni which the keysheet generator is running.
@@ -223,6 +269,8 @@ class KeyGenWindow(Gtk.Window):
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.add(vbox)
+        
+        self.setup_menus(vbox)
 
         self._progressbar = Gtk.ProgressBar()
         vbox.pack_start(self._progressbar, True, True, 0)
@@ -342,6 +390,42 @@ class KeyGenWindow(Gtk.Window):
         
         self._b = None
         self._error_list = ListReporter()
+                
+        xpm_data = keygenicon.get_xpm_data('keygenicon')
+        self._logo = GdkPixbuf.Pixbuf().new_from_xpm_data(xpm_data)
+        
+        self.set_icon(self._logo)
+        
+        self.show_all()
+
+    ## \brief This method creates the menubar of the application.
+    #
+    #  \param [vbox] Is a Gtk.Box object. After creation the new menubar is inserted into this box.
+    #
+    #  \returns Nothing.
+    #            
+    def setup_menus(self, vbox):
+        self._action_group = Gio.SimpleActionGroup()
+        
+        self._about_action = Gio.SimpleAction.new('about', None)
+        self._about_action.connect('activate', self.on_about)
+        
+        self._help_action = Gio.SimpleAction.new('help', None)  
+        self._help_action.connect('activate', self.on_help)              
+
+        self._quit_action = Gio.SimpleAction.new('quit', None)  
+        self._quit_action.connect('activate', self.on_quit)              
+        
+        self._action_group.add_action(self._about_action)
+        self._action_group.add_action(self._help_action)
+        self._action_group.add_action(self._quit_action)        
+        
+        self.insert_action_group('keygen', self._action_group)
+        
+        builder = Gtk.Builder()
+        builder.add_from_string(MENU_XML)
+        menubar = builder.get_object('menubar')
+        vbox.pack_start(Gtk.MenuBar.new_from_model(menubar), False, True, 0)        
 
     ## \brief This method allows to show an error message to the user.
     #
@@ -455,6 +539,53 @@ class KeyGenWindow(Gtk.Window):
         
         # Start timer
         self.timeout_id = GObject.timeout_add(750, self.on_timeout, None)      
+
+
+    ## \brief Callback for menu entry "Help"
+    #
+    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #
+    #  \param [value] Is an object of generic type. It is not used by this method.
+    #
+    #  \returns Nothing.
+    #            
+    def on_help(self, action, value):
+        self.show_message('Not yet implemented')
+
+    ## \brief Callback for menu entry "Quit"
+    #
+    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #
+    #  \param [value] Is an object of generic type. It is not used by this method.
+    #
+    #  \returns Nothing.
+    #            
+    def on_quit(self, action, value):
+        Gtk.main_quit()
+
+    ## \brief Callback for menu entry "About"
+    #
+    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #
+    #  \param [value] Is an object of generic type. It is not used by this method.
+    #
+    #  \returns Nothing.
+    #            
+    def on_about(self, action, value):
+        about_dialog = Gtk.AboutDialog(self) 
+        about_dialog.set_transient_for(self)
+        about_dialog.set_program_name('Key Sheet Generator for rmsk2')
+        about_dialog.set_copyright('Copyright 2016 Martin Grap')
+        about_dialog.set_version("1.0") 
+        about_dialog.set_website("https://github.com/rmsk2/rmsk2/wiki/Key-sheet-generator") 
+        about_dialog.set_website_label("GitHub Wiki for rmsk2") 
+        about_dialog.set_authors(["Martin Grap"]) 
+        about_dialog.set_license(LICENSE_TEXT)
+        
+        about_dialog.set_logo(self._logo)
+        
+        about_dialog.run() 
+        about_dialog.destroy()
 
     ## \brief This method is the callback for the timer that is used to update the GUI with respect to the sheet
     #         generation progress.
