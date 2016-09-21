@@ -45,8 +45,8 @@ public:
     virtual tlv_entry& get_elements() {return elements; }
 
     /*! \brief This method can be used to set the current state of this tlv_map object. The parameter new_elements
-     *         references a vector of tlv_entry objects that make up the new state. This method checks whether
-     *         new_elements contains a valid encoding for a tlv_map object.
+     *         references a TLV encoded vector of tlv_entry objects that make up the new state. This method checks
+     *         whether new_elements contains a valid encoding for a tlv_map object.
      *
      *  The method returns true, in case new_elements does not contain a valid encoding.  
      */    

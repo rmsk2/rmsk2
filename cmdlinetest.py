@@ -18,10 +18,12 @@
 #   
 # \file cmdlinetest.py
 # \brief This file contains classes that implement tests which can be used to verify that
-#        the command line simulator implemented by the program rotorsim is functional and correct.
+#        the command line simulator implemented by the programs rotorsim and rotorstate is functional
+#        and correct.
 
 import subprocess
 import os
+import re
 import rotorsimtest
 import rotorsim
 import simpletest
@@ -52,6 +54,9 @@ class Processor:
         self.__rotorsim_binary = binary_name
         self.__state = state
         self.__do_state_progression = progress_state
+        exp = '^.+\((.+)\): (.+)$'
+        self._exp_c = re.compile(exp)
+        
     
     ## \brief Returns the current machine state known to this instance.
     #        
@@ -183,6 +188,26 @@ class Processor:
     def get_rotor_positions(self):
         return self.process('getpos', '', 0)
 
+    ## \brief Simple wrapper for the process method that allows to retrieve the current rotor machine configuration in form
+    #         of a string to string dictionary. The keys are the same values as accepted by rotorstate as command line
+    #         parameters.
+    #
+    #  \returns A string to string dictionary holding the configuration information of the underlying rotor machine state.
+    #                        
+    def get_config(self):
+        raw_string = self.process('getconfig', '', 0)
+        lines = raw_string.split('\n')
+        # drop line with machine name
+        lines = lines[1:]
+        result = {}
+        
+        for line in lines:
+            match = self._exp_c.search(line)
+            if match != None:
+                result[match.group(1)] = match.group(2)
+        
+        return result                
+
     ## \brief Simple wrapper for the process method that allows to set the current rotor positions.
     #
     #  \param [new_rotor_positions] Is a string which specifies the new positions to which the visible rotors are set.
@@ -308,6 +333,18 @@ class CLIRotorState:
     #                
     def make_random_state(self, machine_name, rotor_positions = ''):
         return self.process(machine_name, {}, rotor_positions, ['--random'])
+        
+    ## \brief Creates a new random rotor machine state constrained by a randomizer parameter
+    #
+    #  \param [machine_name] Is a string and has to specifiy the name of the machine for which a state is to be created.
+    #  \param [randomizer_param] Is a string. It has to specify the randomizer parameter which is to be used.
+    #  \param [rotor_positions] Is a string. It has to specify the rotor positions which are to be used in the newly created
+    #                            state.
+    #
+    #  \returns A byte array which contains the generated state.
+    #                
+    def make_rand_parm_state(self, machine_name, randomizer_param, rotor_positions = ''):
+        return self.process(machine_name, {}, rotor_positions, ['--randparm', randomizer_param])
 
 
 ## \brief This class implements a verification test for the rotorstate program.
@@ -348,6 +385,28 @@ class RotorStateTest(simpletest.SimpleTest):
             self.append_note('KL7 random state decryption result ' + dec_result)
             
             result = result and (dec_result == plain)            
+
+            # Check whether randomization parameter works as intended
+            state = r_state.make_rand_parm_state('SIGABA', 'csp2900')
+            self.append_note('Checking randomizer parameter usage')
+            state_parser = rotorsim.SigabaMachineState.get_default_state()
+            state_parser.load_from_data(state)            
+            self.append_note('Is genereated machine state a CSP2900? {}'.format(state_parser.csp_2900_flag))
+            
+            result = result and (state_parser.csp_2900_flag)
+            
+            # Check whether rotorsim and rotorstate interoperate with respect to configuration information
+            state = r_state.make_rand_parm_state('Services', 'fancy')
+            p.set_state(state)
+            config_dict = p.get_config()
+            rotor_pos = p.get_rotor_positions()
+            enc_string = p.encrypt('diesisteintest')
+            new_state = r_state.make_state('Services', config_dict, rotor_pos)
+            p.set_state(new_state)
+            dec_string = p.decrypt(enc_string)
+            self.append_note('Rotorstate/rotorsim iterop test. Decrypted message {}'.format(dec_string))            
+            
+            result = result and (dec_string == 'diesisteintest'.upper())            
             
         except:
             self.append_note('------------ EXCEPTION ------------')
