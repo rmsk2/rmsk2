@@ -30,8 +30,6 @@ import binascii
 import rotorsim
 import rotorrandom
 
-## \brief Specifies the default name of the UNIX domain socket file which is used to talk to the TLV server
-UXDOMAIN_SOCKET_DEFAULT = './keygen_tlvsock'
 
 MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
                  'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
@@ -1532,22 +1530,6 @@ class KeysheetGeneratorMain:
         if (out_file != sys.stdout) and (out_file != None):
             out_file.close()                            
 
-    ## \brief This method generates the (randomized) UNIX domain socket name which is used to talk to the TLV server.
-    #  
-    #  \returns A string. The UNIX domain socket name.
-    #
-    @staticmethod
-    def get_socket_name():
-        uxdomain_socket = UXDOMAIN_SOCKET_DEFAULT
-        
-        try:
-            with open('/dev/urandom', 'rb') as urand:
-                uxdomain_socket += binascii.hexlify(urand.read(5)).decode()
-        except Exception as e:
-            pass
-        
-        return uxdomain_socket    
-
     ## \brief This method generates the file name which is used to save a key sheet.
     #  
     #  \param [dir_name] Is a string. It has to contain the path of the directory in which the sheet is to be stored.
@@ -1626,11 +1608,9 @@ class KeysheetGeneratorMain:
                 else:
                     reporter.report_error("No output directory specified!")
                     reporter.all_done()
-                    return
-            
-            uxdomain_socket = KeysheetGeneratorMain.get_socket_name()
+                    return            
                                                 
-            with rotorsim.tlvobject.TlvServer(binary = args.tlv_server, server_address = uxdomain_socket) as serv:
+            with rotorsim.tlvobject.TlvServer(binary = args.tlv_server) as serv:
                 
                 ctrl = RenderController(serv, args.type, args.net, args.classification, KeysheetGeneratorMain.format_state_name)
                 ctrl.renderer = renderer
@@ -1669,8 +1649,8 @@ class KeysheetGeneratorMain:
             reporter.report_error('Problem opening or writing to output file: {}'.format(e))
         except OSError as e:
             reporter.report_error('Operating system error: {}'.format(e))
-        except:
-            reporter.report_error('Unable to generate keysheet')
+        except Exception as e:
+            reporter.report_error('Unable to generate keysheet. {}'.format(e))
         
         reporter.all_done()
 

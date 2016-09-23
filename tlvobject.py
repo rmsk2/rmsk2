@@ -23,9 +23,10 @@
 import socket
 import subprocess
 import os
+import binascii
 
 ## \brief Default address for the TLV server
-SERVER_ADDRESS = './sock_tlvstream'
+SERVER_ADDRESS = 'sock_tlvstream'
 ## \brief Default file name of the C++ TLV server
 SERVER_BINARY = './tlv_rotorsim'
 ## \brief Maximum number of bytes to read from a socket in one go
@@ -61,6 +62,9 @@ TAG_NULL = 5
 TAG_RESULT_CODE = 6
 
 ## \brief This function allows to retrieve the default path to the TLV server binary
+#
+#  \returns A string containing the default path of the TLV server.
+#
 def get_tlv_server_path():
     # Default is value in this module
     result = SERVER_BINARY
@@ -81,6 +85,24 @@ def get_tlv_server_path():
     
     result = result.strip()
     return result
+
+## \brief This function generates a (randomized) UNIX domain socket name which is used to talk to the TLV server.
+#  
+#  \returns A string. The default UNIX domain socket name.
+#
+def get_socket_name():
+    uxdomain_socket = './' + SERVER_ADDRESS
+    
+    try:
+        uxdomain_socket = os.environ['HOME'] + '/' + SERVER_ADDRESS
+    
+        with open('/dev/urandom', 'rb') as urand:
+            uxdomain_socket += binascii.hexlify(urand.read(5)).decode()        
+        
+    except Exception as e:
+        uxdomain_socket = './' + SERVER_ADDRESS
+    
+    return uxdomain_socket    
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
 #
@@ -510,7 +532,7 @@ class TlvServer:
     #  \param [server_address] Is a string. Has to specify the address via which the TLV server is
     #         to be reached.
     #
-    def __init__(self, binary = get_tlv_server_path(), server_address = SERVER_ADDRESS):
+    def __init__(self, binary = get_tlv_server_path(), server_address = get_socket_name()):
         ## \brief Holds the the server address
         self.address = server_address
         ## \brief Holds the file name of the server binary
