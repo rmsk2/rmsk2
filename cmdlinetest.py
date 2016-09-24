@@ -25,7 +25,7 @@ import subprocess
 import os
 import re
 import rotorsimtest
-import rotorsim
+import pyrmsk2.rotorsim as rotorsim
 import simpletest
 
 RESULT_PROCESSOR_FORMAT = 43

@@ -23,8 +23,8 @@ import multiprocessing
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GObject
-import keysheetgen
-import keygenicon
+import pyrmsk2.keysheetgen as keysheetgen
+import pyrmsk2.keygenicon as keygenicon
 
 ## \brief Type-ID for progress messages.
 TAG_MESSAGE = 1

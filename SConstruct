@@ -14,7 +14,7 @@ Gladeheader = Builder(action = 'python3 make_glade_header.py $SOURCE $TARGET')
 rmsk['BUILDERS']['Gladeheader'] = Gladeheader
 
 # Generate enigma_rotor_set.h and enigma_rotor_set.cpp by running enigrotorset.py
-Enigmarotorset = Builder(action = 'python3 enigrotorset.py')
+Enigmarotorset = Builder(action = 'python3 pyrmsk2/enigrotorset.py')
 rmsk['BUILDERS']['Enigmarotorset'] = Enigmarotorset
 
 # ---- Build configuration variables ----
@@ -69,7 +69,7 @@ rotor_state_files = ['rotor_state.cpp']
 tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp', 'tlv_data_struct.cpp']
 
 hdr = rmsk.Gladeheader('glade_data.h', 'rotor_dialog_2.ui')
-rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'enigrotorset.py')
+rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'pyrmsk2/enigrotorset.py')
 base_lib = rmsk.Library('rmsk_base', base_files, CPPDEFINES = rmsk_defines)
 spec_lib = rmsk.Library('specmachines', specmachines_files, CPPDEFINES = rmsk_defines)
 visual_lib = rmsk.Library('base_visual', base_visual_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
@@ -92,13 +92,13 @@ rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.page'))
 rmsk.Install('dist/doc/enigma', Glob('doc/enigma/*.png'))
 rmsk.Install('dist/doc/rotorvis', Glob('doc/rotorvis/*.page'))
 rmsk.Install('dist/doc/rotorvis', Glob('doc/rotorvis/*.png'))
-rmsk.Install('dist', Glob('rotorsim.py'))
-rmsk.Install('dist', Glob('tlvobject.py'))
-rmsk.Install('dist', Glob('enigrotorset.py'))
-rmsk.Install('dist', Glob('rotorsetdata.py'))
-rmsk.Install('dist', Glob('rotorrandom.py'))
-rmsk.Install('dist', Glob('keysheetgen.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/rotorsim.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/tlvobject.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/enigrotorset.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/rotorsetdata.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/rotorrandom.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/keysheetgen.py'))
 rmsk.Install('dist', Glob('keygen.py'))
-rmsk.Install('dist', Glob('keygenicon.py'))
+rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/keygenicon.py'))
 Alias('install', 'dist')
 

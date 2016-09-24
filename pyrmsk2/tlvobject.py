@@ -16,7 +16,7 @@
 
 ## @package tlvobject Contains classes that implement the python3 side of the TLV infrastructure.
 #   
-# \file rmsk2/tlvobject.py
+# \file pyrmsk2/tlvobject.py
 # \brief This file contains classes that implement a generic client for the TLV server.
 #
 

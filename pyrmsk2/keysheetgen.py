@@ -18,7 +18,7 @@
 
 ## @package keysheetgen A Python3 program which allows to generate key sheets for all machines provided by rmsk2 and rotorsim.
 #           
-# \file rmsk2/keysheetgen.py
+# \file pyrmsk2/keysheetgen.py
 # \brief This file imlements a keysheet generator for all rotor machines provided by rmsk2 and rotorsim.
 
 
@@ -27,8 +27,8 @@ import os
 import re
 import argparse
 import binascii
-import rotorsim
-import rotorrandom
+import pyrmsk2.rotorsim as rotorsim
+import pyrmsk2.rotorrandom as rotorrandom
 
 
 MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \

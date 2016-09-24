@@ -16,11 +16,11 @@
 
 ## @package rotorrandom A Python3 interface to the C++ alphabet class used to generate random strings and permutations
 #           
-# \file rmsk2/rotorrandom.py
+# \file pyrmsk2/rotorrandom.py
 # \brief This file provides some Python3 classes that allow to generate random strings and
 #        permutation using the C++ program tlv_object.
 
-import tlvobject
+import pyrmsk2.tlvobject as tlvobject
 
 
 ## \brief This class allows access to objects provided by the random_provider and thereby makes

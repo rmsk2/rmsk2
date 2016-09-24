@@ -16,7 +16,7 @@
 
 ## @package keygenicon A hack to embed incons in Python3 source code
 #           
-# \file rmsk2/keygenicon.py
+# \file pyrmsk2/keygenicon.py
 # \brief This file implements a primitive repository for XPM icons. Yes I know, there
 #        are resoruces in GTK, GDK, ... which maybe better for this but at the moment 
 #        I do not want to deal with that.

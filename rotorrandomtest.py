@@ -20,9 +20,9 @@
 # \brief rotorrandomtest contains code that allows to test the RotorRandom class contained in the rotorrandom module.
 #
 
-import tlvobject
+import pyrmsk2.tlvobject as tlvobject
 import simpletest
-import rotorrandom
+import pyrmsk2.rotorrandom as rotorrandom
 
 ## \brief This class implements tests which perform basic consistency checks of the data returned by rotorrandom.Random objects. It
 #         does not test in any way whether the data returned is really random. 

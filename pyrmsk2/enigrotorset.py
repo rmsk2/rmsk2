@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2015 Martin Grap
+# Copyright 2016 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #  implementation of the enigma variants, including the Typex.
 #  New rotors can be included by adding entries to the known_wheels data structure.
 #
-# \file rmsk2/enigrotorset.py
+# \file pyrmsk2/enigrotorset.py
 # \brief Code generator that creates the files enigma_rotor_set.h and enigma_rotor_set.cpp from an
 #        abstract definition of all permutations and ring data (notches) that are used in the
 #        implementation of the enigma variants, including the Typex.

@@ -16,18 +16,18 @@
 
 ## @package rotorsim A Python3 interface to the C++ rotor machines implemented by rmsk2.
 #           
-# \file rmsk2/rotorsim.py
+# \file pyrmsk2/rotorsim.py
 # \brief This file provides some Python3 classes that allow to en/decipher texts using the
 #        C++ program tlv_object. On top of that these classes provide the functionality to
 #        create rotor machine state files which then can be used with the rotorsim program.
 
 import sys
 from gi.repository import GLib
-import enigrotorset as es
+import pyrmsk2.enigrotorset as es
 import os
 import datetime
-import tlvobject
-import rotorsetdata
+import pyrmsk2.tlvobject as tlvobject
+import pyrmsk2.rotorsetdata as rotorsetdata
 import binascii
 
 RESULT_OK = 0

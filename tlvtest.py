@@ -22,7 +22,7 @@
 
 import datetime
 import simpletest
-from tlvobject import *
+from pyrmsk2.tlvobject import *
 
 ## \brief This class implements tests for the TLV infrastructure by calling the add method of test arithmetic 
 #         provider and the echo method of the echo provider.

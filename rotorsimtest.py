@@ -21,7 +21,7 @@
 #        the python3 to C++ interface based on the program tlv_rotorsim is functional and correct.
 
 import simpletest
-from rotorsim import *
+from pyrmsk2.rotorsim import *
 
 ## \brief This class serves as a base class for the verification of all rotor machines.
 #
