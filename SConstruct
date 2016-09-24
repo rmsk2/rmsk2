@@ -99,6 +99,7 @@ rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/rotorsetdata.py'))
 rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/rotorrandom.py'))
 rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/keysheetgen.py'))
 rmsk.Install('dist', Glob('keygen.py'))
+rmsk.Install('dist', Glob('keygencli.py'))
 rmsk.Install('dist/pyrmsk2', Glob('pyrmsk2/keygenicon.py'))
 Alias('install', 'dist')
 

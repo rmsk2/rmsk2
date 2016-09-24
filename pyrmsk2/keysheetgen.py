@@ -14,9 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-#!/usr/bin/env python3
-
-## @package keysheetgen A Python3 program which allows to generate key sheets for all machines provided by rmsk2 and rotorsim.
+## @package keysheetgen A Python3 module which allows to generate key sheets for all machines provided by rmsk2 and rotorsim.
 #           
 # \file pyrmsk2/keysheetgen.py
 # \brief This file imlements a keysheet generator for all rotor machines provided by rmsk2 and rotorsim.
@@ -1653,33 +1651,5 @@ class KeysheetGeneratorMain:
             reporter.report_error('Unable to generate keysheet. {}'.format(e))
         
         reporter.all_done()
-
-    ## \brief This is the main method.
-    #
-    #  \returns Nothing.
-    #    
-    @staticmethod
-    def execute():
-        # Set up command line parser        
-        parser = argparse.ArgumentParser()
-        parser.add_argument("type", choices=MACHINE_NAMES, help="Type of machine to generate a keysheet for")
-        parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="Year to appear on sheet")
-        parser.add_argument("-m", "--month",  type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], \
-                                              help="Month to appear on sheet. Sheets for a whole year are generated when this option is not specified.")
-        parser.add_argument("-n", "--net", required=True, help="Net name to appear on sheet")
-        parser.add_argument("-c", "--classification", required=True, help="Classification level to appear on sheet")
-        parser.add_argument("-s", "--save-states", action='store_true', help="Save machine states for each day of the month in output directory.")
-        parser.add_argument("-o", "--out", metavar='DIRECTORY NAME', \
-                            help="Store keysheet and optionally state files in directory as named by this option and not stdout.")
-        parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
-        parser.add_argument("--tlv-server", help="Path to TLV server binary", default=rotorsim.tlvobject.get_tlv_server_path())
-        
-        # Calls sys.exit() when command line can not be parsed or when --help is requested
-        args = parser.parse_args()        
-    
-        KeysheetGeneratorMain.generate_sheets(args, ReporterBase())
-
-if __name__ == "__main__":
-    KeysheetGeneratorMain.execute()
     
 
