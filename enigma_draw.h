@@ -36,7 +36,7 @@
 \section abut_sec About
 
 This software aims to provide a framework to implement rotor machine simulators. Cryptographically
-accurate sample simulators for several Enigma variants and other rotor machines are included. The
+accurate simulators for several Enigma variants and other rotor machines are included. The
 following machines are implemented by the program *enigma*:
 
     Enigma M4
@@ -56,29 +56,27 @@ And simulators for these machines are implemented by the application *rotorvis*:
     Schlüsselgerät 39
     KL7
 
-Additionally a test program (called *rmsk*) is provided that performs unit tests to verify the accuracy
-of the provided simulators. 
+For longer messages or for experiments that require a level of automation or scriptability generic command line tools (rotorsim for message processing and rotorstate for generating and saving rotor machine states) for all machines implemented by rotorvis and enigma are part of the package.
 
-For your own experiments a small tool called *randperm* has been implemented which prints a set of (pseudo)random
-permutations of different types (permutations, involutions, fixed point free permutations) of the standard
-latin alphabet ABCDEFGHIJKLMNOPQRSTUVWXYZ. 
+If you want to run your own encrypted communications network with your friends rmsk2 also contains a key sheet generator for all simulated machines which allows you to generate text or HTML files that specify random machine settings.
 
-On top of that help files in mallard format (http://projectmallard.org/) are included with the simulators that
-desribe how to operate them.
+A Python3 interface to the C++ implementation of all the rotor machines is also provided. This Python3 interface has been used to implement the key sheet generator.
 
-This software was written between 2008 and 2016 between by Martin Grap (rmsk@gmx.de) and is licensed under the
-Apache 2.0 license (http://www.apache.org/licenses/LICENSE-2.0).
+Finally help files in mallard format (http://projectmallard.org/) are included with the simulators that describe how to operate them. Documentation for the command line simulators and the key sheet generator is provided through this Wiki.
+
+This software was written between 2008 and 2016 between by Martin Grap (rmsk2@gmx.de) and is licensed under the Apache 2.0 license (http://www.apache.org/licenses/LICENSE-2.0).
+
+You find more information and some documentation on the GitHub Wiki of this project: https://github.com/rmsk2/rmsk2/wiki
 
 \section idependencies_sec Dependencies
 
-On a Debian, Raspbian or Ubuntu systems you have to install the following packages in order to be able
-to build rmsk and the sample simulators.
+On a clean Debian, Raspbian or Ubuntu installation you have to additionally install the following packages in order to be able to build rmsk2 and the simulators.
 
     apt-get install scons    
     apt-get install libgtkmm-3.0-dev    
     apt-get install libboost-dev    
     apt-get install libboost-system-dev    
-    apt-get install libboost-program-options-dev        
+    apt-get install libboost-program-options-dev    
     apt-get install doxygen    
     apt-get install yelp (Raspbian only)
 
@@ -87,51 +85,68 @@ to build rmsk and the sample simulators.
 Rmsk's source code is contained in a directory which is structured as follows:
 
     ---./                       Source code 
-       +---doc                  Directory where documentation is created and maintained
+       +---doc                  Directory where documentation is created and 
+       |    |                   maintained
        |    +---enigma          Mallard help files for enigma simulator
-       |    +---rotorvis        Mallard help files for rotorvis
+       |    +---rotorvis        Mallard help files for rotorvis       
        +---doxygen              Directory for documentation extracted by Doxygen
-       |    +---html            Source code documentation in HTML format as extracted by Doxygen           
-       +---dist                 Directory which contains a usable binary distribution of enigma and rotorvis
+       |    +---html            Source code documentation in HTML format as  
+       |                        extracted by Doxygen 
+       +---pyrmsk2              Directory where the modules making up the Python3
+       |                        interface are created and maintained          
+       +---dist                 Directory which contains a usable binary  
+            |                   distribution of enigma and rotorvis
+            +---pyrmsk2         Modules making up the Python3 interface
             +---doc             Documentation intended for distribution 
                  +---enigma     Mallard help files for enigma simulator
                  +---rotorvis   Mallard help files for rotorvis       
+
 
 \section buid_extrac_sec Building and extracting documentation
 
 \subsection building_sec Building Enigma and rotorvis
 
-Rmsk uses scons (http://www.scons.org/) as its build tool. After installing the dependencies as mentioned above,
-you have to change into the source code directory of rmsk and simply type
+Rmsk2 uses scons (http://www.scons.org/) as its build tool. After installing the dependencies as mentioned above, you have to change into the source code directory of rmsk and simply type
 
     scons
-    
-in order to build the programs enigma, rotorvis, rmsk and randperm. This is equivalent to executing 'make all'
-if I would have used GNU make as a build tool. The analog of 'make clean' is 
+
+in order to build the programs enigma, rotorvis (and others). This is equivalent to executing make all if GNU make would have been used as a build tool. The analogue of make clean is
 
     scons -c
-    
-There is currently no analog for 'make install' and it may not be needed as rotorvis and enigma can be run from
-the build directories.
 
-The build information is contained in the file called SConstruct. It describes the targets and their dependencies.
-Additionally it allows to configure the build process. Currently there is only one feature that can be configured
-and that is where the simulators look for their help files. In SConstruct you find the following section enclosed in
-the comment lines '# ---- Build configuration variables ----'
+There is currently no analogue for make install and it may not be needed as rotorvis and enigma can be run from the build or dist directories.
 
-    # Uncomment and modify the following statement if you want to put the help files at a fixed path. 
-    # Default behaviour is to use the same directory in which the program binary resides.
+The build information is contained in the file called SConstruct. It describes the targets and their dependencies. Additionally it allows to configure the build process. Currently there are several features that can be configured.
+
+The first is where the simulators look for their help files. In SConstruct you find the following section enclosed in the comment lines # -— Build configuration variables -—
+
+    # Uncomment and modify the following statement if you want to 
+    # put the help files at a fixed path. Default behaviour is to 
+    # use the same directory in which the program binary resides.
     #rmsk_defines['RMSK_DOC_PATH'] = quote_path('/usr/share/doc/rmsk2')
 
-If you uncomment and modify the line 
+If you uncomment and modify the line
 
     rmsk_defines['RMSK_DOC_PATH'] = quote_path('/usr/share/doc/rmsk2') 
-    
-then you can specify a fixed path which is used by the simulators to determine the loacation of the help files. This is
-intended if you prefer to install enigma and rotorvis globally for all users as is the standard in the UNIX-world. 
-The default behaviour is to look for a doc/enigma or doc/rotorvis directory in the same directory where the program
-binary resides. This allows to use the simulators in a fashion that has come to be known as a 'portable application'
-that requires no installation whatsoever.
+
+then you can specify a fixed path which is used by the simulators to determine the location of the help files. This is intended if you prefer to install enigma and rotorvis globally for all users as is the standard in the UNIX-world. The default behaviour is to look for a doc/enigma or doc/rotorvis directory in the same directory where the program binary resides. This allows to use the simulators in a fashion that has come to be known as a 'portable application' that requires no installation whatsoever.
+
+The second feature deals with the simulated properties of the Schlüsselgerät 39 (SG39) machine. Pictures of the SG39 show that its keyboard has a space key but it remains unknown whether this was used during normal operation or only in combination with a teleprinter.
+
+    # Build SG39 with an asymmetric keyboard/printing device using 'Q' as space
+    #rmsk_defines['SG39_ASYMMETRIC'] = 'asym'
+
+Comment out the previous line in SConstruct in order to simulate a functional space key when building the SG39 simulator. In this case it is assumed that the letter Q was used as a stand in for the blank character when encrypting a message. Additional build configuration variables:
+
+    # Include Enigma variants in rotorvis
+    #rmsk_defines['INCLUDE_ENIGMA'] = 'enigma'
+
+Uncomment the previous line in order to include three Enigma variants (M3, M4 and Services) in rotorvis.
+
+    # Build Typex with a dual printer
+    #rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
+
+Uncomment the previous line to build the graphical Typex simulator with a dual printer.
 
 \subsection extracting_doc Extracting documentation from source code
 
@@ -153,38 +168,6 @@ If your previous build did not contain debug information you also should clear a
     
 before rebuilding the project. The same is true when you switch from a debug build to a release build.
 
-\subsection dist_sec Distributable files
-
-While building the project scons automatically copies the specified output files into the dist subdirectory from where 
-they can be tar'ed and gzip'ed in order to create a binary distributable. Use
-
-    scons install
-    
-to initiate that step manually. Executing scons -c also clears the dist directory.
-
-\subsection architecture_sec The big picture
-
-The source of rmsk is organized in three subsystems: crypto, GUI and application. The crypto subsystem contains the "naked"
-simulators and cryptographic primitives that are needed to implement them. Here all of the cryptography is happening.
-
-On top of that sits the GUI subsystem. This system implements the visualization of the rotor machines. I.e. it deals
-mostly with drawing all the elements like the keyboard, the lamp board, the rotor windows and so on.
-
-We also have the application subsystem that implements all the functionality that is needed to embed the GUI simulator
-in a full fledged gtkmm (http://www.gtkmm.org) application. It provides the user interface that allows the user to
-configure the underlying rotor machines, saving and restoring the state of the simlator and so on.
-
-Finally there is the TLV subsystem which provides a simple remote procedure call facility which is used to provide
-a python3 interface for part of the functionality implemented in the crypto subsystem.
-
-In the source documentation that can be exctracted by doxygen (http://www.stack.nl/~dimitri/doxygen/) classes belonging
-to the GUI, application and TLV subsystems are marked accordingly "... a GUI/application/TLV class ...". Classes that are not
-specially marked belong to the crypto subsystem.
-
-\section missing_sec Stuff that remains to be done
-
-Currently the simulators only provide a user interface in English therefore some future version has to be properly
-internationalized.
 */
 
 #endif /* __enigma_draw_h__ */ 
