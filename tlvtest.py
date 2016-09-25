@@ -111,7 +111,7 @@ class TlvFuncTest(simpletest.SimpleTest):
                         self.append_note("Unexpected number of objects returned")
                     
                     # Retrieve the list of providers known to the server and append it to the notes of this test
-                    self.append_note("Providers known to server: " + str(s.list_providers()))
+                    self.append_note("Providers known to server: " + str(s.list_providers()))                    
                 except:
                     self.append_note("EXCEPTON!!!!")
                     result = False
@@ -151,6 +151,7 @@ class TlvPerfTest(simpletest.SimpleTest):
 
                 spaeter = datetime.datetime.now()
                 self.append_note("Time needed for {} iterations: {}".format(self._iterations, spaeter - jetzt))
+                self.append_note("Number of calls made in this test: {}".format(s.get_num_calls()))                
             except:
                 self.append_note("EXCEPTON!!!!")
                 result = False        

@@ -162,7 +162,8 @@ registry_manager::registry_manager(object_registry *rgstry)
     registry = rgstry; 
     method_pointers["clear"] = &registry_manager::clear_processor;        
     method_pointers["listobjects"] = &registry_manager::list_objects_processor;            
-    method_pointers["listproviders"] = &registry_manager::list_providers_processor;                
+    method_pointers["listproviders"] = &registry_manager::list_providers_processor;
+    method_pointers["numcalls"] = &registry_manager::get_num_calls;                
 }
 
 tlv_callback *registry_manager::get_handler(string& method_name)
@@ -173,6 +174,21 @@ tlv_callback *registry_manager::get_handler(string& method_name)
     {
         result = new tlv_callback(sigc::mem_fun(*this, method_pointers[method_name]));
     }
+    
+    return result;
+}
+
+unsigned int registry_manager::get_num_calls(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry num_calls_as_string;
+    string num_calls_raw = boost::lexical_cast<string>(registry->get_num_calls());
+    
+    num_calls_as_string.to_string(num_calls_raw);
+    result = out_stream->write_tlv(num_calls_as_string);
+    
+    // Write end of result stream marker, i.e. the result code
+    (void)out_stream->write_error_tlv(result);
     
     return result;
 }

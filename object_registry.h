@@ -160,6 +160,13 @@ public:
      *  In case of success ERR_OK is returned. 
      */    
     virtual unsigned int list_providers_processor(tlv_entry& params, tlv_stream *out_stream);    
+
+    /*! \brief This method returns the number of calls handled by the object registry managed by this registry_manager
+     *         object to the client.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int get_num_calls(tlv_entry& params, tlv_stream *out_stream);    
     
     /*! \brief Destructor.
      */        
@@ -181,7 +188,7 @@ class object_registry {
 public:
     /*! \brief Constructor.
      */ 
-    object_registry() : manager(this) { ; }
+    object_registry() : manager(this) { num_calls = 0; }
 
     /*! \brief This is the main method of an object_registry instance. It is called by the processor callback of the tlv_server.
      *         It is used to determine a callback that is capable to handle a call of the method (given in parameter
@@ -227,6 +234,14 @@ public:
      */
     virtual void add_service_provider(string& class_name, service_provider *provider);
 
+    /*! \brief Returns the number of calls recorded by this object registry. 
+     */        
+    unsigned long int get_num_calls() { return num_calls; }
+
+    /*! \brief Records call for statistic purposes. 
+     */        
+    void record_call() { num_calls++; }
+
     /*! \brief This method deletes the service_provider with name class_name from the object regsitry. It also deletes all objects
      *         that are managed by the service_provider which is to be deleted.
      */     
@@ -243,6 +258,8 @@ protected:
     map<string, service_provider *> func_factory;
     /*! Holds the registry manager associated with this object_regsitry instance. */    
     registry_manager manager;
+    /*! Holds the number of calls recorded by this object registry. */        
+    unsigned long int num_calls;
 };
 
 

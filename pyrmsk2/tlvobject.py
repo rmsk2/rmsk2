@@ -596,6 +596,16 @@ class TlvServer:
         param = TlvEntry().to_null()
         return self.do_method_call("root", "listproviders", param)
 
+
+    ## \brief This method allows to retrieve the number of calls made to this TLV server.
+    #
+    #  \returns An integer. 
+    #        
+    def get_num_calls(self):
+        param = TlvEntry().to_null()
+        res = self.do_method_call("root", "numcalls", param)
+        return int(res[0])
+
     ## \brief This method deletes all objects currently managed by this TLV server.
     #
     #  \returns An empty sequence,

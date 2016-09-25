@@ -173,6 +173,8 @@ unsigned int uxdomain_socket_server::on_connect(tlv_stream *client_stream, objec
             break;
         }
 
+        registry->record_call();
+
         // Special case: object_name.delete() deletes the named object.
         if (method_name == "delete")
         {
