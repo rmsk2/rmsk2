@@ -2390,7 +2390,7 @@ class RotorMachine(tlvobject.TlvProxy):
     #         number of times.
     #
     #  \param [num_iterations] An integer. It has to specify how often the proxied rotor machine is to be
-    #         stepped
+    #         stepped. If num_iterations is negative then a single stepping is performed.
     #
     #  \returns A sequence of strings. Each of the strings represents the visualized rotor positions reached
     #           after each stepping of the machine.
