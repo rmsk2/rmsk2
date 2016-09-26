@@ -72,8 +72,7 @@ class Processor:
 
     ## \brief Constructs a command line for the C++ program rotorsim and executes rotorsim.
     #
-    #  \param [command] Is a string and has to specifiy the command which is used as the paraemter for the -c option
-    #                   Allowed values at the moment are "encrypt" and "decrypt".
+    #  \param [command] Is a string and has to specifiy the command which is used as the paraemter for the -c option.
     #  \param [input_data] Is a string which has to contain the input data. This value must not contain characters
     #                      that can not be encoded in ASCII.
     #  \param [output_grouping] Is an int. Specifies the group size which is used when producing the output string.
