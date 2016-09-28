@@ -2239,6 +2239,11 @@ class RotorMachine(tlvobject.TlvProxy):
         param = tlvobject.TlvEntry().to_byte_array(machine_state)
         res = self.do_method_call('new', 'rotorproxy', param)        
         self._handle = res[0]
+    
+    ## \brief Value to use for config flags that are to be set to true    
+    CONF_TRUE = 'true'
+    ## \brief Value to use for config flags that are to be set to false        
+    CONF_FALSE = 'false'           
 
     ## \brief Groups and formats an input text
     #
