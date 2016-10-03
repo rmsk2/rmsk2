@@ -23,6 +23,7 @@ import multiprocessing
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GObject
+import pyrmsk2
 import pyrmsk2.keysheetgen as keysheetgen
 import pyrmsk2.keygenicon as keygenicon
 
@@ -266,6 +267,7 @@ class KeyGenWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Keysheet Generator")
         self.set_border_width(10)
+        self._ainfo = Gio.app_info_get_default_for_uri_scheme('ghelp')
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.add(vbox)
@@ -543,18 +545,18 @@ class KeyGenWindow(Gtk.Window):
 
     ## \brief Callback for menu entry "Help"
     #
-    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #  \param [action] Is a Gtk.Action object. Not used by this method.
     #
     #  \param [value] Is an object of generic type. It is not used by this method.
     #
     #  \returns Nothing.
     #            
     def on_help(self, action, value):
-        self.show_message('Not yet implemented')
+        self._ainfo.launch_uris(['ghelp://' + pyrmsk2.get_doc_path(__file__) + '/keygen/keygen.page'])
 
     ## \brief Callback for menu entry "Quit"
     #
-    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #  \param [action] Is a Gtk.Action object. Not used by this method.
     #
     #  \param [value] Is an object of generic type. It is not used by this method.
     #
@@ -565,7 +567,7 @@ class KeyGenWindow(Gtk.Window):
 
     ## \brief Callback for menu entry "About"
     #
-    #  \param [action] Is a Gtk.Action object. Not used by this mehtod.
+    #  \param [action] Is a Gtk.Action object. Not used by this method.
     #
     #  \param [value] Is an object of generic type. It is not used by this method.
     #

@@ -1,0 +1,12 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="guide"
+      id="index">
+<title>Keygen Help</title>
+<section id="keygen_general">
+<title>General information</title>
+
+<p>Keygen is a key sheet generator for the rotor machines which are supported by rotorvis and rotorsim.
+</p>
+</section>
+
+</page>
