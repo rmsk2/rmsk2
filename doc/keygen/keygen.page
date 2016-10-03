@@ -2,10 +2,18 @@
       type="guide"
       id="index">
 <title>Keygen Help</title>
+
 <section id="keygen_general">
 <title>General information</title>
 
-<p>Keygen is a key sheet generator for the rotor machines which are supported by rotorvis and rotorsim.
+<p>Keygen is a key sheet generator for all rotor machines which are supported by <code>enigma</code> and <code>rotorvis</code>. 
+</p>
+
+<p>
+<media type="image" src="keygen.png"/>
+</p>
+
+<p>
 </p>
 </section>
 
