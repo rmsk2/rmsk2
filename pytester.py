@@ -101,6 +101,8 @@ def perform_some_tests(test_names):
         if i in test_dict.keys():
             all_tests_ok = all_tests_ok and test_dict[i].test()
             test_dict[i].print_notes()
+        else:
+            print('Unknown test {}'.format(i))
     
     if not all_tests_ok:
         print('Some tests FAILED!!')
