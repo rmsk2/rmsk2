@@ -6,15 +6,194 @@
 <section id="keygen_general">
 <title>General information</title>
 
-<p>Keygen is a key sheet generator for all rotor machines which are supported by <code>enigma</code> and <code>rotorvis</code>. 
+<p>Keygen is a key sheet generator for all rotor machines which are supported by <code>enigma</code>, <code>rotorvis</code> and 
+<code>rotorsim</code>. This software assumes that any key sheet
+is intended for a named crypto net or machine key. A sheet is valid for one month in a given year and has always entries for 31 days even
+if the month has only 30, 28 or 29 days. Key sheets also have a (pseudo-)classification level, which is shown on the sheet together with
+other information. Key sheets can either be generated in HTML or TXT format. Here a screenshot of keygen's user interface:
 </p>
 
 <p>
 <media type="image" src="keygen.png"/>
 </p>
-
-<p>
-</p>
 </section>
 
+
+<section id="keygen_gui">
+<title>User interface elements</title>
+
+<p> This section describes the elements of keygen's user interface.
+</p>
+
+<terms>
+    <item>
+        <title>Machine combo box</title>
+        <p>This combo box allows you to choose a machine type for which a key sheet is to be generated.</p>
+    </item>
+    <item>
+        <title>Month combo box</title>
+        <p>This combo box enables you to specify a month for which the key sheet is valid. If you select the alternative <code>Whole year</code>
+        12 key sheets will be created and stored in the output directory. One for each month. The name of the month appears on the key sheet.</p>
+    </item>
+    <item>
+        <title>Year edit box</title>
+        <p>This edit box enables you to specify a year for which the key sheet is valid. Allowed values for years are from the range 1900-2100.
+        The year appears on the key sheet.</p>
+    </item>
+    <item>
+        <title>Classification edit box</title>
+        <p>This edit box enables you to specify the (pseudo-)classifciation level of the generated sheet. This value will appear on the sheet.
+        </p>
+    </item>
+    <item>
+        <title>Crypto net/key name edit box</title>
+        <p>This edit box enables you to specify the name of the key or crypto net for which for which the key sheet is valid. This value
+        will appear on the sheet.</p>
+    </item>
+    <item>
+        <title>Output format radio buttons</title>
+        <p>These radio buttons can be used to select the output format, i.e. at the moment either HTML or TXT.</p>
+    </item>
+    <item>
+        <title>Save state files check box</title>
+        <p>If you check this check box then state files that represent the settings for each day of the month are saved in the output directory.
+        These files can be used to restore the corresponding machine state in order to initialize <code>enigma</code>, <code>rotorvis</code> or 
+        <code>rotorsim</code>.</p>
+    </item>
+    <item>
+        <title>Output directory edit box</title>
+        <p>This edit box enables you to specify the output directory where key sheets and state files will be stored. The browse button on the
+        right can be used to select a directory through the file chooser dialog.</p>        
+    </item>
+    <item>
+        <title>The Generate button</title>
+        <p>Click this button to start the key sheet generation process. When sheets for a whole year are generated the progress bar on the top end
+        of keygen's window will show the name of the month for which a sheet is currently generated.
+        </p>        
+    </item>
+
+</terms>
+
+</section>
+
+<section id="keygen_sheets">
+<title>Machine types and sheet contents</title>
+<p>This section lists the types of machines for which keygen is able to create key sheets. It also gives a short overview of the
+contents of the generated sheet depending on the machine type. It is assumed that the reader is familiar with the facilities which
+can be used to set up the rotor machines in question.</p>.
+
+<table frame="all" rules="all" shade="rows">
+    <tr>
+        <td><p><em>Machine Name</em></p></td> <td><p><em>Keyword(s)</em></p></td> <td><p><em>Description of key sheet contents</em></p></td>
+    </tr>
+    <tr>
+        <td><p>M3 and Services Enigma</p></td>
+        <td><p>M3, Services</p></td>
+        <td><p>
+        Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung), the plugboard (Steckerbrett) 
+        and Kenngruppen. Kenngruppen have been used in Army and Air Force messages to allow the recipient to determine to 
+        which key or crypto net the received message belongs. See also 
+        <link href="http://users.telenet.be/d.rijmenants/en/enigmaproc.htm">here</link>
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>M3 and Services Enigma with Umkehrwalze D</p></td>
+        <td><p>M3D, ServicesD</p></td>
+        <td><p>In addition to normal key sheets for the standard M3 and Services Enigma machines sheets created for these two
+        keywords contain a column for the twelve plugs to be set on the Umkehrwalze D.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>Services Enigma with Uhr</p></td>
+        <td><p>ServicesUhr</p></td>
+        <td><p>In addition to normal key sheets for the standard Services Enigma machines sheets created for this
+        keyword contain a column for the twelve plugs to be set on the Umkehrwalze D and an Uhr dial setting. In contrast to
+        machine settings without Uhr it is important to set the plugs in <code>enimga</code>'s plugboard dialog in the exact same
+        sequence as they appear on the key sheet.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>M4 Enigma</p></td>
+        <td><p>M4</p></td>
+        <td><p>M4 Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and the plugboard (Steckerbrett) but
+        no Kenngruppen as the German Navy historically did not make use of Kenngruppen.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>M4 Enigma with Kenngruppen</p></td>
+        <td><p>M4KGr</p></td>
+        <td><p>Sheets generated for this keyword also specify Kenngruppen in addition to the columns normally given for an M4. Even though        
+        this type of sheet is historically incorrect it has been implemented in order to use the Army and Air Force message procedures
+        with an M4.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>Railway, Abwehr and Tirpitz Enigma</p></td>
+        <td><p>Railway, Abwehr, Tirpitz</p></td>
+        <td><p>Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and Kenngruppen. None of the three
+        machine had a plugboard.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>KD Enigma</p></td>
+        <td><p>KD</p></td>
+        <td><p>Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung), a description of the plugs to be set on
+        the Umkehrwalze D and Kenngruppen. This machine did not have a classical plugboard.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>Typex</p></td>
+        <td><p>Typex</p></td>
+        <td><p>Key sheets contain wheel settings, ring settings and a specification of the thirteen plugs to be set on the rewirable
+        reflector. As I have no information about how the message procedures for the Typex worked no Kenngruppen or similar supporting
+        information is provided on key sheets. When pasting the rotor settings from a key sheet into the correponding entry boxes in
+        the <code>rotorvis</code> configuration dialog the spaces have to be removed.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>Nema war and training model</p></td>
+        <td><p>NemaWar, NemaTraining</p></td>
+        <td><p>Key sheets contain wheel settings (Walzen), the notch ring settings (Nockenringe) and a ten letter basic setting (Codewort) which
+        was used according to Sullivan, Geoff and Weierud, Frode (1999) 'THE SWISS NEMA CIPHER MACHINE', Cryptologia, 23:4, 310 — 328 in order
+        to generate a pseudorandom message key. The operator had to choose ten letters at random. These ten letters were sent in the clear along
+        with the ciphertext as indicator groups. The rotor and notch ring positions for en- and decryption of the message were generated by 
+        first moving the rotors and notch rings to the position specified by the Codewort. After that the indicators were encrypted. Finally the
+        resulting ten letters were used as wheel and notch ring positions for en- or decryption of the message.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>SIGABA (CSP889 and CSP2900 variants)</p></td>
+        <td><p>CSP889, CSP2900</p></td>
+        <td><p>Key sheets contain settings for the selection of the index, control and cipher rotors. On top of that the positions of the
+        index rotors (Index pos) is specified. The final column contains a check value which can be used to verify the correct setup of the machine.
+        It is created by first setting all control and cipher rotors to the O position. After that 30 A characters are encrypted. The final
+        five letter group (containing the ciphertext for the 26th to the 30th A) is the check value. When pasting the rotor settings
+        from a key sheet into the correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces have to be removed.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>KL7</p></td>
+        <td><p>KL7</p></td>
+        <td><p>Key sheets contain the rotor settings, the position of the alphabet ring on each rotor, the notch ring to be used with each
+        moving rotor, the position of each of the notch rings and a position of the seven moving rotors (the so called basic alignment).        
+        The final column contains a check value which can be used to verify the correct setup of the machine.
+        It is created by first setting all moving rotors to the A position. After that 45 L characters are encrypted. The final two
+        five letter groups (containing the ciphertext for the 36th to the 45th L) are the check value. Some information about the message
+        procedures used with the KL7 can be found in the Help file of Dirk Rijmenants' 
+        <link href="http://users.telenet.be/d.rijmenants/en/kl-7sim.htm">KL7 simulator</link>.
+        </p></td>
+    </tr>
+    <tr>
+        <td><p>Schlüsselgerät 39</p></td>
+        <td><p>SG39</p></td>
+        <td><p>Key sheets for the SG39 consist of two pages. The first page specifies the wheel settings (Walzen), the ring settings (Ringe),
+        the thirteen plugs for the plugboard (Steckerbrett) and the thirteen plugs for the rewirable reflector (Umkehrwalze). Additionally
+        a basic positon of the four rotors and three notch wheels and some Kenngruppen are specified. The second page contains the specification
+        of the pins to set on the three moving rotors (Walze Eins, Walze Zwei and Walze Drei) and the notch wheels (Rad Eisn, Rad Zwei, 
+        Rad Drei).
+        </p></td>
+    </tr>
+</table>
+
+</section>
 </page>
