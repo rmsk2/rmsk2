@@ -212,23 +212,23 @@ int rotor_state::check_machine_specific_options(string& err_message)
 void rotor_state::generate_randomizer_help(string& machine_name, string& randomizer_help)
 {
     boost::scoped_ptr<rotor_machine> machine(rmsk::make_default_machine(machine_name));
-    vector<string> parameters;
-    vector<string>::iterator iter;
+    vector<struct randomizer_descriptor> descriptors;
+    vector<struct randomizer_descriptor>::iterator iter;
     
     randomizer_help.clear();
     
     if (machine.get() != NULL)
     {                
-        parameters = machine->get_randomizer_params();
+        descriptors = machine->get_randomizer_descriptors();
         
-        for (iter = parameters.begin(); iter != parameters.end(); ++iter)
+        for (iter = descriptors.begin(); iter != descriptors.end(); ++iter)
         {
-            randomizer_help += (*iter + " ");
+            randomizer_help += (iter->keyword + ": " + iter->description + "\n");
         }
         
         if (randomizer_help != "")
         {
-            randomizer_help = "Allowed randomizer parameters: " + randomizer_help;
+            randomizer_help = "Allowed randomizer parameters: \n" + randomizer_help;
         }
     }
 }

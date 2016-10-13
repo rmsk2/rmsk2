@@ -191,6 +191,25 @@ struct key_word_info {
     keyword_type type;
 };
 
+/*! \brief A struct that is used to bind together the descrption of a randomizer parameter together with the
+ *         keyword to use when actually calling it.
+ */
+struct randomizer_descriptor {
+
+    /*! \brief Constructor. The first parameter (kw) has to contain the keyword of the randomizer parameter and
+     *         the second (desc) its human understandable description.
+     */           
+    randomizer_descriptor(const char *kw, const char *desc) {keyword = string(kw); description = string(desc); }
+
+    /*! \brief keyword to use when calling the randomizer. Also used on the command line of rotorstate.  
+     */           
+    string keyword;
+
+    /*! \brief Human understandable description.  
+     */               
+    string description;
+};
+
 /*! \brief A class which provides several static utility functions for mapping permutations to alphanumeric UKW D plugs
  *         specifications and vice versa.
  */

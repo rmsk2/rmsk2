@@ -420,8 +420,8 @@ nema::nema(vector<rotor_assembly>& rotor_settings, unsigned int left_red_drive_w
     boost::shared_ptr<rotor_keyboard> kbd(new symmetric_keyboard(ustring("ijklmnopqrstuvwxyzabcdefgh")));
     set_keyboard(kbd); 
     
-    randomizer_params.push_back("war");
-    randomizer_params.push_back("training");        
+    randomizer_params.push_back(randomizer_descriptor("war", "Force war machine"));
+    randomizer_params.push_back(randomizer_descriptor("training", "Force training machine"));        
     
     unvisualized_rotor_names.insert(ETW);                          
         

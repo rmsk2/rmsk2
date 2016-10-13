@@ -508,9 +508,9 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
 
 #endif
     
-    randomizer_params.push_back("one");
-    randomizer_params.push_back("two");
-    randomizer_params.push_back("three");
+    randomizer_params.push_back(randomizer_descriptor("one", "Rotor one always moves"));
+    randomizer_params.push_back(randomizer_descriptor("two", "Rotor two always moves"));
+    randomizer_params.push_back(randomizer_descriptor("three", "Rotor three always moves"));
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

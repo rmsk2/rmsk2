@@ -186,7 +186,11 @@ public:
 
     /*! \brief Returns a vector of strings that can be used as a parameter to the randomize() nethod.
      */                  
-    virtual vector<string> get_randomizer_params() { return randomizer_params; }
+    virtual vector<string> get_randomizer_params();
+
+    /*! \brief Returns a vector of strings that can be used as a parameter to the randomize() nethod.
+     */                  
+    virtual vector<struct randomizer_descriptor> get_randomizer_descriptors() { return randomizer_params; }
 
     /*! \brief Returns the input transform in use in this rotor_machine.
      */
@@ -427,7 +431,7 @@ protected:
 
     /*! \brief Holds the parameters that can be given to the randomize method of this machine.
      */                                
-    vector<string> randomizer_params;
+    vector<struct randomizer_descriptor> randomizer_params;
 };
 
 #endif /* __rotor_machine_h__ */

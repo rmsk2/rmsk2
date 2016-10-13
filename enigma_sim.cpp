@@ -431,18 +431,18 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     if (type_m3)
     {
         machine_type = "M3";
-        randomizer_params.push_back("ukwdonly");    
-        randomizer_params.push_back("basic");
+        randomizer_params.push_back(randomizer_descriptor("ukwdonly", "Force use of UKW D but Uhr is forbidden"));  
+        randomizer_params.push_back(randomizer_descriptor("basic", "Both Uhr and UKW D are forbidden"));
     }
     else
     {
         machine_type = "Services";
-        randomizer_params.push_back("uhr");
-        randomizer_params.push_back("nouhr");    
-        randomizer_params.push_back("uhronly");
-        randomizer_params.push_back("ukwdonly");    
-        randomizer_params.push_back("basic");
-        randomizer_params.push_back("fancy");    
+        randomizer_params.push_back(randomizer_descriptor("uhr", "Force use of Uhr and allow for UKW D"));
+        randomizer_params.push_back(randomizer_descriptor("nouhr", "Uhr not used but allow for UKW D"));    
+        randomizer_params.push_back(randomizer_descriptor("uhronly", "Force use of Uhr but UKW D is forbidden"));
+        randomizer_params.push_back(randomizer_descriptor("ukwdonly", "Force use of UKW D but Uhr is forbidden"));    
+        randomizer_params.push_back(randomizer_descriptor("basic", "Both Uhr and UKW D are forbidden"));
+        randomizer_params.push_back(randomizer_descriptor("fancy", "Force use of Uhr and UKW D"));    
     }
     
     

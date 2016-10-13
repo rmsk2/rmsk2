@@ -339,6 +339,19 @@ void rotor_machine::set_keyboard(boost::shared_ptr<rotor_keyboard> new_keyboard)
     keyboard->set_machine(this);
 }
 
+vector<string> rotor_machine::get_randomizer_params()
+{
+    vector<string> result;
+    vector<struct randomizer_descriptor>::iterator iter;
+    
+    for (iter = randomizer_params.begin(); iter != randomizer_params.end(); ++iter)
+    {
+        result.push_back(iter->keyword);
+    }
+    
+    return result;
+}
+
 bool rotor_machine::save(string& file_name)
 {   
     return rmsk::settings_file_save(file_name, sigc::mem_fun(*this, &rotor_machine::save_ini));

@@ -759,8 +759,8 @@ sigaba::sigaba(vector<rotor_id>& r_ids, bool csp_2900_flag)
     prepare_rotor(r_ids[3], R_THREE);
     prepare_rotor(r_ids[4], R_FOUR);
     
-    randomizer_params.push_back("csp2900");
-    randomizer_params.push_back("csp889");                        
+    randomizer_params.push_back(randomizer_descriptor("csp2900", "Force CSP2900"));
+    randomizer_params.push_back(randomizer_descriptor("csp889", "Force CSP889"));                        
     
     get_stepping_gear()->reset();        
 }
