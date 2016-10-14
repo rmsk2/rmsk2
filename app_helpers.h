@@ -331,31 +331,40 @@ protected:
     rotor_draw *simulator_gui;
 };
 
-
+/*! \brief An application class that allows to handle the events that occur when the user opens the dialog which allows
+ *         to randomize machine settings.
+ */    
 class randomizer_param_helper : public menu_helper {
 public:
     /*! \brief Constructor. The parameter name_of_app has to contain the name of the app and is used to set the title
      *         of any dialog window that is presented to the user while processing the event.
      */
     randomizer_param_helper(const char *name_of_app) : menu_helper(name_of_app) { has_errors = false; was_cancelled = false; }
-    
+
+    /*! \brief This method shows a dialog which allows the user to select a randomizer parameter and subsequently calls the randomize()
+     *         method of the rotor_machine object to which the parameter machine points using that randomizer parameter.
+     */    
     virtual void randomize_machine(rotor_machine *machine);    
 
-    /*! \brief This method returns false, if randomization was carried without errors. Else true is returned.
+    /*! \brief This method returns false, if no errors were encountered during randomization. Else true is returned.
      */                    
-    bool get_has_error() { return has_errors; }
+    virtual bool get_has_error() { return has_errors; }
 
-    /*! \brief This method returns true, if the randomization dialog was cacelled. Else it returns true.
+    /*! \brief This method returns true, if the randomization dialog was cancelled. Else it returns true.
      */                    
-    bool get_was_cancelled() { return was_cancelled; }
+    virtual bool get_was_cancelled() { return was_cancelled; }
 
     /*! \brief Destructor.
      */                    
     virtual ~randomizer_param_helper() { ; }
 
 protected:
+    /*! \brief Is true when the previous call of the randomize_machine() resulted in an error. Else holds false. */  
     bool has_errors;
-    
+
+    /*! \brief Is true when the dialog to select the randomizer parameter was closed by clicking cancel in the 
+     *         previous call of the randomize_machine() method. Else holds false. 
+     */      
     bool was_cancelled;
 };
 #endif /* __app_helpers_h__ */
