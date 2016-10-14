@@ -331,4 +331,31 @@ protected:
     rotor_draw *simulator_gui;
 };
 
+
+class randomizer_param_helper : public menu_helper {
+public:
+    /*! \brief Constructor. The parameter name_of_app has to contain the name of the app and is used to set the title
+     *         of any dialog window that is presented to the user while processing the event.
+     */
+    randomizer_param_helper(const char *name_of_app) : menu_helper(name_of_app) { has_errors = false; was_cancelled = false; }
+    
+    virtual void randomize_machine(rotor_machine *machine);    
+
+    /*! \brief This method returns false, if randomization was carried without errors. Else true is returned.
+     */                    
+    bool get_has_error() { return has_errors; }
+
+    /*! \brief This method returns true, if the randomization dialog was cacelled. Else it returns true.
+     */                    
+    bool get_was_cancelled() { return was_cancelled; }
+
+    /*! \brief Destructor.
+     */                    
+    virtual ~randomizer_param_helper() { ; }
+
+protected:
+    bool has_errors;
+    
+    bool was_cancelled;
+};
 #endif /* __app_helpers_h__ */

@@ -162,7 +162,7 @@ protected:
      */
     virtual void update_stecker_brett();
 
-    /*! \brief This method retreives the rotor positions from the underlying simulator object to which enigma_app_window::enigma points and
+    /*! \brief This method retrieves the rotor positions from the underlying simulator object to which enigma_app_window::enigma points and
      *         uses this data to update the corresponding values in enigma_app_window::conf.
      *
      *  This method is used to synchronize the rotor positions stored in the state variable enigma_app_window::conf used by this class with
@@ -272,7 +272,12 @@ protected:
     /*! \brief Helper object that is used to manage the events that occur when the user select the "Set rotor positions" 
      *         entry from the menu. 
      */    
-    rotor_position_helper pos_helper;      
+    rotor_position_helper pos_helper;
+    
+    /*! \brief Helper object that is used to manage the events that occur when the user requests to randomize machine settings. 
+     */    
+    randomizer_param_helper rand_helper;
+          
 };
 #endif /* __enigma_app_window_h__ */
 

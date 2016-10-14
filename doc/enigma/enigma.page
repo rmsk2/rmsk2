@@ -159,8 +159,8 @@ variant.
         <p>Resets all the settings available for the simulated Enigma variant to default values.</p>
     </item>
     <item>
-        <title><code>Randomize</code></title>
-        <p>Resets all the settings available for the simulated Enigma variant to random values.</p>
+        <title><code>Randomize ...</code></title>
+        <p>Resets all the settings available for the simulated Enigma variant to random values. These values are constrained by the randomizer parameter that is chosen by the user.</p>
     </item>
     <item>
         <title><code>UKW Dora wiring ...</code></title>

@@ -123,9 +123,10 @@ the simulator has regained the focus.
         paper strip changing the en/decryption mode also clears the paper strip.</p></note>
     </item>    
     <item>
-        <title><code>Randomize state</code></title>
+        <title><code>Randomize state ...</code></title>
         <p>Changes the settings of the machine to random values. Basis for random number generation is /dev/urandom so this is probably not
-        cryptographically secure if your life depends on it but for having fun or doing some experiments it should be more than enough.</p>
+        cryptographically secure if your life depends on it but for having fun or doing some experiments it should be more than enough.
+        The random settings are constrained by the randomizer parameter that is chosen by the user.</p>
     </item>    
     <item>
         <title><code>Rip paper strip</code></title>

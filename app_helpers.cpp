@@ -23,6 +23,7 @@
 #include<rmsk_globals.h>
 #include<Enigma.xpm>
 #include<rotorpos_dialog.h>
+#include<randomizer_dialog.h>
 
 void menu_helper::message_dialog(Glib::ustring& message, Gtk::MessageType type)
 {
@@ -426,5 +427,48 @@ void rotor_position_helper::set_rotor_positions(sigc::slot<void> *set_pos_succes
 
     // Redraw rotor windows
     simulator_gui->get_rotor_visualizer()->update_all_rotor_windows();    
+}
+
+/* ------------------------------------------------------------------ */
+
+void randomizer_param_helper::randomize_machine(rotor_machine *machine)
+{
+    string randomizer_parameter;
+    vector<randomizer_descriptor> known_parameters = machine->get_randomizer_descriptors();
+    
+    was_cancelled = false;
+    has_errors = false;    
+    
+    if (known_parameters.size() == 0)
+    {
+        if (machine->randomize(randomizer_parameter))
+        {
+            has_errors = true;
+            error_message("Randomization failed");
+        }            
+    }
+    else
+    {        
+        randomizer_dialog dlg(*win, randomizer_parameter, known_parameters);
+        int dlg_result;
+        bool rand_result;
+    
+        do
+        {
+            dlg_result = dlg.run();        
+            was_cancelled = (dlg_result != Gtk::RESPONSE_OK);
+            
+            if (dlg_result == Gtk::RESPONSE_OK)
+            {
+                // Try to randomize machine
+                if ((rand_result = machine->randomize(randomizer_parameter)))
+                {
+                    has_errors = true;
+                    error_message("Randomization failed");
+                }        
+            }
+          // Try again if randomization failed even though the user closed the dialog by clicking OK    
+        } while ((dlg_result == Gtk::RESPONSE_OK) && rand_result);                
+    }
 }
 

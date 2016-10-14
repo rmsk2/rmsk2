@@ -32,7 +32,7 @@ rotorpos_dialog::rotorpos_dialog(Gtk::Window& parent, Glib::ustring& rotor_posit
     v_box->pack_start(config_items);
     config_items.attach(pos_label, 0, 0, 1, 1);
     
-    // Set up pos_label
+    // Set up pos_entry
     config_items.attach(pos_entry, 1, 0, 1, 1);
     pos_entry.set_hexpand(true);
     pos_entry.get_size_request(size_x, size_y);

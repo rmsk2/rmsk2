@@ -431,8 +431,8 @@ enigma_I::enigma_I(unsigned int ukw_id, unsigned int slow_id, unsigned int middl
     if (type_m3)
     {
         machine_type = "M3";
-        randomizer_params.push_back(randomizer_descriptor("ukwdonly", "Force use of UKW D but Uhr is forbidden"));  
-        randomizer_params.push_back(randomizer_descriptor("basic", "Both Uhr and UKW D are forbidden"));
+        randomizer_params.push_back(randomizer_descriptor("ukwdonly", "Force use of UKW D"));  
+        randomizer_params.push_back(randomizer_descriptor("basic", "UKW D is forbidden"));
     }
     else
     {

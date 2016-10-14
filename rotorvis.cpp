@@ -226,6 +226,10 @@ protected:
      */    
     rotor_position_helper pos_helper;
 
+    /*! \brief Helper object that is used to manage the events that occur when the user requests to randomize machine settings. 
+     */    
+    randomizer_param_helper rand_helper;
+
 };
 
 void rotor_visual::set_titles(Glib::ustring& last_file_name)
@@ -304,17 +308,14 @@ void rotor_visual::on_set_rotor_positions()
 
 void rotor_visual::on_randomize_machine()
 {
-    string dummy;    
-    bool result = the_machine->randomize(dummy);
+    rand_helper.randomize_machine(the_machine.get());
     
-    if (result)
-    {
-        messages.error_message("Randomization failed");
+    if ((!rand_helper.get_was_cancelled()) and (!rand_helper.get_has_error()))
+    {        
+        simulator_gui->set_machine(the_machine.get()); 
+        machine_id = the_machine->get_description();
+        set_titles(last_file_name_used);          
     }
-    else
-    {
-        simulator_gui->set_machine(the_machine.get());
-    }    
 }
 
 void rotor_visual::save_state()
@@ -641,7 +642,7 @@ void rotor_visual::on_mode_changed()
 }
 
 rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
-    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS), pos_helper(ROTORVIS)
+    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS), pos_helper(ROTORVIS), rand_helper(ROTORVIS)
 {    
     last_file_name_used = "";
     win = main_win;
@@ -715,6 +716,8 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     loghelp.set_parent_window(win);
     loghelp.set_simulator(disp, simulator_gui);
     
+    rand_helper.set_parent_window(win);
+    
     on_mode_changed();
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed)); 
     on_enc_state_activate();
@@ -736,7 +739,7 @@ void rotor_visual::setup_menus()
     enc_dec_item = Gtk::ToggleAction::create("logstyleencrypt", "Mode: Encryption");
     menu_action->add(enc_dec_item, sigc::mem_fun(*this, &rotor_visual::on_enc_state_activate));
     menu_action->add(Gtk::Action::create("outputreset", "Rip _paper strip"), sigc::mem_fun(*this, &rotor_visual::on_reset));    
-    menu_action->add(Gtk::Action::create("randomize", "Ran_domize state"), sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
+    menu_action->add(Gtk::Action::create("randomize", "Ran_domize state ..."), sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
     menu_action->add(Gtk::Action::create("processclipboard", "Process _clipboard"), sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));    
     
     menu_action->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &rotor_visual::on_quit_activate));

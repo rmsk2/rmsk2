@@ -24,7 +24,7 @@
 
 
 enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
-    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA), pos_helper(ENIGMA)
+    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA), pos_helper(ENIGMA), rand_helper(ENIGMA)
 {
     Glib::ustring window_title(" Enigma");
     
@@ -141,6 +141,8 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     loghelp.set_parent_window(this);
     loghelp.set_simulator(disp, simulator_gui);    
     
+    rand_helper.set_parent_window(this);
+    
     disp->signal_become_invisible().connect(sigc::mem_fun(*this, &enigma_app_window::on_log_invisible));
     log_style_menuitem->set_active(simulator_gui->get_enc_flag());
 
@@ -179,7 +181,7 @@ void enigma_app_window::setup_menus()
     menu_action->add(Gtk::Action::create("rotorsettings", "Rotor _settings ..."), sigc::mem_fun(*this, &enigma_app_window::on_settings_activate));
     menu_action->add(Gtk::Action::create("plugboard", "_Plugboard ..."), sigc::mem_fun(*this, &enigma_app_window::on_plugboard_activate));            
     menu_action->add(Gtk::Action::create("reset", "_Reset"), sigc::mem_fun(*this, &enigma_app_window::on_reset_activate));            
-    menu_action->add(Gtk::Action::create("randomize", "R_andomize"), sigc::mem_fun(*this, &enigma_app_window::on_randomize_activate));
+    menu_action->add(Gtk::Action::create("randomize", "R_andomize ..."), sigc::mem_fun(*this, &enigma_app_window::on_randomize_activate));
     menu_action->add(Gtk::Action::create("ukwd", "UKW Dora _wiring ..."), sigc::mem_fun(*this, &enigma_app_window::on_ukwd_activate));                        
 
     menu_action->add(Gtk::Action::create("MenuHelp", "_Help"));
@@ -481,18 +483,39 @@ void enigma_app_window::on_mode_changed()
 
 void enigma_app_window::on_randomize_activate()
 {
+    const char *model = enigma->get_machine_type().c_str();
+    string model_str(model);
+    std::map<string, string> randomized_settings;
+
     sync_rotor_pos();
+    rand_helper.randomize_machine(enigma);    
     
-    if (!conf.randomize())
+    if (!rand_helper.get_has_error())
     {
-        update_rotors();
-        update_stecker_brett();
+        // randomization of the underlying machine was successfull or no randomization was done at all
         
-        messages.info_message("Wheel order, ring settings, rotor positions, plugboard (if applicable) and UKW Dora wiring successfully randomized");
+        // Retrieve settings from underlying machine
+        enigma_configurator conf_obj(model);
+        conf_obj.get_config(randomized_settings, enigma);
+        
+        if (!rand_helper.get_was_cancelled())
+        {
+            // User did not cancel the randomization dialog           
+            // Sync config with randomized settings (This never should fail)
+            if (!conf.from_keywords(randomized_settings, model_str))
+            {
+                // Retrieve rotor positions from randomized machine
+                sync_rotor_pos(); 
+                // Update GUI with new settings
+                simulator_gui->set_machine(enigma);
+                        
+                messages.info_message("Wheel order, ring settings, rotor positions, plugboard (if applicable) and UKW Dora wiring successfully randomized");
+            }
+            else
+            {
+                messages.error_message("Syncing random settings failed");
+            }    
+        }
     }
-    else
-    {
-        messages.error_message("Randomizing settings failed");
-    }    
 }
 
