@@ -274,6 +274,14 @@ bool schluesselgeraet39::randomize(string& param)
     vector<unsigned int> num_pins_slow, num_pins_middle;
     string pins_rotor_1, pins_rotor_2, pins_rotor_3; 
     unsigned int key_gen_selector;
+    map<string, unsigned int> rand_parm_map;
+    
+    rand_parm_map["one"] = 1;
+    rand_parm_map["two"] = 0;    
+    rand_parm_map["three"] = 2;
+    rand_parm_map["enigma7"] = 3;
+    rand_parm_map["enigma5"] = 4;
+    rand_parm_map["enigma9"] = 5;    
     
     try
     {
@@ -291,25 +299,11 @@ bool schluesselgeraet39::randomize(string& param)
         
         key_gen_selector = stepping_selection_perm.encrypt(0);
         
-        if (param == "one")
+        if (rand_parm_map.count(param) != 0)
         {
-            key_gen_selector = 1;
+            key_gen_selector = rand_parm_map[param];
         }
-        else
-        {
-            if (param == "two")
-            {
-                key_gen_selector = 0;
-            }
-            else
-            {
-                if (param == "three")
-                {
-                    key_gen_selector = 2;
-                }
-            }
-        }
-                
+                        
         // Determine stepping motion
         switch(key_gen_selector)
         {
@@ -363,6 +357,22 @@ bool schluesselgeraet39::randomize(string& param)
                 pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
                 pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';                
                 pins_rotor_2 += rotor_pin_perm.encrypt(2) + 'a';
+            }
+            break;                
+            case 3:
+            case 4:
+            case 5:        
+            {
+                map<unsigned int, unsigned int> num_notch_map;
+                num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
+                // rotor 1 always moves            
+                pins_wheel_1 = "abcdefghijklmnopqrstu";               
+
+                randomize_help rotor_1_rand(&pins_rotor_1, 26);
+                fill_wheel_spec(rotor_1_rand, num_notch_map[key_gen_selector]);
+
+                randomize_help rotor_2_rand(&pins_rotor_2, 26);
+                fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
             }
             break;                
             default:
@@ -511,6 +521,9 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     randomizer_params.push_back(randomizer_descriptor("one", "Rotor one always moves"));
     randomizer_params.push_back(randomizer_descriptor("two", "Rotor two always moves"));
     randomizer_params.push_back(randomizer_descriptor("three", "Rotor three always moves"));
+    randomizer_params.push_back(randomizer_descriptor("enigma7", "Enigma stepping with 7 notches"));
+    randomizer_params.push_back(randomizer_descriptor("enigma5", "Enigma stepping with 5 notches"));
+    randomizer_params.push_back(randomizer_descriptor("enigma9", "Enigma stepping with 9 notches"));        
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

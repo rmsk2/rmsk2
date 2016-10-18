@@ -149,11 +149,11 @@ protected:
     bool load_additional_components(string& identifier, Glib::KeyFile& ini_file);
 };
 
-/*! \brief A struct which is intended as a helper for the randomize method. It contains the a pointer to the pin
+/*! \brief A struct which is intended as a helper for the randomize method. It contains a pointer to the pin
  *         specification and the maximum number of pins on the corresponding rotor/wheel.
  */
 struct randomize_help {
-    /*! \brief Constructor. The paramete sp is used for setting spec and sz is used for setting size.
+    /*! \brief Constructor. The parameter sp is used for setting spec and sz is used for setting size.
      */
     randomize_help(string *sp, unsigned int sz) { spec = sp; size = sz; }
     /*! \brief Holds a pointer to the pin specification. */

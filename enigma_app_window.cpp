@@ -508,8 +508,6 @@ void enigma_app_window::on_randomize_activate()
                 sync_rotor_pos(); 
                 // Update GUI with new settings
                 simulator_gui->set_machine(enigma);
-                        
-                messages.info_message("Wheel order, ring settings, rotor positions, plugboard (if applicable) and UKW Dora wiring successfully randomized");
             }
             else
             {

@@ -22,8 +22,8 @@
 
 #include<randomizer_dialog.h>
 
-randomizer_dialog::randomizer_dialog(Gtk::Window& parent, string& rotor_positions, vector<randomizer_descriptor>& param_choices)
-    : Dialog("Randomize settings", parent, true), parameter(rotor_positions), param_label("Possible randomizer parameters"), empty_label("")
+randomizer_dialog::randomizer_dialog(Gtk::Window& parent, string& randomizer_parameter, vector<randomizer_descriptor>& param_choices)
+    : Dialog("Randomize settings", parent, true), parameter(randomizer_parameter), param_label("Possible randomizer parameters"), empty_label("")
 {
     add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     ok_button = add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);

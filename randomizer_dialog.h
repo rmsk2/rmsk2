@@ -38,6 +38,7 @@ public:
      *
      *  \param parent [in] Has to point to the parent window, i.e. the main window of the application.
      *  \param randomizer_parameter [out] Changed to new value chosen by the user when the dialog is closed with OK.
+     *  \param param_choices [in] Has to contain the possible choices which are available for randomizer parameters.     
      */
     randomizer_dialog(Gtk::Window& parent, string& randomizer_parameter, vector<randomizer_descriptor>& param_choices);
 
