@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
  *  \brief This file contains the implementation of a simulator for the Schluesselgeraet 39
  */ 
 
+#include<algorithm>
+#include<exception>
 #include<boost/scoped_ptr.hpp>
 #include<boost/lexical_cast.hpp>
 #include<rmsk_globals.h>
@@ -26,7 +28,6 @@
 #include<configurator.h>
 
 #ifdef SG39_ASYMMETRIC
-
 
 /*! \brief Output characters when doing decryptions and input characters for encryptions.
  */
@@ -37,6 +38,17 @@ static ustring str_plain_chars_ger =  "abcdefghijklmnop rstuvwxyz";
 static ustring str_cipher_chars_ger = "abcdefghijklmnopqrstuvwxyz";
 
 #endif
+
+/*! \brief This class is used to construct exception objects to signal errors when randomization
+ *         of an SG39 state fails.
+ */
+class sg39_randomize_exception : public exception {
+public:
+    virtual const char* what() const throw()
+    {
+        return "Unable to randomize SG39 state";
+    }
+};
 
 rotor_set sg39_rotor_factory::sg39_set(rmsk::std_alpha()->get_size());
 
@@ -228,11 +240,45 @@ void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int
     urandom_generator rand;
     permutation wheel_spec_perm = permutation::get_random_permutation(rand,  wheel_spec.size);
     wheel_spec.spec->clear(); 
+    
+    unsigned int candidate_count = 0;
+    unsigned int one_count = 0;
         
-    for (unsigned int count = 0; count < num_ones; count++)
+    while ((one_count < num_ones) && (candidate_count < wheel_spec.size))
     {
-        wheel_spec.spec->push_back(rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(count)));
+        char candidate = rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(candidate_count));
+        
+        if (diff_test(*wheel_spec.spec, candidate))
+        {
+            wheel_spec.spec->push_back(candidate);
+            one_count++;
+        }
+        
+        candidate_count++;
     }
+    
+    if (one_count != num_ones)
+    {
+        throw sg39_randomize_exception();
+    }
+}
+
+bool schluesselgeraet39::diff_test(string& wheel_spec_candidate, char new_pin_pos)
+{
+    bool result = true;
+    string to_test = wheel_spec_candidate + new_pin_pos;
+    
+    if (to_test.length() > 1)
+    {
+        sort(to_test.begin(), to_test.end());
+        
+        for (unsigned int count = 1; (count < to_test.length()) && result; count++)
+        {
+            result &= ((to_test[count] - to_test[count - 1]) != 1);
+        }
+    }
+    
+    return result;
 }
 
 bool schluesselgeraet39::set_test(string& wheel_spec1, string& wheel_spec2, unsigned int max_overlap)
@@ -307,97 +353,65 @@ bool schluesselgeraet39::randomize(string& param)
         // Determine stepping motion
         switch(key_gen_selector)
         {
-            case 0:        
+            case 0: /* cycle length: 14196 = 21 * 26 * 26*/       
             {
-                // rotor 2 always moves
+                // wheel 2 -> rotor 2 always moves
                 pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
-                randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                fill_wheel_spec(wheel_3_rand, 7);
-
+                
+                // wheel 1 -> rotor 1
                 randomize_help wheel_1_rand(&pins_wheel_1, 21);
-                fill_wheel_spec(wheel_1_rand, 3);
-
-
-                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
-                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';
-                pins_rotor_2 += rotor_pin_perm.encrypt(15) + 'a';
+                fill_wheel_spec(wheel_1_rand, 5);
                 
-                if (wheel_pin_source.get_next_val())
-                {
-                    pins_rotor_2 += rotor_pin_perm.encrypt(7) + 'a';
-                    pins_rotor_2 += rotor_pin_perm.encrypt(9) + 'a';        
-                }
-
-                pins_rotor_3 += rotor_pin_perm.encrypt(2) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(3) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(4) + 'a';
-                
-                if (wheel_pin_source.get_next_val())
-                {
-                    pins_rotor_3 += rotor_pin_perm.encrypt(8) + 'a';        
-                    pins_rotor_3 += rotor_pin_perm.encrypt(10) + 'a';
-                }
+                // rotor 2 -> rotor 3                
+                randomize_help rotor_2_rand(&pins_rotor_2, 26);
+                fill_wheel_spec(rotor_2_rand, 7);                
             }
             break;                
-            case 1:        
+            case 1: /* cycle length: 7436 = 11 * 26 * 26. Why not 25*26*26??? */
             {
-                // rotor 1 always moves            
-                pins_wheel_1 = "abcdefghijklmnopqrstu";               
+                // wheel 1 -> rotor 1 always moves
+                pins_wheel_1 = "abcdefghijklmnopqrstu";            
+                
+                // wheel 3 -> rotor 3
                 randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                fill_wheel_spec(wheel_3_rand, 3);
+                fill_wheel_spec(wheel_3_rand, 9);
 
-                randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                fill_wheel_spec(wheel_2_rand, 7);
-
-
-                pins_rotor_1 += rotor_pin_perm.encrypt(10) + 'a';
-                pins_rotor_1 += rotor_pin_perm.encrypt(11) + 'a';                
-                pins_rotor_1 += rotor_pin_perm.encrypt(12) + 'a';
-
-                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
-                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';                
-                pins_rotor_2 += rotor_pin_perm.encrypt(2) + 'a';
+                // rotor 1 -> rotor 2
+                randomize_help rotor_1_rand(&pins_rotor_1, 26);
+                fill_wheel_spec(rotor_1_rand, 7);
             }
             break;                
-            case 3:
-            case 4:
-            case 5:        
+            case 3: /*cycle length:  2028 = 3*26*26 (minimal, 12844 = 19*26*26 often) */
+            case 4: /*cycle length: 14196 = 21 * 26 * 26 */
+            case 5: /*cycle length:  1352 = 2*26*26 (minimal, 11492 = 17*26*26 often) */       
             {
                 map<unsigned int, unsigned int> num_notch_map;
                 num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
-                // rotor 1 always moves            
+                // wheel 1 -> rotor 1 always moves            
                 pins_wheel_1 = "abcdefghijklmnopqrstu";               
 
+                // rotor 1 -> rotor 2
                 randomize_help rotor_1_rand(&pins_rotor_1, 26);
                 fill_wheel_spec(rotor_1_rand, num_notch_map[key_gen_selector]);
 
+                // rotor 2 -> rotor 2 and rotor 3
                 randomize_help rotor_2_rand(&pins_rotor_2, 26);
                 fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
             }
             break;                
-            default:
+            default: /* cycle length: 15547 = 23 * 26 * 26 */
             {
-                // rotor 3 always moves
+                // wheel 3 -> rotor 3 always moves
                 pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
                 
-                randomize_help wheel_1_rand(&pins_wheel_1, 21);
-                fill_wheel_spec(wheel_1_rand, 3);	
-
+                // wheel 2 -> rotor 2
                 randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                fill_wheel_spec(wheel_2_rand, 5);
+                fill_wheel_spec(wheel_2_rand, 3);                
 
-                pins_rotor_2 += rotor_pin_perm.encrypt(0) + 'a';
-                pins_rotor_2 += rotor_pin_perm.encrypt(1) + 'a';
+                // rotor 3 -> rotor 1
+                randomize_help rotor_3_rand(&pins_rotor_3, 26);
+                fill_wheel_spec(rotor_3_rand, 5);
                 
-                pins_rotor_1 += rotor_pin_perm.encrypt(2) + 'a';
-                pins_rotor_1 += rotor_pin_perm.encrypt(3) + 'a';        
-                pins_rotor_1 += rotor_pin_perm.encrypt(4) + 'a';
-
-                pins_rotor_3 += rotor_pin_perm.encrypt(7) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(8) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(9) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(10) + 'a';
-                pins_rotor_3 += rotor_pin_perm.encrypt(11) + 'a';                        
             }
             break;
         }

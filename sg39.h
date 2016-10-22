@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ const unsigned int SG39_ROTOR_8 = 8;
 const unsigned int SG39_ROTOR_9 = 9;
 
 const unsigned int ID_SG39_UKW = 100;
-
 
 /*! \brief A class that allows to retrieve a rotor_set object that contains the standard rotor set
  *         used by the Schluesselgeraet 39.
@@ -241,7 +240,12 @@ protected:
      */          
     virtual bool set_test(string& wheel_spec1, string& wheel_spec2, unsigned int max_overlap);
 
-    /*! \brief This method ensures that the string to which wheel_spec points contains at least num_ones '1' characters.
+    /*! \brief This method returns true if the distance between each of two consecutive pins of wheel spec
+     *         wheel_spec_candidate + new_pin_pos is bigger than one.
+     */          
+    virtual bool diff_test(string& wheel_spec_candidate, char new_pin_pos);
+
+    /*! \brief This method ensures that the string to which wheel_spec points contains num_ones '1' characters.
      */          
     virtual void fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones);
 };
