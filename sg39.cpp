@@ -27,6 +27,11 @@
 #include<sg39.h>
 #include<configurator.h>
 
+/*! \brief This constant specifies the maximum number of tries before randomization of a machine
+ *         is considered to have failed.
+ */
+const unsigned int MAX_RAND_TRIES = 10;
+
 #ifdef SG39_ASYMMETRIC
 
 /*! \brief Output characters when doing decryptions and input characters for encryptions.
@@ -237,27 +242,48 @@ void sg39_stepping_gear::save_additional_components(string& identifier, Glib::Ke
 
 void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int num_ones)
 {
-    urandom_generator rand;
-    permutation wheel_spec_perm = permutation::get_random_permutation(rand,  wheel_spec.size);
-    wheel_spec.spec->clear(); 
+    bool spec_found = false;
+    urandom_generator rand;       
+    unsigned int try_count = 0, candidate_count = 0, one_count = 0; 
+    string sorted_spec;
+    char final_char = rmsk::std_alpha()->to_val(wheel_spec.size - 1);
+    bool last_first_pins_not_consecutive = false;
     
-    unsigned int candidate_count = 0;
-    unsigned int one_count = 0;
-        
-    while ((one_count < num_ones) && (candidate_count < wheel_spec.size))
+    do
     {
-        char candidate = rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(candidate_count));
+        // clean candidate wheel spec
+        permutation wheel_spec_perm = permutation::get_random_permutation(rand,  wheel_spec.size);
+        wheel_spec.spec->clear();
+        candidate_count = 0;
+        one_count = 0;        
         
-        if (diff_test(*wheel_spec.spec, candidate))
+        // create candidate wheel spec
+        while ((one_count < num_ones) && (candidate_count < wheel_spec.size))
         {
-            wheel_spec.spec->push_back(candidate);
-            one_count++;
+            char candidate = rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(candidate_count));
+            
+            if (diff_test(*wheel_spec.spec, candidate))
+            {
+                wheel_spec.spec->push_back(candidate);
+                one_count++;
+            }
+            
+            candidate_count++;
         }
         
-        candidate_count++;
-    }
-    
-    if (one_count != num_ones)
+        // sort candidate wheel spec
+        sorted_spec = (*wheel_spec.spec);
+        sort(sorted_spec.begin(), sorted_spec.end());
+        
+        try_count++;
+        // make sure that the two pins at the first and last character are not both set
+        last_first_pins_not_consecutive = ((one_count >= 1) && ((sorted_spec[0] != 'a') || (sorted_spec[one_count - 1] != final_char)));
+        
+        spec_found = (one_count == num_ones) && last_first_pins_not_consecutive;                     
+        
+    } while((not spec_found) && (try_count <= MAX_RAND_TRIES));
+        
+    if (try_count > MAX_RAND_TRIES)
     {
         throw sg39_randomize_exception();
     }
@@ -353,7 +379,7 @@ bool schluesselgeraet39::randomize(string& param)
         // Determine stepping motion
         switch(key_gen_selector)
         {
-            case 0: /* cycle length: 14196 = 21 * 26 * 26*/       
+            case 0: /* cycle length: 14196 = 21*26*26 */       
             {
                 // wheel 2 -> rotor 2 always moves
                 pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
@@ -367,7 +393,7 @@ bool schluesselgeraet39::randomize(string& param)
                 fill_wheel_spec(rotor_2_rand, 7);                
             }
             break;                
-            case 1: /* cycle length: 7436 = 11 * 26 * 26. Why not 25*26*26??? */
+            case 1: /* cycle length: 7436 = 11*26*26. Why not 25*26*26??? */
             {
                 // wheel 1 -> rotor 1 always moves
                 pins_wheel_1 = "abcdefghijklmnopqrstu";            
@@ -381,9 +407,9 @@ bool schluesselgeraet39::randomize(string& param)
                 fill_wheel_spec(rotor_1_rand, 7);
             }
             break;                
-            case 3: /*cycle length:  2028 = 3*26*26 (minimal, 12844 = 19*26*26 often) */
-            case 4: /*cycle length: 14196 = 21 * 26 * 26 */
-            case 5: /*cycle length:  1352 = 2*26*26 (minimal, 11492 = 17*26*26 often) */       
+            case 3: /* cycle length: 12844 = 19*26*26 */
+            case 4: /* cycle length: 14196 = 21*26*26 */
+            case 5: /* cycle length: 11492 = 17*26*26 */       
             {
                 map<unsigned int, unsigned int> num_notch_map;
                 num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
@@ -399,7 +425,7 @@ bool schluesselgeraet39::randomize(string& param)
                 fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
             }
             break;                
-            default: /* cycle length: 15547 = 23 * 26 * 26 */
+            default: /* cycle length: 15548 = 23*26*26 */
             {
                 // wheel 3 -> rotor 3 always moves
                 pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
