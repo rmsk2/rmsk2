@@ -262,8 +262,10 @@ void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int
         {
             char candidate = rmsk::std_alpha()->to_val(wheel_spec_perm.encrypt(candidate_count));
             
+            // Test whether two consecutive pins are set
             if (diff_test(*wheel_spec.spec, candidate))
             {
+                // No consecutive pins.
                 wheel_spec.spec->push_back(candidate);
                 one_count++;
             }
@@ -276,7 +278,7 @@ void schluesselgeraet39::fill_wheel_spec(randomize_help wheel_spec, unsigned int
         sort(sorted_spec.begin(), sorted_spec.end());
         
         try_count++;
-        // make sure that the two pins at the first and last character are not both set
+        // make sure that the two pins at the first and last character which are next to each other on the rotor ring are not both set
         last_first_pins_not_consecutive = ((one_count >= 1) && ((sorted_spec[0] != 'a') || (sorted_spec[one_count - 1] != final_char)));
         
         spec_found = (one_count == num_ones) && last_first_pins_not_consecutive;                     
