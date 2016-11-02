@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -550,8 +550,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
             // Walzenlage UKW B I VI VIII
             machine_conf[KW_ENIG_ROTOR_SELECTION] = "1168";
             machine_conf[KW_ENIG_RINGSTELLUNG] = "abc";
-            machine_conf[KW_ENIG_STECKERBRETT] = "14:adcnetflgijvkzpuqywx";
-            machine_conf[KW_USES_UHR] = CONF_TRUE;
+            machine_conf[KW_ENIG_STECKERBRETT] = "adcnetflgijvkzpuqywx";
             machine_conf[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
             
             result = c->make_machine(machine_conf);

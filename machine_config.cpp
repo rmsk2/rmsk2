@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -764,7 +764,7 @@ void machine_config::get_keywords(vector<key_word_info>& infos)
     {
         infos.push_back(key_word_info(KW_ENIG_STECKERBRETT, KEY_STRING, "Enigma Steckerbrett"));
         
-        // Only Services and M3 can use the Uhr
+        // Only Services can use the Uhr
         if (uhr_capable)
         {            
             infos.push_back(key_word_info(KW_USES_UHR, KEY_BOOL, "Uses Uhr"));
