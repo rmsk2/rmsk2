@@ -390,7 +390,7 @@ class RotorStateTest(simpletest.SimpleTest):
             self.append_note('Checking randomizer parameter usage')
             state_parser = rotorsim.SigabaMachineState.get_default_state()
             state_parser.load_from_data(state)            
-            self.append_note('Is genereated machine state a CSP2900? {}'.format(state_parser.csp_2900_flag))
+            self.append_note('Is generated machine state a CSP2900? {}'.format(state_parser.csp_2900_flag))
             
             result = result and (state_parser.csp_2900_flag)
             
