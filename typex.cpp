@@ -80,18 +80,17 @@ rotor_set& typex_rotor_sets::get_rotor_set(const char *set_name)
             
             enigma_rotor_factory::get_rotor_set().slice_rotor_set(*typex_sets[real_set_name], sp_02390_ids, sp_02390_ids);                        
         }
-        else
+
+        if (real_set_name == Y269)
         {
-            if (real_set_name == Y269)
-            {
-                vector<unsigned int> y_269_ids = {TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C, TYPEX_Y_269_D, TYPEX_Y_269_E, 
-                                                  TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J,
-                                                  TYPEX_Y_269_K, TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N, TYPEX_ETW, 
-                                                  TYPEX_Y_269_UKW};          
-                
-                enigma_rotor_factory::get_rotor_set().slice_rotor_set(*typex_sets[real_set_name], y_269_ids, y_269_ids);  
-            }
+            vector<unsigned int> y_269_ids = {TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C, TYPEX_Y_269_D, TYPEX_Y_269_E, 
+                                              TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J,
+                                              TYPEX_Y_269_K, TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N, TYPEX_ETW, 
+                                              TYPEX_Y_269_UKW};          
+            
+            enigma_rotor_factory::get_rotor_set().slice_rotor_set(*typex_sets[real_set_name], y_269_ids, y_269_ids);  
         }
+
     }
     
     return *typex_sets[real_set_name];
