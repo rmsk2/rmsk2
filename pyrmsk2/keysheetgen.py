@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import pyrmsk2.rotorrandom as rotorrandom
 
 
 MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
-                 'Tirpitz', 'Typex', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
+                 'Tirpitz', 'Typex', 'TypexY269', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
 
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
@@ -1355,7 +1355,7 @@ class RenderController:
             result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_state(machine_name + 'Enigma')
             result['randparm'] = 'egal'
             
-        elif machine_name == 'Typex': # Typex
+        elif (machine_name == 'Typex') or (machine_name == 'TypexY269'): # Typex
             # Set up column mapping            
             keysheet.column_mapping = {'Wheel settings':PlugsColumn(14, 'rotors'), 'Rings':Column(5, 'rings'), \
                                        'Reflector':Column(26, 'reflector')}
@@ -1369,7 +1369,11 @@ class RenderController:
             
             result['isgerman'] = False
             result['state'] = rotorsim.TypexState.get_default_state()
-            result['randparm'] = 'egal'     
+            
+            if machine_name == 'Typex':            
+                result['randparm'] = 'sp02390'
+            else:
+                result['randparm'] = 'y269'
                                
         elif (machine_name == 'NemaWar') or ((machine_name == 'NemaTraining')): # Nema war and training models
             # Set up column mapping            
