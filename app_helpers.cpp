@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ void menu_helper::message_dialog(Glib::ustring& message, Gtk::MessageType type)
 
 /* ------------------------------------------------------------------ */
 
-const char *apache_license = "Copyright 2016 Martin Grap\n"
+const char *apache_license = "Copyright 2017 Martin Grap\n"
     "\n"
     "Licensed under the Apache License, Version 2.0 (the \"License\");\n"
     "You may obtain a copy of the License at\n"
@@ -78,7 +78,7 @@ void help_menu_helper::on_about_activate()
     about.set_version(about_version);
     about.set_transient_for(*win);
     about.set_license(apache_license);
-    about.set_copyright("Copyright 2016 " + about_author);
+    about.set_copyright("Copyright 2017 " + about_author);
     about.set_logo(enigma_icon);
     
     about.run();
