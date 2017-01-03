@@ -39,10 +39,15 @@ The configuration dialog for the Typex looks like this:
 <p>There are the following configuration settings:</p>
 <terms>
     <item>
+        <title><code>Typex Rotor Set</code></title>
+        <p>Typex was used with several rotor sets. In this field the name of the rotor set to use can be entered. Currently two values are allowed: defaultset and Y269,
+        where defaultset corresponds to the rotor set named SP02390 in the Typex simulator of the CSG.</p>
+    </item>
+    <item>
         <title><code>Typex rotors</code></title>
-        <p>Determines which rotors are placed in the machine and in what sequence. There are seven rotors (<code>a-g</code>). Each one of them
-        can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation (<code>N</code> or <code>R</code>)
-        have to be specified. Exactly five of the possible seven rotors have to be placed in the machine.</p>
+        <p>Determines which rotors are placed in the machine and in what sequence. There are seven (defaultset) or 14 (Y269) rotors (<code>a-g</code> or <code>a-n</code>).
+        Each one of them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation 
+        (<code>N</code> or <code>R</code>) have to be specified. Exactly five of the possible rotors have to be placed in the machine.</p>
     </item>
     <item>
         <title><code>Typex rings</code></title>
@@ -74,7 +79,7 @@ The configuration dialog for the Typex looks like this:
 <section id="typex_interoperability">
 <title>Interoperability with the CSG simulator</title>
 <p>
-Currently Rotorvis only implements the rotor set designated <code>SP02390</code> in the CSG simulator.
+Currently Rotorvis only implements the rotor sets designated <code>SP02390</code> and <code>Y269</code> in the CSG simulator.
 </p>
 </section>
 
