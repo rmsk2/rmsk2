@@ -188,6 +188,47 @@ class TypexTest(EnigmaFuncTest):
         return result
 
 
+## \brief This class implements a verification test for the Typex using the alternative rotor set Y269.
+#
+class TypexTestY269(EnigmaFuncTest):
+    ## \brief Constructor. 
+    #
+    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
+    #         which contains information about Enigma rotors and rings.
+    #
+    #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
+    #         the decryption operations during the verification tests.
+    #
+    def __init__(self, enig_rotor_set, proc = None):
+        super().__init__("Typex Test Y269", enig_rotor_set, proc)
+
+    ## \brief Performs the verification test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #        
+    def test(self):
+        result = super().test()
+        
+        self._rotor_set.change_reflector(es.TYPEX_Y_269_UKW, 'arbycudheqfsglixjpknmotwvz')        
+        typex_state = TypexState(self._rotor_set)
+        
+        typex_state.default_set_name = 'Y269'
+        typex_state.insert_typex_rotor('stator1', es.TYPEX_Y_269_E, 'a', 'a')
+        typex_state.insert_typex_rotor('stator2', es.TYPEX_Y_269_D, 'a', 'a')        
+        typex_state.insert_typex_rotor('fast', es.TYPEX_Y_269_C, 'a', 'a', INSERT_REVERSE)
+        typex_state.insert_typex_rotor('middle', es.TYPEX_Y_269_B, 'a', 'a')        
+        typex_state.insert_typex_rotor('slow', es.TYPEX_Y_269_A, 'a', 'a')          
+        typex_state.insert_typex_rotor('umkehrwalze', es.TYPEX_Y_269_UKW, 'a', 'a')              
+        
+        self._proc.set_state(typex_state.render_state())
+        
+        decryption_result = self._proc.decrypt('agdzdfthgeocgrmyjsbukuztd')
+        self.append_note("Decryption result: " + decryption_result)
+        result = (decryption_result.lower() == 'hallo dies ist ein test  ')
+        
+        return result
+
+
 ## \brief This class implements a verification test for the Tirpitz Enigma.
 #
 class TirpitzTest(EnigmaFuncTest):
@@ -867,6 +908,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     enigma_verification_test.add(AbwehrTest(enigma_verification_test.rotor_set))
     enigma_verification_test.add(RailwayTest(enigma_verification_test.rotor_set))    
     enigma_verification_test.add(TypexTest(enigma_verification_test.rotor_set))
+    enigma_verification_test.add(TypexTestY269(enigma_verification_test.rotor_set))    
 
     sigaba_verification_test = VerificationTests("SIGABA verification test", RotorSet.get_std_set('sigaba'), RotorSet.get_std_set('sigaba_index'), context)
     sigaba_verification_test.add(CSP889Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -966,6 +966,11 @@ void typex_configurator::get_keywords(vector<key_word_info>& infos)
     infos.clear();
 
    /*
+    * Specifies the name of the rotor set to use. Currently the following values are allowed: defaultset, Y269    
+    */    
+    infos.push_back(key_word_info(KW_TYPEX_ROTOR_SET, KEY_STRING, "Typex Rotor Set"));    
+
+   /*
     * Determines which rotors are placed in the machine and in what sequence. There are seven rotors (a-g). Each
     * one of them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its 
     * designation and orientation (N or R) have to be specified. Exactly five of the possible seven rotors have to 
@@ -985,9 +990,11 @@ void typex_configurator::get_keywords(vector<key_word_info>& infos)
     * can and must occur once in this seting.   
     */
     infos.push_back(key_word_info(KW_TYPEX_REFLECTOR, KEY_STRING, "Typex Reflector"));
+    
+    change_rotor_set(rotor_set_name);    
 }
 
-/*! Caveat: This method assumes that the unsigned int constants TYPEX_SP_02390_A, ..., TYPEX_SP_02390_G from the file enigma_rotor_set.h
+/*! Caveat: This method assumes that the unsigned int constants TYPEX_XXX_A, ..., TYPEX_XXX_Y from the file enigma_rotor_set.h
  *  have consecutive values.
  */ 
 string typex_configurator::transform_typex_rotor_info(rotor_id& id)
@@ -999,9 +1006,26 @@ string typex_configurator::transform_typex_rotor_info(rotor_id& id)
         help = "R";
     }
     
-    rotor_name += (id.r_id - TYPEX_SP_02390_A) + 'a';
+    rotor_name += (id.r_id - typex_base_id) + 'a';
     
     return (rotor_name + help);
+}
+
+void typex_configurator::change_rotor_set(string& rotor_set_name)
+{
+    if (rotor_set_name == DEFAULT_SET)
+    {
+        typex_base_id = TYPEX_SP_02390_A;
+        typex_ukw_id = TYPEX_SP_02390_UKW;
+        typex_max_rotor = 'g';        
+    }
+
+    if (rotor_set_name == Y269)
+    {
+        typex_base_id = TYPEX_Y_269_A;
+        typex_ukw_id = TYPEX_Y_269_UKW;
+        typex_max_rotor = 'n';        
+    }
 }
 
 void typex_configurator::get_config(map<string, string>& config_data, rotor_machine *configured_machine)
@@ -1012,6 +1036,10 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     typex_stepper *stepper = dynamic_cast<typex_stepper *>(machine->get_stepping_gear());
     
     config_data.clear();
+
+    // Retrieve current default rotor set name
+    config_data[KW_TYPEX_ROTOR_SET] = machine->get_default_set_name();
+    change_rotor_set(config_data[KW_TYPEX_ROTOR_SET]);
     
     // Retrieve rotor information from machine
     help += transform_typex_rotor_info(machine->get_stepping_gear()->get_descriptor(SLOW).id);
@@ -1035,6 +1063,9 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     
     // Retrieve current reflector setting from machine
     config_data[KW_TYPEX_REFLECTOR] = get_reflector(machine->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->get_perm());
+    
+    // Retrieve current default rotor set name
+    config_data[KW_TYPEX_ROTOR_SET] = machine->get_default_set_name();
 }
 
 unsigned int typex_configurator::configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure)
@@ -1053,12 +1084,16 @@ unsigned int typex_configurator::configure_machine(map<string, string>& config_d
         
         if (result == CONFIGURATOR_OK)
         {
+            // Set default rotor set name
+            machine->set_default_set_name(rotor_set_name); 
+        
             // Insert rotors into machine                   
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[0], SLOW);
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[1], MIDDLE);            
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[2], FAST);                        
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[3], STATOR2);                          
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[4], STATOR1);                                      
+            machine->prepare_rotor(rotor_set_name.c_str(), typex_ukw_id, UMKEHRWALZE);
             
             // Set ringstellung
             stepper->set_ringstellung(SLOW, ringstellung[0]);
@@ -1091,9 +1126,8 @@ rotor_machine *typex_configurator::make_machine(map<string, string>& config_data
     {
         // Throws exception upon failure
         // Beware: machine is constructed using the default rotor set!
-        result = new typex(TYPEX_SP_02390_UKW, rotors[0].r_id, rotors[1].r_id, rotors[2].r_id, rotors[3].r_id, rotors[4].r_id);
-        // Also call configure_machine in order to make sure that the correct rotor_set as specified in rotor_set_name is used.
-        // This call does not change the machine's configuration as long as rotor_set_name == DEFAULT_SET.
+        result = new typex(TYPEX_SP_02390_UKW, TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E);
+
         // Result casted to void. Call can not fail.
         (void)configure_machine(config_data, result);
     }
@@ -1106,15 +1140,36 @@ unsigned int typex_configurator::parse_config(map<string, string>& config_data)
     unsigned int result = CONFIGURATOR_OK;
     string help, value;
     set<char> uniqueness_test;  
+    set<string> known_rotor_sets;
+    vector<string>::iterator iter;
+    vector<string> all_rotor_set_names;
     
     do
     {  
+        // Determine known rotor set names
+        typex dummy(TYPEX_SP_02390_UKW, TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E);
+        all_rotor_set_names = dummy.get_rotor_set_names();
+    
+        for (iter = all_rotor_set_names.begin(); iter != all_rotor_set_names.end(); ++iter)
+        {
+            known_rotor_sets.insert(*iter);
+        }
+    
         // Verify that there is a value for all keywords   
         if (!check_for_completeness(config_data))
         {
             result = CONFIGURATOR_INCONSISTENT;
             break;
         }
+
+        // make sure rotor set name is valid
+        if (known_rotor_sets.count(config_data[KW_TYPEX_ROTOR_SET]) == 0)
+        {
+            result = CONFIGURATOR_INCONSISTENT;
+            break;            
+        }
+
+        change_rotor_set(config_data[KW_TYPEX_ROTOR_SET]);
         
         // Verify ringstellung and store in the variable of the same name        
         ringstellung = config_data[KW_TYPEX_RINGS];
@@ -1140,11 +1195,11 @@ unsigned int typex_configurator::parse_config(map<string, string>& config_data)
         {
             help = value.substr(count * 2, 2);
             
-            // First character has to be from the range 'a'-'g'
+            // First character has to be from the range 'a'- typex_max_rotor
             // second character has to be 'R' or 'N'
-            if (((help[0] >= 'a') && (help[0] <= 'g')) && ((help[1] == 'N' || (help[1] == 'R'))))
+            if (((help[0] >= 'a') && (help[0] <= typex_max_rotor)) && ((help[1] == 'N' || (help[1] == 'R'))))
             {
-                rotors.push_back(rotor_id(help[0] - 'a' + TYPEX_SP_02390_A, help[1] == 'R'));
+                rotors.push_back(rotor_id(help[0] - 'a' + typex_base_id, help[1] == 'R'));
                 uniqueness_test.insert(help[0]);
             }
             else
@@ -1171,6 +1226,8 @@ unsigned int typex_configurator::parse_config(map<string, string>& config_data)
             result = CONFIGURATOR_INCONSISTENT;
             break;            
         } 
+        
+        rotor_set_name = config_data[KW_TYPEX_ROTOR_SET];
         
         reflector.clear();
         

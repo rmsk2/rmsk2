@@ -37,7 +37,7 @@ rmsk_defines = {}
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
-rmsk_libs = rmsk['LIBS'] + ['specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'cmdline_base', 'boost_system', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
+rmsk_libs = rmsk['LIBS'] + ['tlv_lib', 'specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'cmdline_base', 'boost_system', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
 enigma_includes = rmsk['CPPPATH']
 
 base_files = ['permutation.cpp', 'rand_gen.cpp', 'rotor.cpp', 'simple_mod_int.cpp', 'stepping.cpp']
@@ -67,13 +67,15 @@ commandline_base_files = ['cmdline_base.cpp']
 rotor_sim_files = ['rotor_sim.cpp']
 rotor_state_files = ['rotor_state.cpp']
 
-tlv_object_files = ['tlv_object.cpp', 'tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp', 'tlv_data_struct.cpp']
+tlv_lib_files = ['tlv_stream.cpp', 'tlv_server.cpp', 'object_registry.cpp', 'arith_test.cpp', 'tlv_data_struct.cpp']
+tlv_object_files = ['tlv_object.cpp']
 
 hdr = rmsk.Gladeheader('glade_data.h', 'rotor_dialog_2.ui')
 rotor_set = rmsk.Enigmarotorset(['enigma_rotor_set.cpp', 'enigma_rotor_set.h'], 'pyrmsk2/enigrotorset.py')
 base_lib = rmsk.Library('rmsk_base', base_files, CPPDEFINES = rmsk_defines)
 spec_lib = rmsk.Library('specmachines', specmachines_files, CPPDEFINES = rmsk_defines)
 visual_lib = rmsk.Library('base_visual', base_visual_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
+tlv_lib = rmsk.Library('tlv_lib', tlv_lib_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
 app_lib = rmsk.Library('application_base', application_base_files, CPPPATH = enigma_includes, CPPDEFINES = rmsk_defines)
 cmdline_base_lib = rmsk.Library('cmdline_base', commandline_base_files, CPPDEFINES = rmsk_defines)
 rmsk_prog = rmsk.Program('rmsk', rmsk_files, LIBS = rmsk_libs, LIBPATH = rmsk_lib_path, CPPDEFINES = rmsk_defines)

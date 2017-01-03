@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@
 #define KW_TYPEX_ROTORS "rotors"
 #define KW_TYPEX_RINGS "rings"
 #define KW_TYPEX_REFLECTOR "reflector"
+#define KW_TYPEX_ROTOR_SET "rotorset"
 
 // Keywords for KL7
 #define KW_KL7_ROTORS "rotors"
@@ -445,6 +446,18 @@ protected:
     /*! \brief Holds the ringstellung that is to be used with this machine.
      */         
     string ringstellung;
+
+    /*! \brief Holds the rotor id for the UKW to use in the context of the current rotor set
+     */      
+    unsigned int typex_ukw_id;
+
+    /*! \brief Holds the rotor id f the "a" rotor to use in the context of the current rotor set
+     */      
+    unsigned int typex_base_id;
+
+    /*! \brief Holds the identifier (a-z) of the last rotor in the current set
+     */          
+    char typex_max_rotor;
     
     /*! \brief Holds the rotor_id objects that describe the rotors which are to be inserted into the machine.
      */     
@@ -467,6 +480,11 @@ protected:
      *  as a side effect.
      */           
     virtual unsigned int parse_config(map<string, string>& config_data);
+
+    /*! \brief This method sets the members typex_ukw_id, typex_base_id and typex_max_rotor accroding on the rotor 
+     *         set name.
+     */    
+    void change_rotor_set(string& rotor_set_name);
 };
 
 /*! \brief A class that knows how to create and configure ::kl7 objects.

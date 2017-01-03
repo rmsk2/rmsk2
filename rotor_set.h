@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,6 +116,11 @@ public:
      *         by the contents of the vector desired_rotor_ids. 
      */                    
     virtual void randomize(vector<unsigned int> desired_rotor_ids, rotor_ring_random_source *rand_source);
+
+    /*! \brief Copies part of this rotor set into the rotor_set specified by parameter new_set. The parameters rotor_ids_to_copy and
+     *         ring_ids_to_copy specify the rotors and rings to copy into the new set.
+     */                        
+    virtual void slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy);
 
     /*! \brief Empties this rotor_set.
      */                        

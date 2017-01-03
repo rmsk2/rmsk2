@@ -82,6 +82,24 @@ WALZE_KD_V = 37
 WALZE_KD_VI = 38
 WALZE_KD_ETW = 39
 
+
+# Typex rotor ids for rotor set Y_269
+TYPEX_Y_269_A = 40
+TYPEX_Y_269_B = 41
+TYPEX_Y_269_C = 42
+TYPEX_Y_269_D = 43
+TYPEX_Y_269_E = 44
+TYPEX_Y_269_F = 45
+TYPEX_Y_269_G = 46
+TYPEX_Y_269_H = 47
+TYPEX_Y_269_I = 48
+TYPEX_Y_269_J = 49
+TYPEX_Y_269_K = 50
+TYPEX_Y_269_L = 51
+TYPEX_Y_269_M = 52
+TYPEX_Y_269_N = 53
+
+
 # Rotor ids for Umkehrwalze A, B, C and D of Services Enigma
 UKW_A = 100
 UKW_B = 101
@@ -103,8 +121,11 @@ UKW_RB = 108
 # Rotor id for Tirpitz Enigma reflector
 UKW_T = 109
 
-# Rotor id for Typex reflector
+# Rotor id for Typex reflector in rotor set SP_02390
 TYPEX_SP_02390_UKW = 110
+
+# Rotor id for Typex reflector in rotor set Y_269
+TYPEX_Y_269_UKW = 112
 
 
 # Permutations for Services Enigma, M3 and M4 rotors
@@ -198,6 +219,26 @@ PERM_SP_02390_G = "lusyeitrjapfkwcvmqhbgnxzod"
 PERM_SP_02390_UKW = "yruhqsldpxngokmiebfzcwvjat"
 PERM_TYPEX_ETW = "qwertzuioasdfghjkpyxcvbnml"
 
+# Permutations for Typex rotors of set Y_269
+PERM_Y_269_A = "uwirlzpebjodkvafmtcshyxgnq"
+PERM_Y_269_B = "ygbaowmtjrhpenfcxkuidqzlsv"
+PERM_Y_269_C = "hwautkyjonlfiqzdcbrgpemxvs"
+PERM_Y_269_D = "qybuhaojnctlizswfpmgevxdrk"
+PERM_Y_269_E = "yiloktbwfqncghpxdjsvaumzre"
+PERM_Y_269_F = "exaybhvusolcmqgwndiztpkfjr"
+PERM_Y_269_G = "kboizmtxrhdcgpyausvlqjewnf"
+PERM_Y_269_H = "hqxcnbirumoyaftgkzleswjdvp"
+PERM_Y_269_I = "bumpzvykjxgtdrocslqiaehwfn"
+PERM_Y_269_J = "kchgdvueobmlxrfwynqizpjats"
+PERM_Y_269_K = "wjaveciqnkzgdubspxmfythlro"
+PERM_Y_269_L = "igesoyldujamvhrcxfpztqnbwk"
+PERM_Y_269_M = "hdrzvlbtioewcknsyfqxmupgja"
+PERM_Y_269_N = "lcmsbeioqjxfawkthdrznvypgu"
+PERM_Y_269_UKW = "yruhqsldpxngokmiebfzcwvjat"
+
+# Notches for Typex rotors of set SP_02390
+NOTCH_Y_269 = "fmsz"
+
 # Notches for Typex rotors of set SP_02390
 NOTCH_SP_02390 = "fmsz"
 
@@ -223,8 +264,10 @@ known_ids = [WALZE_I, WALZE_II, WALZE_III, WALZE_IV, WALZE_V, WALZE_VI, WALZE_VI
              WALZE_ABW_ETW, WALZE_RB_I, WALZE_RB_II, WALZE_RB_III, WALZE_RB_ETW, WALZE_T_I, WALZE_T_II, WALZE_T_III, WALZE_T_IV,
              WALZE_T_V, WALZE_T_VI, WALZE_T_VII, WALZE_T_VIII, WALZE_T_ETW, UKW_A, UKW_B, UKW_C, UKW_B_DN, UKW_C_DN, WALZE_BETA,
              WALZE_GAMMA, UKW_ABW, UKW_RB, UKW_T, TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D,
-             TYPEX_SP_02390_E, TYPEX_SP_02390_F, TYPEX_SP_02390_G, TYPEX_ETW, TYPEX_SP_02390_UKW, UKW_D, WALZE_KD_I, WALZE_KD_II, WALZE_KD_III, WALZE_KD_IV,
-             WALZE_KD_V, WALZE_KD_VI, WALZE_KD_ETW]
+             TYPEX_SP_02390_E, TYPEX_SP_02390_F, TYPEX_SP_02390_G, TYPEX_ETW, TYPEX_Y_269_UKW, TYPEX_SP_02390_UKW, UKW_D, WALZE_KD_I,
+             WALZE_KD_II, WALZE_KD_III, WALZE_KD_IV, WALZE_KD_V, WALZE_KD_VI, WALZE_KD_ETW, TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C,
+             TYPEX_Y_269_D, TYPEX_Y_269_E, TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J, TYPEX_Y_269_K,
+             TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N]
              
 
 # known_wheels maps the rotor id to the corresponding permutation, notches and a human
@@ -282,6 +325,21 @@ known_wheels[WALZE_KD_IV] = (PERM_KD_IV, NOTCH_KD_IV, "WALZE_KD_IV")
 known_wheels[WALZE_KD_V] = (PERM_KD_V, NOTCH_KD_V, "WALZE_KD_V")
 known_wheels[WALZE_KD_VI] = (PERM_KD_VI, NOTCH_KD_VI, "WALZE_KD_VI")
 known_wheels[WALZE_KD_ETW] = (PERM_KD_ETW, NOTCH_EMPTY, "WALZE_KD_ETW")
+known_wheels[TYPEX_Y_269_A] = (PERM_Y_269_A, NOTCH_Y_269, "TYPEX_Y_269_A")
+known_wheels[TYPEX_Y_269_B] = (PERM_Y_269_B, NOTCH_Y_269, "TYPEX_Y_269_B")
+known_wheels[TYPEX_Y_269_C] = (PERM_Y_269_C, NOTCH_Y_269, "TYPEX_Y_269_C")
+known_wheels[TYPEX_Y_269_D] = (PERM_Y_269_D, NOTCH_Y_269, "TYPEX_Y_269_D")
+known_wheels[TYPEX_Y_269_E] = (PERM_Y_269_E, NOTCH_Y_269, "TYPEX_Y_269_E")
+known_wheels[TYPEX_Y_269_F] = (PERM_Y_269_F, NOTCH_Y_269, "TYPEX_Y_269_F")
+known_wheels[TYPEX_Y_269_G] = (PERM_Y_269_G, NOTCH_Y_269, "TYPEX_Y_269_G")
+known_wheels[TYPEX_Y_269_H] = (PERM_Y_269_H, NOTCH_Y_269, "TYPEX_Y_269_H")
+known_wheels[TYPEX_Y_269_I] = (PERM_Y_269_I, NOTCH_Y_269, "TYPEX_Y_269_I")
+known_wheels[TYPEX_Y_269_J] = (PERM_Y_269_J, NOTCH_Y_269, "TYPEX_Y_269_J")
+known_wheels[TYPEX_Y_269_K] = (PERM_Y_269_K, NOTCH_Y_269, "TYPEX_Y_269_K")
+known_wheels[TYPEX_Y_269_L] = (PERM_Y_269_L, NOTCH_Y_269, "TYPEX_Y_269_L")
+known_wheels[TYPEX_Y_269_M] = (PERM_Y_269_M, NOTCH_Y_269, "TYPEX_Y_269_M")
+known_wheels[TYPEX_Y_269_N] = (PERM_Y_269_N, NOTCH_Y_269, "TYPEX_Y_269_N")
+known_wheels[TYPEX_Y_269_UKW] = (PERM_Y_269_UKW, NOTCH_EMPTY, "TYPEX_Y_269_UKW")
 
 
 alpha_mapping = {}

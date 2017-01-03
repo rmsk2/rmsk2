@@ -475,7 +475,8 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
 
         // Construct Typex machine with default settings                
         if (name == MNAME_TYPEX)
-        {              
+        {   
+            machine_conf[KW_TYPEX_ROTOR_SET] = DEFAULT_SET;
             machine_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
             machine_conf[KW_TYPEX_RINGS] = "aaaaa";
             machine_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";

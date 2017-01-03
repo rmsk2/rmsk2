@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,63 @@ ustring str_shifted_chars = "-'vz3%x£8*().,9014/57<2 6>";
  */
 ustring str_output_chars =  "abcdefghijklmnopqrstuvwxyz";
 
+/*! \brief Rotor and ring data for Typex rotor set SP_02390
+ */
+rotor_set typex_set_SP_02390(26);
+
+/*! \brief Rotor and ring data for Typex rotor set Y_269
+ */
+rotor_set typex_set_Y_269(26);
+
+/*! \brief Holds all Typex rotor sets
+ */
+map<string, rotor_set*> typex_rotor_sets::typex_sets;
+
+rotor_set& typex_rotor_sets::get_rotor_set(const char *set_name)
+{
+    string real_set_name = DEFAULT_SET;
+    string set_name_to_test(set_name);
+
+    // Fill typex_sets if empty
+    if (typex_sets.size() == 0)
+    {
+        typex_sets[DEFAULT_SET] = &typex_set_SP_02390;
+        typex_sets[Y269] = &typex_set_Y_269;
+    }
+    
+    // Check if specified rotor set name is valid
+    if (typex_sets.count(set_name_to_test) != 0)
+    {
+        real_set_name = set_name_to_test;        
+    }
+    
+    // Fill named rotor set if it is empty
+    if (typex_sets[real_set_name]->get_num_rotors() == 0)
+    {
+        if (real_set_name == DEFAULT_SET)
+        {
+            vector<unsigned int> sp_02390_ids = {TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E, 
+                                                 TYPEX_SP_02390_F, TYPEX_SP_02390_G, TYPEX_ETW, TYPEX_SP_02390_UKW};
+            
+            enigma_rotor_factory::get_rotor_set().slice_rotor_set(*typex_sets[real_set_name], sp_02390_ids, sp_02390_ids);                        
+        }
+        else
+        {
+            if (real_set_name == Y269)
+            {
+                vector<unsigned int> y_269_ids = {TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C, TYPEX_Y_269_D, TYPEX_Y_269_E, 
+                                                  TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J,
+                                                  TYPEX_Y_269_K, TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N, TYPEX_ETW, 
+                                                  TYPEX_Y_269_UKW};          
+                
+                enigma_rotor_factory::get_rotor_set().slice_rotor_set(*typex_sets[real_set_name], y_269_ids, y_269_ids);  
+            }
+        }
+    }
+    
+    return *typex_sets[real_set_name];
+}
+
 void typex_stepper::reset()
 {
     enigma_stepper::reset();
@@ -63,8 +120,29 @@ bool typex::randomize(string& param)
     random_bit_source reverse_rotors(5);
     urandom_generator rand;    
     string known_rotors("abcdefg");
+    string name_rotor_set = get_default_set_name();
     string ring_positions, rotor_positions, selected_rotors;
     map<string, string> machine_conf;
+    
+    if (param == "y269")
+    {
+        name_rotor_set = Y269;
+    }
+    
+    if (param == "sp02390")
+    {
+        name_rotor_set = DEFAULT_SET;
+    }    
+    
+    if (name_rotor_set == DEFAULT_SET)
+    {
+        known_rotors = "abcdefg";
+    }
+
+    if (name_rotor_set == Y269)
+    {
+        known_rotors = "abcdefghijklmn";
+    }
     
     try
     {
@@ -79,6 +157,7 @@ bool typex::randomize(string& param)
             selected_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
         }
         
+        machine_conf[KW_TYPEX_ROTOR_SET] = name_rotor_set;
         machine_conf[KW_TYPEX_ROTORS] = selected_rotors;
         machine_conf[KW_TYPEX_RINGS] = ring_positions;
         machine_conf[KW_TYPEX_REFLECTOR] = rmsk::std_alpha()->perm_as_string(reflector_perm);
@@ -104,6 +183,9 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
 { 
     vector<string> rotor_names;
     vector<gunichar> norm_alph, shift_alph, out_alph;
+    
+    add_rotor_set(DEFAULT_SET, typex_rotor_sets::get_rotor_set(DEFAULT_SET));
+    add_rotor_set(Y269, typex_rotor_sets::get_rotor_set(Y269));
     
     stepper = NULL;
     machine_name = MNAME_TYPEX;
@@ -152,6 +234,9 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     prepare_rotor(middle_id, MIDDLE);
     prepare_rotor(slow_id, SLOW);    
     prepare_rotor(ukw_id, UMKEHRWALZE);
+    
+    randomizer_params.push_back(randomizer_descriptor("sp02390", "Force rotor set SP02390"));
+    randomizer_params.push_back(randomizer_descriptor("y269", "Force rotor set Y269"));            
     
     unvisualized_rotor_names.insert(ETW);        
     unvisualized_rotor_names.insert(UMKEHRWALZE);  

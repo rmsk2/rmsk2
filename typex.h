@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,24 @@
 
 #define STATOR1 "stator1"
 #define STATOR2 "stator2"
+#define Y269 "Y269"
 
 
 using namespace Glib;
+
+/*! \brief A class that allows to retrieve the rotor sets as they have been defined for the Typex.
+ */
+class typex_rotor_sets {
+public:
+    /*! \brief This method allows to retrieve a Typex rotor set by name. The name is specified as a zero terminated
+     *         C-string through the parameter set_name.
+     */
+    static rotor_set& get_rotor_set(const char* set_name);
+
+protected:
+    /*! \brief Holds the known Typex rotor sets */
+    static map<string, rotor_set*> typex_sets;
+};
 
 /*! \brief A class that implements the stepping_gear of the Typex.
  */

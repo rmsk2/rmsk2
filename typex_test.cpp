@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,6 +117,7 @@ void test_typex::register_tests(composite_test_case *container)
     typex *typex_t_load = new typex(TYPEX_SP_02390_UKW, TYPEX_SP_02390_E, TYPEX_SP_02390_D, TYPEX_SP_02390_A, TYPEX_SP_02390_C, TYPEX_SP_02390_B);
     
     map<string, string> typex_conf;
+    typex_conf[KW_TYPEX_ROTOR_SET] = DEFAULT_SET;
     typex_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
     typex_conf[KW_TYPEX_RINGS] = "aaaaa";
     typex_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2016 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,5 +326,29 @@ void rotor_set::add_ring(unsigned int desired_id, vector<unsigned int> ring_data
     
     permutation::get_identity(get_rotor_size()).to_vec(identity_help);
     add_rotor_and_ring(desired_id, identity_help, ring_data);
+}
+
+void rotor_set::slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy)
+{
+    rmsk::simple_assert((new_set.get_rotor_size() != get_rotor_size()), "rotor size of target rotor set is different from the rotor size of the source");
+    vector<unsigned int>::iterator rotor_iter, ring_iter;       
+    
+    new_set.clear();
+    
+    for (rotor_iter = rotor_ids_to_copy.begin(); rotor_iter != rotor_ids_to_copy.end(); ++rotor_iter)
+    {
+        if (perms.count(*rotor_iter) != 0)
+        {
+            new_set.perms[*rotor_iter] = perms[*rotor_iter];
+        }
+    }
+    
+    for (ring_iter = ring_ids_to_copy.begin(); ring_iter != ring_ids_to_copy.end(); ++ring_iter)
+    {
+        if (ring_data_vals.count(*ring_iter) != 0)
+        {
+            new_set.ring_data_vals[*ring_iter] = ring_data_vals[*ring_iter];
+        }
+    }
 }
 

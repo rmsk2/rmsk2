@@ -494,6 +494,7 @@ class GenericRotorMachineState:
         self._config = {}
         ## \brief Holds the alphabet which is ued to map alphanumerical rotor positions to ints
         self._default_alpha = 'abcdefghijklmnopqrstuvwxyz'
+        self._default_rotor_set_name = 'defaultset'
         
         for slot in self._slot_names:
             self.insert_rotor(slot, rotor_set.ids[0], rotor_set.ids[0], 0, 0)
@@ -521,6 +522,24 @@ class GenericRotorMachineState:
     #                                        
     def get_slot_names(self):
         return self._slot_names
+
+    ## \brief This method allows the caller to retrieve the name of the default rotor set in use in this instance
+    #
+    #  \returns A string.
+    #                                                                    
+    @property
+    def default_set_name(self):
+        return self._default_rotor_set_name
+
+    ## \brief This method allows the caller to change the name of the default rotor set
+    #
+    #  \param [new_value] Is a string. It has to specify the new name of the default rotor set
+    #    
+    #  \returns Nothing. 
+    #                                                                        
+    @default_set_name.setter
+    def default_set_name(self, new_value):
+        self._default_rotor_set_name = new_value
 
     ## \brief This method is intended to save additional data for each rotor slot.
     #
@@ -668,7 +687,7 @@ class GenericRotorMachineState:
         
         # Store machine name and name of default rotor set in INI file
         result.set_string('machine', 'name', self._name)
-        result.set_string('machine', 'rotorsetname', 'defaultset')
+        result.set_string('machine', 'rotorsetname', self.default_set_name)
         
         # Iterate over rotor slots
         for i in self._slot_names:
