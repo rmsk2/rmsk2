@@ -55,7 +55,7 @@ From the command line the simulators can be started as follows:
 <code>./enigma &lt;machine_name&gt;</code>
 </p>
 <p>
-where <code>&lt;machine_name&gt;</code> can be <code>Services, M4, M4 SMax, M3, Abwehr, Railway, Tirpitz, KD</code>. If you start Enigma without
+where <code>&lt;machine_name&gt;</code> can be <code>Services, M4, M4 Schreibmax, M3, Abwehr, Railway, Tirpitz, KD</code>. If you start Enigma without
 any parameters a a dialog will appear, that allows you to select the variant to simulate. As an example the simulator for the M4 variant
 looks like this:
 </p>
