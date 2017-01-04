@@ -36,7 +36,7 @@ TAG_ERROR = 3
 
 ## \brief Text of Apache 2.0 license for about dialog.
 LICENSE_TEXT = """
-Copyright 2016 Martin Grap
+Copyright 2017 Martin Grap
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
