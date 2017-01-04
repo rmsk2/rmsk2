@@ -147,7 +147,7 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>Key sheets contain wheel settings, ring settings and a specification of the thirteen plugs to be set on the rewirable
         reflector. As I have no information about how the message procedures for the Typex worked no Kenngruppen or similar supporting
         information is provided on key sheets. When pasting the rotor settings from a key sheet into the correponding entry boxes in
-        the <code>rotorvis</code> configuration dialog the spaces have to be removed. The 
+        the <code>rotorvis</code> configuration dialog the spaces have to be removed.
         </p></td>
     </tr>
     <tr>
