@@ -383,7 +383,8 @@ bool schluesselgeraet39::randomize(string& param)
     rand_parm_map["three"] = 2;
     rand_parm_map["enigma7"] = 3;
     rand_parm_map["enigma5"] = 4;
-    rand_parm_map["enigma9"] = 5;    
+    rand_parm_map["enigma9"] = 5;
+    rand_parm_map["enigmam4"] = 6;    
     
     try
     {
@@ -405,99 +406,110 @@ bool schluesselgeraet39::randomize(string& param)
         {
             key_gen_selector = rand_parm_map[param];
         }
-                        
-        // Determine stepping motion
-        switch(key_gen_selector)
-        {
-            case 0: /* cycle length: 14196 = 21*26*26 */       
+        
+        if (key_gen_selector != 6)
+        {                
+            // Determine stepping motion
+            switch(key_gen_selector)
             {
-                // wheel 2 -> rotor 2 always moves
-                pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
-                
-                // wheel 1 -> rotor 1
-                randomize_help wheel_1_rand(&pins_wheel_1, 21);
-                fill_wheel_spec(wheel_1_rand, 5);
-                
-                // rotor 2 -> rotor 3                
-                randomize_help rotor_2_rand(&pins_rotor_2, 26);
-                fill_wheel_spec(rotor_2_rand, 7);                
-            }
-            break;                
-            case 1: /* cycle length: 7436 = 11*26*26. Why not 25*26*26??? */
-            {
-                // wheel 1 -> rotor 1 always moves
-                pins_wheel_1 = "abcdefghijklmnopqrstu";            
-                
-                // wheel 3 -> rotor 3
-                randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                fill_wheel_spec(wheel_3_rand, 9);
+                case 0: /* cycle length: 14196 = 21*26*26 */       
+                {
+                    // wheel 2 -> rotor 2 always moves
+                    pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
+                    
+                    // wheel 1 -> rotor 1
+                    randomize_help wheel_1_rand(&pins_wheel_1, 21);
+                    fill_wheel_spec(wheel_1_rand, 5);
+                    
+                    // rotor 2 -> rotor 3                
+                    randomize_help rotor_2_rand(&pins_rotor_2, 26);
+                    fill_wheel_spec(rotor_2_rand, 7);                
+                }
+                break;                
+                case 1: /* cycle length: 7436 = 11*26*26. Why not 25*26*26??? */
+                {
+                    // wheel 1 -> rotor 1 always moves
+                    pins_wheel_1 = "abcdefghijklmnopqrstu";            
+                    
+                    // wheel 3 -> rotor 3
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 9);
 
-                // rotor 1 -> rotor 2
-                randomize_help rotor_1_rand(&pins_rotor_1, 26);
-                fill_wheel_spec(rotor_1_rand, 7);
-            }
-            break;                
-            case 3: /* cycle length: 12844 = 19*26*26 */
-            case 4: /* cycle length: 14196 = 21*26*26 */
-            case 5: /* cycle length: 11492 = 17*26*26 */       
-            {
-                map<unsigned int, unsigned int> num_notch_map;
-                num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
-                // wheel 1 -> rotor 1 always moves            
-                pins_wheel_1 = "abcdefghijklmnopqrstu";               
+                    // rotor 1 -> rotor 2
+                    randomize_help rotor_1_rand(&pins_rotor_1, 26);
+                    fill_wheel_spec(rotor_1_rand, 7);
+                }
+                break;                
+                case 3: /* cycle length: 12844 = 19*26*26 */
+                case 4: /* cycle length: 14196 = 21*26*26 */
+                case 5: /* cycle length: 11492 = 17*26*26 */       
+                {
+                    map<unsigned int, unsigned int> num_notch_map;
+                    num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
+                    // wheel 1 -> rotor 1 always moves            
+                    pins_wheel_1 = "abcdefghijklmnopqrstu";               
 
-                // rotor 1 -> rotor 2
-                randomize_help rotor_1_rand(&pins_rotor_1, 26);
-                fill_wheel_spec(rotor_1_rand, num_notch_map[key_gen_selector]);
+                    // rotor 1 -> rotor 2
+                    randomize_help rotor_1_rand(&pins_rotor_1, 26);
+                    fill_wheel_spec(rotor_1_rand, num_notch_map[key_gen_selector]);
 
-                // rotor 2 -> rotor 2 and rotor 3
-                randomize_help rotor_2_rand(&pins_rotor_2, 26);
-                fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
-            }
-            break;                
-            default: /* cycle length: 15548 = 23*26*26 */
-            {
-                // wheel 3 -> rotor 3 always moves
-                pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
-                
-                // wheel 2 -> rotor 2
-                randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                fill_wheel_spec(wheel_2_rand, 3);                
+                    // rotor 2 -> rotor 2 and rotor 3
+                    randomize_help rotor_2_rand(&pins_rotor_2, 26);
+                    fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
+                }
+                break;
+                default: /* cycle length: 15548 = 23*26*26 */
+                {
+                    // wheel 3 -> rotor 3 always moves
+                    pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
+                    
+                    // wheel 2 -> rotor 2
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 3);                
 
-                // rotor 3 -> rotor 1
-                randomize_help rotor_3_rand(&pins_rotor_3, 26);
-                fill_wheel_spec(rotor_3_rand, 5);
-                
+                    // rotor 3 -> rotor 1
+                    randomize_help rotor_3_rand(&pins_rotor_3, 26);
+                    fill_wheel_spec(rotor_3_rand, 5);
+                    
+                }
+                break;
             }
-            break;
+            
+            machine_conf[KW_SG39_ROTOR_SET] = get_default_set_name();                
+            machine_conf[KW_SG39_ROTORS] = rotors;
+            machine_conf[KW_SG39_RING_POS] = rmsk::std_alpha()->get_random_string(4);
+            machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
+            machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
+            machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;
+            machine_conf[KW_SG39_PINS_WHEEL_2] = pins_wheel_2;            
+            machine_conf[KW_SG39_PINS_WHEEL_3] = pins_wheel_3;
+            machine_conf[KW_SG39_PINS_ROTOR_1] = pins_rotor_1;
+            machine_conf[KW_SG39_PINS_ROTOR_2] = pins_rotor_2;
+            machine_conf[KW_SG39_PINS_ROTOR_3] = pins_rotor_3;
+
+            c->configure_machine(machine_conf, this);    
+            
+            // Set random rotor positions
+            rotor_pos = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(4));
+            rotor_pos.push_back(0);
+            get_sg39_stepper()->set_all_displacements(rotor_pos);
+            
+            // Set wheel positions
+            wheel_pos = wheel1_alpha.to_vector(wheel1_alpha.get_random_string(2));
+            get_sg39_stepper()->set_wheel_pos(ROTOR_1, wheel_pos[0]);
+            wheel_pos = wheel2_alpha.to_vector(wheel2_alpha.get_random_string(2));
+            get_sg39_stepper()->set_wheel_pos(ROTOR_2, wheel_pos[0]);
+            wheel_pos = wheel3_alpha.to_vector(wheel3_alpha.get_random_string(2));
+            get_sg39_stepper()->set_wheel_pos(ROTOR_3, wheel_pos[0]);                        
         }
-
-                        
-        machine_conf[KW_SG39_ROTORS] = rotors;
-        machine_conf[KW_SG39_RING_POS] = rmsk::std_alpha()->get_random_string(4);
-        machine_conf[KW_SG39_ENTRY_PLUGS] = rmsk::std_alpha()->perm_as_string(plugboard_perm);
-        machine_conf[KW_SG39_REFLECTOR_PLUGS] = rmsk::std_alpha()->perm_as_string(reflector_perm);
-        machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;
-        machine_conf[KW_SG39_PINS_WHEEL_2] = pins_wheel_2;            
-        machine_conf[KW_SG39_PINS_WHEEL_3] = pins_wheel_3;
-        machine_conf[KW_SG39_PINS_ROTOR_1] = pins_rotor_1;
-        machine_conf[KW_SG39_PINS_ROTOR_2] = pins_rotor_2;
-        machine_conf[KW_SG39_PINS_ROTOR_3] = pins_rotor_3;
-
-        c->configure_machine(machine_conf, this);    
-        
-        // Set random rotor positions
-        rotor_pos = rmsk::std_alpha()->to_vector(rmsk::std_alpha()->get_random_string(4));
-        rotor_pos.push_back(0);
-        get_sg39_stepper()->set_all_displacements(rotor_pos);
-        
-        // Set wheel positions
-        wheel_pos = wheel1_alpha.to_vector(wheel1_alpha.get_random_string(2));
-        get_sg39_stepper()->set_wheel_pos(ROTOR_1, wheel_pos[0]);
-        wheel_pos = wheel2_alpha.to_vector(wheel2_alpha.get_random_string(2));
-        get_sg39_stepper()->set_wheel_pos(ROTOR_2, wheel_pos[0]);
-        wheel_pos = wheel3_alpha.to_vector(wheel3_alpha.get_random_string(2));
-        get_sg39_stepper()->set_wheel_pos(ROTOR_3, wheel_pos[0]);        
+        else
+        {
+            string dummy;
+            enigma_M4 enigma_M4(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_IV, WALZE_I);
+            enigma_M4.randomize(dummy);
+            
+            configure_from_m4(&enigma_M4);        
+        }        
     }
     catch(...)
     {
@@ -651,7 +663,8 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     randomizer_params.push_back(randomizer_descriptor("three", "Rotor three always moves"));
     randomizer_params.push_back(randomizer_descriptor("enigma7", "Enigma stepping with 7 notches"));
     randomizer_params.push_back(randomizer_descriptor("enigma5", "Enigma stepping with 5 notches"));
-    randomizer_params.push_back(randomizer_descriptor("enigma9", "Enigma stepping with 9 notches"));        
+    randomizer_params.push_back(randomizer_descriptor("enigma9", "Enigma stepping with 9 notches")); 
+    randomizer_params.push_back(randomizer_descriptor("enigmam4", "M4 Enigma compatible"));        
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

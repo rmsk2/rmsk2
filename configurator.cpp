@@ -661,6 +661,11 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
     infos.clear();
 
    /*
+    * Specifies the name of the rotor set to use. Currently the following values are allowed: defaultset, M4Set    
+    */    
+    infos.push_back(key_word_info(KW_SG39_ROTOR_SET, KEY_STRING, "SG39 Rotor Set"));    
+
+   /*
     * Determines which rotors are placed in the machine and in what sequence. There are 10 rotors (0-9). For each 
     * rotor that is to be placed in the machine a designation has to be specified. Each designation may only appear
     * once. The number of the leftmost (stationary) rotor has to be specified as the first character.
@@ -728,6 +733,9 @@ void sg39_configurator::get_config(map<string, string>& config_data, rotor_machi
     vector<unsigned int> help_vec;
     sg39_stepping_gear *stepper = machine->get_sg39_stepper();
     
+    config_data[KW_SG39_ROTOR_SET] = configured_machine->get_default_set_name();
+    set_rotor_set_name(config_data[KW_SG39_ROTOR_SET]);
+    
     // Retrieve a representation of the rotors currently inserted into the schluesselgeraet39 to which
     // machine points.
     help += stepper->get_descriptor(ROTOR_4).id.r_id + '0';
@@ -779,11 +787,18 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
     bool test_result = true;  
     vector<unsigned int> zero_21(21, 0), zero_23(23, 0), zero_25(25, 0), zero_26(26, 0);
     string ringstellung_temp;
+    set<string> known_rotor_set_names = {DEFAULT_SET, M4_SET};
     
     do
     {  
         // Verifiy that a value is given for each keyword  
         if (!check_for_completeness(config_data))
+        {
+            result = CONFIGURATOR_INCONSISTENT;
+            break;
+        }
+        
+        if (known_rotor_set_names.count(config_data[KW_SG39_ROTOR_SET]) == 0)
         {
             result = CONFIGURATOR_INCONSISTENT;
             break;
@@ -889,14 +904,16 @@ unsigned int sg39_configurator::configure_machine(map<string, string>& config_da
     else
     {
         sg39_stepping_gear *stepper = machine->get_sg39_stepper();
-                
-        string default_set = machine->get_default_set_name();
-        set_rotor_set_name(default_set);
-        
+                        
         result = parse_config(config_data);
         
         if (result == CONFIGURATOR_OK)
-        {            
+        {
+            string default_set = config_data[KW_SG39_ROTOR_SET];
+            set_rotor_set_name(default_set);
+            
+            machine->set_default_set_name(default_set);
+                    
             // Insert rotors into machine
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[0], ROTOR_1);
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[1], ROTOR_2);            
@@ -1067,9 +1084,6 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     
     // Retrieve current reflector setting from machine
     config_data[KW_TYPEX_REFLECTOR] = get_reflector(machine->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->get_perm());
-    
-    // Retrieve current default rotor set name
-    config_data[KW_TYPEX_ROTOR_SET] = machine->get_default_set_name();
 }
 
 unsigned int typex_configurator::configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure)

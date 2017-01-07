@@ -268,9 +268,8 @@ void rotor_visual::on_configure_machine()
         conf_ptr->get_keywords(infos);
         conf_ptr->get_config(config_data, the_machine);
         
-        // Use that information to initialize the configuration dialog
-        string default_set_name = the_machine->get_default_set_name();
-        configurator_dialog dlg(*win, infos, config_data, default_set_name);
+        // Use that information to initialize the configuration dialog        
+        configurator_dialog dlg(*win, infos, config_data);
         
         do
         {
@@ -603,7 +602,8 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
 
 
         // Construct SG39 machine with default settings        
-        {                    
+        {
+            machine_conf[KW_SG39_ROTOR_SET] = DEFAULT_SET;                    
             machine_conf[KW_SG39_ROTORS] = "3415";
             machine_conf[KW_SG39_RING_POS] = "aaaa";            
             machine_conf[KW_SG39_ENTRY_PLUGS] = "ldtrmihoncpwjkbyevsaxgfzuq";

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@
 #define KW_CSP_2900_FLAG "csp2900"
 
 // Keywords for Schluesselgeraet 39
+#define KW_SG39_ROTOR_SET "rotorset"
 #define KW_SG39_ROTORS "rotors"
 #define KW_SG39_RING_POS "rings"
 #define KW_SG39_REFLECTOR_PLUGS "reflector"

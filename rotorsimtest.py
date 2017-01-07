@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -805,7 +805,7 @@ class RandParmTest(simpletest.SimpleTest):
                 machine.set_state(machine_state)
                 
                 randomizer_params = machine.get_randomizer_params()
-                this_result = (randomizer_params == ['one', 'two', 'three', 'enigma7', 'enigma5', 'enigma9'])
+                this_result = (randomizer_params == ['one', 'two', 'three', 'enigma7', 'enigma5', 'enigma9', 'enigmam4'])
                 result = result and this_result
                 if not this_result:
                     self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
