@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,12 @@ public:
      *         ring_ids_to_copy specify the rotors and rings to copy into the new set.
      */                        
     virtual void slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy);
+    
+
+    /*! \brief This method changes the ids of the rotors and rings in this set to new values. The parameter rotor_id_mapping maps the
+     *         old rotor ids to the new values. The parameter ring_id_mapping does the same for the ring ids.
+     */                            
+    virtual void change_ids(map<unsigned int, unsigned int>& rotor_id_mapping, map<unsigned int, unsigned int>& ring_id_mapping);
 
     /*! \brief Empties this rotor_set.
      */                        

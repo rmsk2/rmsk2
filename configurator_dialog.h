@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public:
      *  config_data is a map that maps the name of a configuration parameter (as specified in parameter infos) to its
      *  current value. If the dialog is not closed via OK, then config_data remains unchanged.
      */
-    configurator_dialog(Gtk::Window& parent, vector<key_word_info>& infos, std::map<string, string>& config_data);
+    configurator_dialog(Gtk::Window& parent, vector<key_word_info>& infos, std::map<string, string>& config_data, string& current_rotor_set_name);
 
     /*! \brief Callback which is executed when the user closed the dialog by clicking on the OK button.
      */

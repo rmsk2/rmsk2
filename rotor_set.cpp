@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,6 +326,33 @@ void rotor_set::add_ring(unsigned int desired_id, vector<unsigned int> ring_data
     
     permutation::get_identity(get_rotor_size()).to_vec(identity_help);
     add_rotor_and_ring(desired_id, identity_help, ring_data);
+}
+
+void rotor_set::change_ids(map<unsigned int, unsigned int>& rotor_id_mapping, map<unsigned int, unsigned int>& ring_id_mapping)
+{
+    map<unsigned int, unsigned int>::iterator rotor_iter, ring_iter;
+    map<unsigned int, vector<unsigned int> > new_perms;
+    map<unsigned int, vector<unsigned int> > new_ring_data_vals;
+    
+    
+    for (rotor_iter = rotor_id_mapping.begin(); rotor_iter != rotor_id_mapping.end(); ++rotor_iter)
+    {
+        if (perms.count(rotor_iter->first) != 0)
+        {
+            new_perms[rotor_iter->second] = perms[rotor_iter->first];
+        }
+    }
+    
+    for (ring_iter = ring_id_mapping.begin(); ring_iter != ring_id_mapping.end(); ++ring_iter)
+    {
+        if (ring_data_vals.count(ring_iter->first) != 0)
+        {
+            new_ring_data_vals[ring_iter->second] = ring_data_vals[ring_iter->first];
+        }
+    }
+    
+    perms = new_perms;
+    ring_data_vals = new_ring_data_vals;
 }
 
 void rotor_set::slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy)

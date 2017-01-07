@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include<boost/lexical_cast.hpp>
 #include<rmsk_globals.h>
 #include<alphabet.h>
+#include<enigma_sim.h>
 #include<sg39.h>
 #include<configurator.h>
 
@@ -55,7 +56,18 @@ public:
     }
 };
 
+/*! \brief Definition of sg39_set */
 rotor_set sg39_rotor_factory::sg39_set(rmsk::std_alpha()->get_size());
+
+/*! \brief Definition of m4_set */
+rotor_set sg39_rotor_factory::m4_set(rmsk::std_alpha()->get_size());
+
+/*! \brief Definition of rotor id mapping */
+map<unsigned int, unsigned int> sg39_rotor_factory::id_mapping = { {WALZE_I, SG39_ROTOR_1}, {WALZE_II, SG39_ROTOR_2}, {WALZE_III, SG39_ROTOR_3}, {WALZE_IV, SG39_ROTOR_4},
+                                                                   {WALZE_V, SG39_ROTOR_5}, {WALZE_VI, SG39_ROTOR_6}, {WALZE_VII, SG39_ROTOR_7}, {WALZE_VIII, SG39_ROTOR_8},
+                                                                   {WALZE_BETA, SG39_ROTOR_0}, {WALZE_GAMMA, SG39_ROTOR_9}, {UKW_B_DN, UKW_B_DN}, {UKW_C_DN, UKW_C_DN}
+};
+
 
 /*! The document describing the Schlüsselgerät 39 contained no info about the wiring of the rotors or
  *  how many rotors were provided. Below you find 10 random fix point free permutations.
@@ -81,6 +93,22 @@ rotor_set& sg39_rotor_factory::get_rotor_set()
     }
     
     return sg39_set;
+}
+
+rotor_set& sg39_rotor_factory::get_m4_rotor_set()
+{
+    vector<unsigned int> m4_ids = {WALZE_I, WALZE_II, WALZE_III, WALZE_IV, WALZE_V, WALZE_VI, WALZE_VII, WALZE_VIII, UKW_B_DN, UKW_C_DN, WALZE_BETA, WALZE_GAMMA};
+
+    if (m4_set.get_num_rotors() == 0)
+    {        
+        rotor_set& enigma_set = enigma_rotor_factory::get_rotor_set();
+        
+        enigma_set.slice_rotor_set(m4_set, m4_ids, m4_ids);
+        m4_set.change_ids(id_mapping, id_mapping);
+        m4_set.add_rotor(ID_SG39_UKW, rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt"))); 
+    }
+    
+    return m4_set;
 }
 
 bool sg39_stepping_gear::wheel_is_at_notch(const char *identifier)
@@ -479,6 +507,63 @@ bool schluesselgeraet39::randomize(string& param)
     return result;
 }
 
+void schluesselgeraet39::configure_from_m4(enigma_M4 *m4_enigma)
+{
+    sg39_stepping_gear *stepper = get_sg39_stepper();
+    enigma_stepper_base *se = m4_enigma->get_enigma_stepper();
+    vector<unsigned int> dat_1(21, 1), dat_2(23, 0), dat_3(25, 0), empty_ring(26, 0);
+    rotor_id id1(sg39_rotor_factory::id_mapping[se->get_descriptor((unsigned int)0).id.r_id]);
+    rotor_id id2(sg39_rotor_factory::id_mapping[se->get_descriptor(1).id.r_id]);
+    rotor_id id3(sg39_rotor_factory::id_mapping[se->get_descriptor(2).id.r_id]);
+    rotor_id id4(sg39_rotor_factory::id_mapping[se->get_descriptor(3).id.r_id]);
+    vector<unsigned int> entry_perm_data;
+
+    set_default_set_name(M4_SET);
+    
+    // Insert rotors and rings into machine
+    prepare_rotor(id1, ROTOR_1);
+    prepare_rotor(id2, ROTOR_2);            
+    prepare_rotor(id3, ROTOR_3);                        
+    prepare_rotor(id4, ROTOR_4);
+    
+    // Clear ring of third rotor so that it does not step rotor 1
+    stepper->get_descriptor(ROTOR_3).ring->set_ring_data(empty_ring);                          
+    
+    // Set pin data on wheels
+    stepper->set_wheel_data(ROTOR_1, dat_1);
+    stepper->set_wheel_data(ROTOR_2, dat_2);
+    stepper->set_wheel_data(ROTOR_3, dat_3);                
+    
+    // Set reflector
+    permutation *reflector_perm = new permutation();
+    *reflector_perm = *se->get_descriptor(4).r->get_perm();
+    set_reflector(boost::shared_ptr<permutation>(reflector_perm));
+    
+    // Set plugboard permutation    
+    for (unsigned int count = 0; count < 26; count++)
+    {
+        entry_perm_data.push_back(m4_enigma->get_input_transform()->encrypt(count));
+    }
+    
+    permutation *plugboard_perm = new permutation(entry_perm_data);    
+    set_input_transform(boost::shared_ptr<encryption_transform>(plugboard_perm));            
+
+    // Set ring position on rotors            
+    stepper->get_descriptor(ROTOR_1).ring->set_offset(se->get_descriptor((unsigned int)0).ring->get_offset());
+    stepper->get_descriptor(ROTOR_2).ring->set_offset(se->get_descriptor(1).ring->get_offset());
+    stepper->get_descriptor(ROTOR_3).ring->set_offset(se->get_descriptor(2).ring->get_offset());
+    stepper->get_descriptor(ROTOR_4).ring->set_offset(se->get_descriptor(3).ring->get_offset());
+
+    // Move all non stationary rotors to correct positions and all wheels to the 'a' position
+    for (unsigned int count = 0; count < 3; count++)
+    {
+        stepper->get_descriptor(count).ring->set_pos(se->get_ring_pos(count));
+        stepper->get_descriptor(count).mod_int_vals["wheelpos"].set_val(0);
+    }
+    
+    // Move stationary rotor to correct position
+    stepper->get_descriptor(3).ring->set_pos(se->get_ring_pos(3));    
+}
 
 /*! The wheels are implemented by storing the wheeldata as well as the wheelpos in key/value pairs of the corresponding 
  *  ::rotor_descriptor object.
@@ -492,6 +577,7 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     simple_mod_int mod_1(21), mod_2(23), mod_3(25);
     
     add_rotor_set(DEFAULT_SET, sg39_rotor_factory::get_rotor_set());  
+    add_rotor_set(M4_SET, sg39_rotor_factory::get_m4_rotor_set());
     
     is_pre_step = true;
     machine_name = MNAME_SG39;

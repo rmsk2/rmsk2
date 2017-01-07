@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@
 #include<boost/shared_ptr.hpp>
 #include<rotor_machine.h>
 #include<rotor_set.h>
+#include<enigma_sim.h>
 
 #define ROTOR_1 "rotor_1"
 #define ROTOR_2 "rotor_2"
 #define ROTOR_3 "rotor_3"
 #define ROTOR_4 "rotor_4"
 #define UKW_SG39 "umkehrwalze"
+#define M4_SET "M4Set"
 
 const unsigned int SG39_ROTOR_0 = 0;
 const unsigned int SG39_ROTOR_1 = 1;
@@ -58,15 +60,30 @@ public:
      *  If not it constructs a corresponding object.
      */  
     static rotor_set& get_rotor_set();
+
+    /*! \brief Returns the rotor_set which is used by a standard M4 Engigma.
+     *
+     *  If this method is called the first time it checks whether m4_set contains any data.
+     *  If not it constructs a corresponding object.
+     */      
+    static rotor_set& get_m4_rotor_set();
     
     /*! \brief Allows to set the default rotor_set object.
      */       
     static void set_rotor_set(rotor_set& r_set) { sg39_set = r_set; }
     
+    /*! \brief Maps the ids of the M4 rotors to the ids in use on an SG39
+     */    
+    static map<unsigned int, unsigned int> id_mapping;    
+    
 protected:
     /*! \brief The actual rotor_set object to be used.
      */
     static rotor_set sg39_set;
+
+    /*! \brief The actual M4 rotor_set object to be used.
+     */
+    static rotor_set m4_set;
 };
 
 /*! \brief A class that implements the stepping_gear used by the Schluesselgeraet 39.
@@ -218,6 +235,11 @@ public:
      *  Returns true if an error was encountered else false. If true is returned the state of the underlying machine has not been changed.
      */
     virtual bool move_all_rotors(const char *new_positions) { ustring help(new_positions); return move_all_rotors(help); }
+
+    /*! \brief This method configures this SG39 instance in such a way that it is compatible with the enigma_M4 instance to which the
+     *         parameter m4_enigma points.
+     */    
+    virtual void configure_from_m4(enigma_M4 *m4_enigma);
     
     /*! \brief Destructor.
      */             

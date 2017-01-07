@@ -269,7 +269,8 @@ void rotor_visual::on_configure_machine()
         conf_ptr->get_config(config_data, the_machine);
         
         // Use that information to initialize the configuration dialog
-        configurator_dialog dlg(*win, infos, config_data);
+        string default_set_name = the_machine->get_default_set_name();
+        configurator_dialog dlg(*win, infos, config_data, default_set_name);
         
         do
         {

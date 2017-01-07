@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -888,7 +888,11 @@ unsigned int sg39_configurator::configure_machine(map<string, string>& config_da
     }
     else
     {
-        sg39_stepping_gear *stepper = machine->get_sg39_stepper();        
+        sg39_stepping_gear *stepper = machine->get_sg39_stepper();
+                
+        string default_set = machine->get_default_set_name();
+        set_rotor_set_name(default_set);
+        
         result = parse_config(config_data);
         
         if (result == CONFIGURATOR_OK)

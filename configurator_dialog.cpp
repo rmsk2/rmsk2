@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 #include<configurator_dialog.h>
 
-configurator_dialog::configurator_dialog(Gtk::Window& parent, vector<key_word_info>& infos, std::map<string, string>& config_data)
+configurator_dialog::configurator_dialog(Gtk::Window& parent, vector<key_word_info>& infos, std::map<string, string>& config_data, string& current_rotor_set_name)
     : Dialog("Configuration", parent, true), inf(infos), conf_data(config_data)
 {
     add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -61,11 +61,17 @@ configurator_dialog::configurator_dialog(Gtk::Window& parent, vector<key_word_in
         
         count++; // line count
     }
+
+    // Add information about rotor set currently in use in the machine which is to be configured
+    Gtk::Label *l_set = manage(new Gtk::Label("Current rotor set"));
+    config_items.attach(*l_set, 0, count, 1, 1);
+    Gtk::Label *l_set_name = manage(new Gtk::Label(current_rotor_set_name));
+    config_items.attach(*l_set_name, 1, count, 1, 1);
     
     // Add an additional empty label to get some space between the configuraton controls and
     // the dialog buttons
     Gtk::Label *l = manage(new Gtk::Label(""));
-    config_items.attach(*l, 0, count, 1, 1);
+    config_items.attach(*l, 0, count + 1, 1, 1);
     
     
     config_items.set_column_spacing(5);
