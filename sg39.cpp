@@ -524,7 +524,7 @@ void schluesselgeraet39::configure_from_m4(enigma_M4 *m4_enigma)
     sg39_stepping_gear *stepper = get_sg39_stepper();
     enigma_stepper_base *se = m4_enigma->get_enigma_stepper();
     vector<unsigned int> dat_1(21, 1), dat_2(23, 0), dat_3(25, 0), empty_ring(26, 0);
-    rotor_id id1(sg39_rotor_factory::id_mapping[se->get_descriptor((unsigned int)0).id.r_id]);
+    rotor_id id1(sg39_rotor_factory::id_mapping[se->get_descriptor(0u).id.r_id]);
     rotor_id id2(sg39_rotor_factory::id_mapping[se->get_descriptor(1).id.r_id]);
     rotor_id id3(sg39_rotor_factory::id_mapping[se->get_descriptor(2).id.r_id]);
     rotor_id id4(sg39_rotor_factory::id_mapping[se->get_descriptor(3).id.r_id]);
@@ -561,7 +561,7 @@ void schluesselgeraet39::configure_from_m4(enigma_M4 *m4_enigma)
     set_input_transform(boost::shared_ptr<encryption_transform>(plugboard_perm));            
 
     // Set ring position on rotors            
-    stepper->get_descriptor(ROTOR_1).ring->set_offset(se->get_descriptor((unsigned int)0).ring->get_offset());
+    stepper->get_descriptor(ROTOR_1).ring->set_offset(se->get_descriptor(0u).ring->get_offset());
     stepper->get_descriptor(ROTOR_2).ring->set_offset(se->get_descriptor(1).ring->get_offset());
     stepper->get_descriptor(ROTOR_3).ring->set_offset(se->get_descriptor(2).ring->get_offset());
     stepper->get_descriptor(ROTOR_4).ring->set_offset(se->get_descriptor(3).ring->get_offset());
