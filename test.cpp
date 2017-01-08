@@ -88,7 +88,9 @@ bool alles_andere::test()
 {
     bool result = test_case::test();
     
+    append_note("**************************************************");
     append_note("********* Demonstrations and experiments *********");
+    append_note("**************************************************");
     
     // Code to demonstrate that the resulting tranformation of the Uhr depends
     // on the sequence of the Uhr cabling
