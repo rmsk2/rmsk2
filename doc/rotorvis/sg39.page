@@ -22,6 +22,13 @@ length the pinwheels had different sizes (21, 23 and 25 pins) which had no commo
 <p> 
 According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters.
 </p>
+<p>When using an appropriate set of rotors and making the additional reasonable assumption that SG39 rotors had settable rings the Schlüsselgerät 39 can be configured in such a way that 
+it is compatible with an M4 Enigma and consequently with any other Enigma variant used by the german military during WWII (i.e. Services and M3).
+</p>
+<p>Using other rotor sets it would be easy to additionally achieve at least partial compatibility with any Enigma variant that has a stationary or settable (but
+not moving) reflector, i.e. any Enigma variant simulated by rmsk2 (including Typex) but not Abwehr. Full compatibility with KD could even be achieved in a more or less
+straightforward fashion.
+</p>
 </section>
 
 <section id="sg39_config">
@@ -34,6 +41,12 @@ This picture shows the dialog which can be used to configure the SG39:
 </p>
 <p>The following settings can be configured:</p>
 <terms>
+    <item>
+        <title><code>SG39 Rotor Set</code></title>
+        <p>This field allows to select the rotor set which is to be used to configure the machine. Currently the following values are allowed: defaultset, M4Set. When using M4Set 
+        the machine can be configured in such a way that it is compatible with an M4Enigma.</p>
+    </item>   
+
     <item>
         <title><code>SG39 Rotors</code></title>
         <p>Determines which rotors are placed in the machine and in what sequence. There are 10 rotors (<code>0-9</code>). For each rotor that is to be placed in the machine
@@ -104,7 +117,7 @@ independently "kicked" one step by the pins on the electrical
 rotors, only one of these kicks would take effect.</p>
 </section>
 
-<section id="typex_interoperability">
+<section id="sg39_interoperability">
 <title>Interoperability with other simulators</title>
 <p>
 As I am not aware of another simulator for this machine, there are no interoperability considerations.
