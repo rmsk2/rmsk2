@@ -22,12 +22,13 @@ length the pinwheels had different sizes (21, 23 and 25 pins) which had no commo
 <p> 
 According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters.
 </p>
-<p>When using an appropriate set of rotors and making the additional reasonable assumption that SG39 rotors had settable rings the Schlüsselgerät 39 can be configured in such a way that 
-it is compatible with an M4 Enigma and consequently with any other Enigma variant used by the german military during WWII (i.e. Services and M3).
+<p>When using an appropriate set of rotors the Schlüsselgerät 39 can be configured in such a way that it is compatible with an M4 Enigma and consequently with 
+any other Enigma variant used by the german military during WWII (i.e. Services and M3). Additionally making the reasonable assumption that SG39 rotors had settable
+rings makes this fully practical and even allows to use M4 key sheets.
 </p>
 <p>Using other rotor sets it would be easy to additionally achieve at least partial compatibility with any Enigma variant that has a stationary or settable (but
 not moving) reflector, i.e. any Enigma variant simulated by rmsk2 (including Typex) but not Abwehr. Full compatibility with KD could even be achieved in a more or less
-straightforward fashion.
+obvious fashion.
 </p>
 </section>
 
