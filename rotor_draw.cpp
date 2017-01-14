@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -621,6 +621,8 @@ bool rotor_draw::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     {
         (*click_iter)->draw(cr);
     }
+    
+    queue_draw();
 
     return true;
 }
