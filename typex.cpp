@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,7 @@ bool typex::randomize(string& param)
         machine_conf[KW_TYPEX_ROTORS] = selected_rotors;
         machine_conf[KW_TYPEX_RINGS] = ring_positions;
         machine_conf[KW_TYPEX_REFLECTOR] = rmsk::std_alpha()->perm_as_string(reflector_perm);
+        machine_conf[KW_TYPEX_PLUGBOARD] = "";
         boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
         c->configure_machine(machine_conf, this);
         

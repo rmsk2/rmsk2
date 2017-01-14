@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,7 @@ void test_typex::register_tests(composite_test_case *container)
     typex_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
     typex_conf[KW_TYPEX_RINGS] = "aaaaa";
     typex_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";
+    typex_conf[KW_TYPEX_PLUGBOARD] = "";
     boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(MNAME_TYPEX));            
     typex_t = c->make_machine(typex_conf);
     (dynamic_cast<enigma_family_base *>(typex_t))->move_all_rotors("aaaaa");

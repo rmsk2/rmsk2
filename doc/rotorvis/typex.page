@@ -44,7 +44,7 @@ The configuration dialog for the Typex looks like this:
         where defaultset corresponds to the rotor set named SP02390 in the Typex simulator of the CSG.</p>
     </item>
     <item>
-        <title><code>Typex rotors</code></title>
+        <title><code>Typex Rotors</code></title>
         <p>Determines which rotors are placed in the machine and in what sequence. There are seven (defaultset) or 14 (Y269) rotors (<code>a-g</code> or <code>a-n</code>).
         Each one of them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation 
         (<code>N</code> or <code>R</code>) have to be specified. Exactly five of the possible rotors have to be placed in the machine.</p>
@@ -55,10 +55,16 @@ The configuration dialog for the Typex looks like this:
         The positions are designated by the letters <code>a-z</code>. Therefore this setting consists of five letters.</p>
     </item>    
     <item>
-        <title><code>Typex reflector</code></title>
+        <title><code>Typex Reflector</code></title>
         <p>As with some Enigma variants the reflector of the Typex can be set in the field. The reflector is specified by 13 pairs of letters. In the
         example given above the pairs are: <code>ar by cu dh eq fs gl ix jp kn mo tw vz</code>. Each letter can and must occur once in this seting.</p>
-    </item>    
+    </item>  
+    <item>
+        <title><code>Typex Plugboard</code></title>
+        <p>Later Typex models had an optional plugboard. Allowed values for this field are therefore either the empty string (no plugboard) or a permutation 
+        of <code>a-z</code>.</p>
+    </item>     
+      
 </terms>
 </section>
 

@@ -50,6 +50,7 @@
 #define KW_TYPEX_RINGS "rings"
 #define KW_TYPEX_REFLECTOR "reflector"
 #define KW_TYPEX_ROTOR_SET "rotorset"
+#define KW_TYPEX_PLUGBOARD "plugs"
 
 // Keywords for KL7
 #define KW_KL7_ROTORS "rotors"
@@ -447,6 +448,10 @@ protected:
     /*! \brief Holds the ringstellung that is to be used with this machine.
      */         
     string ringstellung;
+
+    /*! \brief Holds the value of the permutation that is realized via the plugboard.
+     */         
+    string plugboard_perm;
 
     /*! \brief Holds the rotor id for the UKW to use in the context of the current rotor set
      */      

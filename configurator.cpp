@@ -1011,6 +1011,13 @@ void typex_configurator::get_keywords(vector<key_word_info>& infos)
     * can and must occur once in this seting.   
     */
     infos.push_back(key_word_info(KW_TYPEX_REFLECTOR, KEY_STRING, "Typex Reflector"));
+
+   /*
+    * Later Typex models had an optional plugboard. Allowed values for this field are therefore either the empty string
+    * (no plugboard) or a permutation of a-z. 
+    */
+    infos.push_back(key_word_info(KW_TYPEX_PLUGBOARD, KEY_STRING, "Typex Plugboard"));
+
     
     change_rotor_set(rotor_set_name);    
 }
@@ -1055,6 +1062,7 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     rmsk::simple_assert(machine == NULL, "programmer error: machine is not Typex");    
     string help;
     typex_stepper *stepper = dynamic_cast<typex_stepper *>(machine->get_stepping_gear());
+    string plugboard_config;
     
     config_data.clear();
 
@@ -1084,6 +1092,13 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     
     // Retrieve current reflector setting from machine
     config_data[KW_TYPEX_REFLECTOR] = get_reflector(machine->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->get_perm());
+    
+    if (machine->get_input_transform().get() != NULL)
+    {
+        plugboard_config = get_entry_plugboard(machine->get_input_transform().get());
+    }
+    
+    config_data[KW_TYPEX_PLUGBOARD] = plugboard_config;
 }
 
 unsigned int typex_configurator::configure_machine(map<string, string>& config_data, rotor_machine *machine_to_configure)
@@ -1099,6 +1114,7 @@ unsigned int typex_configurator::configure_machine(map<string, string>& config_d
     {
         typex_stepper *stepper = dynamic_cast<typex_stepper *>(machine->get_stepping_gear());        
         result = parse_config(config_data);
+        boost::shared_ptr<encryption_transform> plugboard_transform(NULL);
         
         if (result == CONFIGURATOR_OK)
         {
@@ -1122,6 +1138,14 @@ unsigned int typex_configurator::configure_machine(map<string, string>& config_d
             
             // Set reflector            
             machine->set_reflector(reflector);
+            
+            // Set plugboard
+            if (plugboard_perm != "")
+            {
+                plugboard_transform = boost::shared_ptr<encryption_transform>(rmsk::std_alpha()->make_perm_ptr(plugboard_perm.c_str()));
+            }
+            
+            machine->set_input_transform(plugboard_transform);
                            
             // Reset rotor positions. stepper->reset() must not be called as this would also reset
             // the ringstellung          
@@ -1193,6 +1217,15 @@ unsigned int typex_configurator::parse_config(map<string, string>& config_data)
         ringstellung = config_data[KW_TYPEX_RINGS];
         
         if (!check_rotor_spec(ringstellung, 'a', 'z', 5, false))
+        {
+            result = CONFIGURATOR_INCONSISTENT;
+            break;            
+        }        
+
+        // Verify that specified value for plugboard permutation is valid        
+        plugboard_perm = config_data[KW_TYPEX_PLUGBOARD];
+        
+        if ((plugboard_perm != "") && (!check_for_perm(plugboard_perm)))
         {
             result = CONFIGURATOR_INCONSISTENT;
             break;            

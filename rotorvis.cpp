@@ -480,6 +480,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
             machine_conf[KW_TYPEX_ROTORS] = "aNbNcRdNeN";
             machine_conf[KW_TYPEX_RINGS] = "aaaaa";
             machine_conf[KW_TYPEX_REFLECTOR] = "arbycudheqfsglixjpknmotwvz";
+            machine_conf[KW_TYPEX_PLUGBOARD] = "";
             result = c->make_machine(machine_conf);                      
 
             rotor_identifiers.push_back(STATOR1);
