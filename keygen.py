@@ -552,7 +552,7 @@ class KeyGenWindow(Gtk.Window):
     #  \returns Nothing.
     #            
     def on_help(self, action, value):
-        self._ainfo.launch_uris(['ghelp://' + pyrmsk2.get_doc_path(__file__) + '/keygen/keygen.page'])
+        self._ainfo.launch_uris(['ghelp://' + pyrmsk2.get_doc_path(__file__) + '/keygen/index.page'])
 
     ## \brief Callback for menu entry "Quit"
     #

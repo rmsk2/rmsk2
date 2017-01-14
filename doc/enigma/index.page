@@ -4,7 +4,7 @@
 <title>Enigma Help</title>
 <section id="enigma_general">
 <title>General information</title>
-
+ 
 <p>Enigma is a cryptographically accurate simulator for several variants of the famous Enigma cipher machine. Implementations for the
 following variants are provided:
 </p>
