@@ -1088,11 +1088,11 @@ void typex_configurator::get_config(map<string, string>& config_data, rotor_mach
     help += stepper->get_ringstellung(STATOR1);                    
 
     config_data[KW_TYPEX_RINGS] = help;
-    //help = "";
     
     // Retrieve current reflector setting from machine
     config_data[KW_TYPEX_REFLECTOR] = get_reflector(machine->get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->get_perm());
-    
+        
+    // Determine plugboard permutation
     if (machine->get_input_transform().get() != NULL)
     {
         plugboard_config = get_entry_plugboard(machine->get_input_transform().get());
