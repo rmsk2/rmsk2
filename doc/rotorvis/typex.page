@@ -9,14 +9,16 @@
 <section id="typex_about">
 <title>About the machine</title>
 <p>
-The Typex was a cipher machine that was used by the UK during WWII and into first decades of the cold war. Cryptographically the Typex variant simulated by Rotorvis and the <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">CSG</link> is a
-modified commercial Enigma machine without a plugboard. Like the Enigma the Typex has three moving rotors (the first three) and a reflector. Instead of a plugboard
-the Typex has two additional rotors which can be set by hand but do not step during En-/Decipherment (the last two). Cryptographically these two rotors have the
-same purpose as a plugboard: They prevent attacks which can be mounted when only the rightmost rotor of a machine steps most of the time. On top of 
-that the rotors of the Typex step much more irregularly than those of the Enigma, because they have five (or even more) turnover notches instead of one or two
-in the case of the Enigma. Another cryptographic advantage the Typex had over the Enigma is, that each rotor can be placed in two orientations
-(normal, reverse) in the machine. There were several rotor sets for the Typex and these rotor sets could contain up to 240 rotors, which increased
-the number of possible machine settings enormously. The Typex as simulated by Rotorvis looks like this:
+The Typex was a cipher machine that was used by the UK during WWII and into first decades of the cold war. Cryptographically the Typex variant simulated by 
+Rotorvis and the <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">CSG</link> essentially is a
+modified commercial Enigma machine without a plugboard (even though later models also had an optional plugboard which Rotorvis also implements). Like the
+Enigma the Typex  has three moving rotors (the first three) and a reflector. Instead of a plugboard the Typex has two additional rotors which can be set
+by hand but do not step during En-/Decipherment (the last two). Cryptographically these two rotors have the same purpose as a plugboard: They prevent attacks
+which can be mounted when only the rightmost rotor of a machine steps most of the time. On top of that the rotors of the Typex step much more irregularly
+than those of the Enigma, because they have five (or even more) turnover notches instead of one or two in the case of the Enigma. Another cryptographic 
+advantage the Typex had over the Enigma is, that each rotor can be placed in two orientations (normal, reverse) in the machine. There were several rotor 
+sets for the Typex and these rotor sets could contain up to 240 rotors, which increased the number of possible machine settings enormously. The Typex as
+simulated by Rotorvis looks like this:
 </p>
 <p>
 <media type="image" src="typex.png"/>
