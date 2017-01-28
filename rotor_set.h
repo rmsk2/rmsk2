@@ -120,8 +120,7 @@ public:
     /*! \brief Copies part of this rotor set into the rotor_set specified by parameter new_set. The parameters rotor_ids_to_copy and
      *         ring_ids_to_copy specify the rotors and rings to copy into the new set.
      */                        
-    virtual void slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy);
-    
+    virtual void slice_rotor_set(rotor_set& new_set, vector<unsigned int>& rotor_ids_to_copy, vector<unsigned int>& ring_ids_to_copy);    
 
     /*! \brief This method changes the ids of the rotors and rings in this set to new values. The parameter rotor_id_mapping maps the
      *         old rotor ids to the new values. The parameter ring_id_mapping does the same for the ring ids.
