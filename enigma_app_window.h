@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,6 +177,11 @@ protected:
      *         from constructor.
      */    
     void setup_menus();
+
+    /*! \brief This method queries the current state of the underlying rotor machine and set the grouping value in the log dialog
+     *         accordingly.
+     */    
+    void sync_log_grouping();
     
     /*! \brief Points to the GUI simulator that is in use in this application. */
     rotor_draw *simulator_gui;
@@ -185,19 +190,16 @@ protected:
     Glib::ustring app_name;
 
     /*! \brief Holds the object that represents the menu action group of this application. */    
-    Glib::RefPtr<Gtk::ActionGroup> menu_action;
-    
-    /*! \brief Holds the object that is used to construct the menu of this application from a textual representation. */    
-    Glib::RefPtr<Gtk::UIManager> ui_manager;
-    
+    Glib::RefPtr<Gio::SimpleActionGroup> menu_action;
+        
     /*! \brief Holds the layout object that is used to stack the GUI elements (menu_bar and simulator_gui) of this application on top of each other. */    
     Gtk::Box *vbox1;
     
     /*! \brief Holds the menu item that can be used to switch between encryption and decryption style when logging machine output. */    
-    Glib::RefPtr<Gtk::ToggleAction> log_style_menuitem;
+    Glib::RefPtr<Gio::SimpleAction> log_style_menuitem;
     
     /*! \brief Holds the menu item that can be used to switch the log window on or off. */        
-    Glib::RefPtr<Gtk::ToggleAction> show_log_menuitem;
+    Glib::RefPtr<Gio::SimpleAction> show_log_menuitem;
     
     /*! \brief Holds the menu that is in use in this application. */        
     Gtk::Widget *menu_bar;

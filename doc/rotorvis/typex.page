@@ -81,7 +81,9 @@ The configuration dialog for the Typex looks like this:
     <item><p>When in figures mode the CSG simulator prints an apostrophe when the B or the N key is pressed. In my opinion it makes no sense to
     place the apostrophe twice on the keyboard and leave out the comma. I therefore assume that one of the apostrophes really is a comma. And
     so in Rotorvis the N key produces a comma when encrypting in figures mode.</p></item>
-    <item><p>In contrast to the CSG simulator Rotorvis implements the optional plugboard that was present in late war Typex models.</p></item>    
+    <item><p>In contrast to the CSG simulator Rotorvis implements the optional plugboard that was present in late war Typex models.</p></item>
+    <item><p>Later Typex models not only had an optional plugboard, they also printed plaintext and ciphertext at the same time. This feature was
+    omitted from the CSG simulator but is implemented by Rotorvis.</p></item>    
 </list>
 </section>
 

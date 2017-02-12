@@ -63,8 +63,8 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     
     // Setup main window (stacking menu bar and simulator GUI object on top of each other)
     vbox1 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    menu_action = Gtk::ActionGroup::create();
-    ui_manager = Gtk::UIManager::create();    
+    menu_action = Gio::SimpleActionGroup::create();
+    //ui_manager = Gtk::UIManager::create();    
     setup_menus();
     
     vbox1->pack_start(*menu_bar, Gtk::PACK_SHRINK, 0);
@@ -144,93 +144,153 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     rand_helper.set_parent_window(this);
     
     disp->signal_become_invisible().connect(sigc::mem_fun(*this, &enigma_app_window::on_log_invisible));
-    log_style_menuitem->set_active(simulator_gui->get_enc_flag());
+    log_style_menuitem->change_state(simulator_gui->get_enc_flag());
 
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &enigma_app_window::on_mode_changed));     
     signal_delete_event().connect(sigc::mem_fun(*this, &enigma_app_window::on_my_delete_event));
     
     window_title = conf.get_machine_type() + window_title;    
     set_title(window_title);        
+    sync_log_grouping();
 }
 
 void enigma_app_window::setup_menus()
 {
-    menu_action->add(Gtk::Action::create("MenuFile", "_File"));
+    // File menu
+    menu_action->add_action("loadsettings", sigc::mem_fun(file_helper, &file_operations_helper::on_file_open));
+    menu_action->add_action("savesettings", sigc::mem_fun(file_helper, &file_operations_helper::on_file_save));
+    menu_action->add_action("savesettingsas", sigc::mem_fun(file_helper, &file_operations_helper::on_file_save_as));    
 
-    menu_action->add(Gtk::Action::create("loadsettings", "_Load settings ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_open));
-    menu_action->add(Gtk::Action::create("savesettings", "_Save settings ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_save));
-    menu_action->add(Gtk::Action::create("savesettingsas", "S_ave settings as ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_save_as));    
 
-
-    show_log_menuitem = Gtk::ToggleAction::create("showlogs", "Sh_ow logs ...");
-    menu_action->add(show_log_menuitem, sigc::mem_fun(*this, &enigma_app_window::on_output_activate));    
-    log_style_menuitem = Gtk::ToggleAction::create("logstyleencrypt", "Log style: Encryption");
-    menu_action->add(log_style_menuitem, sigc::mem_fun(*this, &enigma_app_window::on_enc_state_activate));  
+    show_log_menuitem = menu_action->add_action_bool("showlogs", sigc::mem_fun(*this, &enigma_app_window::on_output_activate), false);    
+    log_style_menuitem = menu_action->add_action_bool("logstyleencrypt", sigc::mem_fun(*this, &enigma_app_window::on_enc_state_activate), true);  
 
     if (conf.get_uses_schreibmax())
     {
-        menu_action->add(Gtk::Action::create("ripstrip", "Rip _paper strip"), sigc::mem_fun(*this, &enigma_app_window::on_rip_schreibmax_activate));    
+        menu_action->add_action("ripstrip", sigc::mem_fun(*this, &enigma_app_window::on_rip_schreibmax_activate));    
     }
 
-    menu_action->add(Gtk::Action::create("processclipboard", "Process _clipboard"), sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));
+    menu_action->add_action("processclipboard", sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));
     
-    menu_action->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &enigma_app_window::on_quit_activate));
+    menu_action->add_action("Quit", sigc::mem_fun(*this, &enigma_app_window::on_quit_activate));
 
-    menu_action->add(Gtk::Action::create("MenuSettings", "_Machine settings"));
-    menu_action->add(Gtk::Action::create("rotorpos", "Set rotor pos_itions ..."), sigc::mem_fun(*this, &enigma_app_window::on_set_rotor_positions_activate));    
-    menu_action->add(Gtk::Action::create("rotorsettings", "Rotor _settings ..."), sigc::mem_fun(*this, &enigma_app_window::on_settings_activate));
-    menu_action->add(Gtk::Action::create("plugboard", "_Plugboard ..."), sigc::mem_fun(*this, &enigma_app_window::on_plugboard_activate));            
-    menu_action->add(Gtk::Action::create("reset", "_Reset"), sigc::mem_fun(*this, &enigma_app_window::on_reset_activate));            
-    menu_action->add(Gtk::Action::create("randomize", "R_andomize ..."), sigc::mem_fun(*this, &enigma_app_window::on_randomize_activate));
-    menu_action->add(Gtk::Action::create("ukwd", "UKW Dora _wiring ..."), sigc::mem_fun(*this, &enigma_app_window::on_ukwd_activate));                        
+    // Machine settings menu
+    menu_action->add_action("rotorpos", sigc::mem_fun(*this, &enigma_app_window::on_set_rotor_positions_activate));    
+    menu_action->add_action("rotorsettings", sigc::mem_fun(*this, &enigma_app_window::on_settings_activate));
+    menu_action->add_action("plugboard", sigc::mem_fun(*this, &enigma_app_window::on_plugboard_activate));            
+    menu_action->add_action("reset", sigc::mem_fun(*this, &enigma_app_window::on_reset_activate));            
+    menu_action->add_action("randomize", sigc::mem_fun(*this, &enigma_app_window::on_randomize_activate));
+    menu_action->add_action("ukwd", sigc::mem_fun(*this, &enigma_app_window::on_ukwd_activate));                        
 
-    menu_action->add(Gtk::Action::create("MenuHelp", "_Help"));
-    menu_action->add(Gtk::Action::create("howtouse", "_How to use this simulator ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
-    menu_action->add(Gtk::Action::create("saverotorset", "Save rotor se_t data ..."), sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));        
-    menu_action->add(Gtk::Action::create("about", "_About ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
+    // Help menu
+    menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
+    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));        
+    menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
-    ui_manager->insert_action_group(menu_action);
-    add_accel_group(ui_manager->get_accel_group());    
+    insert_action_group("enigma", menu_action); 
 
     Glib::ustring ui_info_first =
-        "<ui>"
-        "  <menubar name='MenuBar'>"
-        "    <menu action='MenuFile'>"
-        "      <menuitem action='loadsettings'/>"
-        "      <menuitem action='savesettings'/>"
-        "      <menuitem action='savesettingsas'/>"        
-        "      <menuitem action='showlogs'/>"
-        "      <menuitem action='logstyleencrypt'/>";
+    "<interface>"
+    "  <menu id='menubar'>"
+    "    <submenu>"
+    "      <attribute name='label' translatable='no'>_Machine</attribute>"
+    "      <section>" 
+    "      <item>"
+    "        <attribute name='label' translatable='no'>_Load settings ...</attribute>"
+    "        <attribute name='action'>enigma.loadsettings</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>S_ave settings as ...</attribute>"
+    "        <attribute name='action'>enigma.savesettingsas</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Sa_ve settings ...</attribute>"
+    "        <attribute name='action'>enigma.savesettings</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Sh_ow logs ...</attribute>"
+    "        <attribute name='action'>enigma.showlogs</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Log style: Encryption</attribute>"
+    "        <attribute name='action'>enigma.logstyleencrypt</attribute>"
+    "      </item>";
+    
     
     if (conf.get_uses_schreibmax())
     {
-        ui_info_first +=  "      <menuitem action='ripstrip'/>";
+        ui_info_first +=  "      <item>";
+        ui_info_first +=  "        <attribute name='label' translatable='no'>Rip _paper strip</attribute>";
+        ui_info_first +=  "        <attribute name='action'>enigma.ripstrip</attribute>";
+        ui_info_first +=  "      </item>";
     }    
         
-    Glib::ustring ui_info_second =         
-        "      <menuitem action='processclipboard'/>"                        
-        "      <separator/>"                
-        "      <menuitem action='Quit'/>"
-        "    </menu>"
-        "    <menu action='MenuSettings'>"
-        "      <menuitem action='rotorpos'/>"        
-        "      <menuitem action='rotorsettings'/>"
-        "      <menuitem action='plugboard'/>"
-        "      <menuitem action='reset'/>"
-        "      <menuitem action='randomize'/>"
-        "      <menuitem action='ukwd'/>"                                
-        "    </menu>"        
-        "    <menu action='MenuHelp'>"
-        "      <menuitem action='howtouse'/>"
-        "      <menuitem action='saverotorset'/>"                
-        "      <menuitem action='about'/>"
-        "    </menu>"        
-        "  </menubar>"
-        "</ui>";
+    Glib::ustring ui_info_second = 
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Process _clipboard</attribute>"
+    "        <attribute name='action'>enigma.processclipboard</attribute>"
+    "      </item>"            
+    "      </section>"    
+    "      <section>"        
+    "      <item>"    
+    "        <attribute name='label' translatable='no'>_Quit</attribute>"
+    "        <attribute name='action'>enigma.Quit</attribute>"
+    "      </item>"    
+    "      </section>"    
+    "    </submenu>"
+    "    <submenu>"    
+    "      <attribute name='label' translatable='no'>_Machine settings</attribute>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Set rotor pos_itions ...</attribute>"
+    "        <attribute name='action'>enigma.rotorpos</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Rotor _settings ...</attribute>"
+    "        <attribute name='action'>enigma.rotorsettings</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>_Plugboard ...</attribute>"
+    "        <attribute name='action'>enigma.plugboard</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>_Reset</attribute>"
+    "        <attribute name='action'>enigma.reset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>R_andomize ...</attribute>"
+    "        <attribute name='action'>enigma.randomize</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>UKW Dora _wiring ...</attribute>"
+    "        <attribute name='action'>enigma.ukwd</attribute>"
+    "      </item>"
+    "    </submenu>"
+    "    <submenu>"
+    "      <attribute name='label' translatable='no'>_Help</attribute>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
+    "        <attribute name='action'>enigma.howtouse</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Save rotor se_t data ...</attribute>"
+    "        <attribute name='action'>enigma.saverotorset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>A_bout ...</attribute>"
+    "        <attribute name='action'>enigma.about</attribute>"
+    "      </item>"    
+    "    </submenu>"
+    "  </menu>"
+    "</interface>";
 
     Glib::ustring ui_info = ui_info_first + ui_info_second;
-    ui_manager->add_ui_from_string(ui_info);
-    menu_bar = ui_manager->get_widget("/MenuBar");    
+    
+    ref_xml->add_from_string(ui_info);
+
+    auto object = ref_xml->get_object("menubar");
+    auto gmenu = Glib::RefPtr<Gio::Menu>::cast_dynamic(object);    
+    
+    menu_bar = new Gtk::MenuBar(gmenu);    
 }
 
 void enigma_app_window::update_rotors()
@@ -453,32 +513,51 @@ void enigma_app_window::use_serial_port(string port)
     simulator_gui->set_output_device(real_lampboard);
 }
 
-void enigma_app_window::on_enc_state_activate()
+void enigma_app_window::sync_log_grouping()
 {
+    bool current_state;
     unsigned int group_type = FORMAT_GROUP5;
-
+    
+    log_style_menuitem->get_state(current_state);
+    
     if ((conf.get_machine_type() == "M3") || (conf.get_machine_type() == "M4"))
     {
         group_type = FORMAT_GROUP4;
     }
 
-    loghelp.set_grouping(group_type, log_style_menuitem->get_active());   
+    loghelp.set_grouping(group_type, current_state);       
+}
+
+void enigma_app_window::on_enc_state_activate()
+{
+    bool current_state; 
+    
+    log_style_menuitem->get_state(current_state);
+    current_state = !current_state;
+    log_style_menuitem->change_state(current_state);
+
+    sync_log_grouping();
 }
 
 void enigma_app_window::on_output_activate()
 {
-    loghelp.display_log_window(show_log_menuitem->get_active());
+    bool current_state;
+
+    show_log_menuitem->get_state(current_state);
+    current_state = !current_state;
+    show_log_menuitem->change_state(current_state);    
+    loghelp.display_log_window(current_state);
 }
 
 void enigma_app_window::on_log_invisible()
 {
     loghelp.block_connections();
-    show_log_menuitem->set_active(false);
+    show_log_menuitem->change_state(false);
 }
 
 void enigma_app_window::on_mode_changed()
 {
-    log_style_menuitem->set_active(simulator_gui->get_enc_flag());
+    log_style_menuitem->change_state(simulator_gui->get_enc_flag());
 }
 
 void enigma_app_window::on_randomize_activate()
@@ -508,6 +587,7 @@ void enigma_app_window::on_randomize_activate()
                 sync_rotor_pos(); 
                 // Update GUI with new settings
                 simulator_gui->set_machine(enigma);
+                sync_log_grouping();
             }
             else
             {

@@ -32,7 +32,7 @@ rmsk_defines = {}
 #rmsk_defines['INCLUDE_ENIGMA'] = 'enigma'
 
 # Build Typex with a dual printer
-#rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
+rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
 
 # ---- Build configuration variables ----
 

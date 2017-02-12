@@ -145,20 +145,25 @@ protected:
      */            
     void set_titles(Glib::ustring& last_file_name);
 
+    /*! \brief This method queries the current state of the underlying rotor machine and set the grouping value in the log dialog
+     *         accordingly.
+     */                
+    void sync_log_grouping();
+
     /*! \brief Holds the object that represents the menu action group of this application. */    
-    Glib::RefPtr<Gtk::ActionGroup> menu_action;
+    Glib::RefPtr<Gio::SimpleActionGroup> menu_action;
     
     /*! \brief Holds the object that is used to construct the menu of this application from a textual representation. */        
-    Glib::RefPtr<Gtk::UIManager> ui_manager;
+    Glib::RefPtr<Gtk::Builder> ref_builder;
     
     /*! \brief Holds the layout object that is used to stack the GUI elements (menu_bar and simulator_gui) of this application on top of each other. */    
     Gtk::Box *vbox1;
     
     /*! \brief Holds the menu item that can be used to switch the log window on or off. */    
-    Glib::RefPtr<Gtk::ToggleAction> log_item;
+    Glib::RefPtr<Gio::SimpleAction> log_item;
     
     /*! \brief Holds the menu item that can be used to switch between encryption and decryption. Also affects the presentation of data in the log dialog. */    
-    Glib::RefPtr<Gtk::ToggleAction> enc_dec_item;
+    Glib::RefPtr<Gio::SimpleAction> enc_dec_item;
 
     /*! \brief Holds the menu that is in use in this application. */
     Gtk::Widget *menu_bar;
@@ -314,7 +319,8 @@ void rotor_visual::on_randomize_machine()
     {        
         simulator_gui->set_machine(the_machine.get()); 
         machine_id = the_machine->get_description();
-        set_titles(last_file_name_used);          
+        set_titles(last_file_name_used);
+        sync_log_grouping();
     }
 }
 
@@ -338,18 +344,37 @@ void rotor_visual::on_quit_activate()
 
 void rotor_visual::on_output_activate()
 {
-    loghelp.display_log_window(log_item->get_active());
+    bool current_state;
+
+    log_item->get_state(current_state);
+    current_state = !current_state;
+    log_item->change_state(current_state);    
+    loghelp.display_log_window(current_state);
 }
 
 void rotor_visual::on_log_invisible()
 {
     loghelp.block_connections();
-    log_item->set_active(false);    
+    log_item->change_state(false);    
+}
+
+void rotor_visual::sync_log_grouping()
+{
+    bool current_state = simulator_gui->get_enc_flag();
+    
+    loghelp.set_grouping(FORMAT_GROUP5, current_state); 
 }
 
 void rotor_visual::on_enc_state_activate()
 {
-    loghelp.set_grouping(FORMAT_GROUP5, enc_dec_item->get_active()); 
+    bool current_state = simulator_gui->get_enc_flag();
+
+    current_state = !current_state;
+    // Indirectly calls on_mode_change(). The method on_mode_change() is connected to the signal that is emitted when 
+    // set_enc_flag() is called
+    simulator_gui->set_enc_flag(current_state);
+    
+    loghelp.set_grouping(FORMAT_GROUP5, current_state); 
 }
 
 void rotor_visual::on_reset()
@@ -640,7 +665,7 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
 
 void rotor_visual::on_mode_changed()
 {
-    enc_dec_item->set_active(simulator_gui->get_enc_flag());
+    enc_dec_item->change_state(simulator_gui->get_enc_flag());
 }
 
 rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
@@ -668,8 +693,8 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     win->set_resizable(false);
     
     vbox1 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    menu_action = Gtk::ActionGroup::create();
-    ui_manager = Gtk::UIManager::create();       
+    menu_action = Gio::SimpleActionGroup::create();
+    ref_builder = Gtk::Builder::create();
 
     // Create simulator GUI object
     if (dynamic_cast<enigma_base *>(the_machine.get()) == NULL)
@@ -720,69 +745,116 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     
     rand_helper.set_parent_window(win);
     
-    on_mode_changed();
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed)); 
-    on_enc_state_activate();
     win->signal_delete_event().connect(sigc::mem_fun(*this, &rotor_visual::on_my_delete_event));              
+    on_mode_changed();
 }
 
 void rotor_visual::setup_menus()
 {
-    menu_action->add(Gtk::Action::create("MenuFile", "_Machine"));
-    menu_action->add(Gtk::Action::create("loadsettings", "_Load settings ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_open));
-    menu_action->add(Gtk::Action::create("savesettingsas", "S_ave settings as ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_save_as));    
-    menu_action->add(Gtk::Action::create("savesettings", "Sa_ve settings ..."), sigc::mem_fun(file_helper, &file_operations_helper::on_file_save));        
-
-
-    menu_action->add(Gtk::Action::create("rotorpos", "Set rotor pos_itions ..."), sigc::mem_fun(*this, &rotor_visual::on_set_rotor_positions));        
-    menu_action->add(Gtk::Action::create("configure", "Confi_gure machine ..."), sigc::mem_fun(*this, &rotor_visual::on_configure_machine));        
-    log_item = Gtk::ToggleAction::create("showlogs", "Sh_ow logs ...");
-    menu_action->add(log_item, sigc::mem_fun(*this, &rotor_visual::on_output_activate));    
-    enc_dec_item = Gtk::ToggleAction::create("logstyleencrypt", "Mode: Encryption");
-    menu_action->add(enc_dec_item, sigc::mem_fun(*this, &rotor_visual::on_enc_state_activate));
-    menu_action->add(Gtk::Action::create("outputreset", "Rip _paper strip"), sigc::mem_fun(*this, &rotor_visual::on_reset));    
-    menu_action->add(Gtk::Action::create("randomize", "Ran_domize state ..."), sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
-    menu_action->add(Gtk::Action::create("processclipboard", "Process _clipboard"), sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));    
+    // Machine menu
+    menu_action->add_action("loadsettings", sigc::mem_fun(file_helper, &file_operations_helper::on_file_open));
+    menu_action->add_action("savesettingsas", sigc::mem_fun(file_helper, &file_operations_helper::on_file_save_as));    
+    menu_action->add_action("savesettings", sigc::mem_fun(file_helper, &file_operations_helper::on_file_save));        
+    menu_action->add_action("rotorpos", sigc::mem_fun(*this, &rotor_visual::on_set_rotor_positions));        
+    menu_action->add_action("configure", sigc::mem_fun(*this, &rotor_visual::on_configure_machine));
+            
+    log_item = menu_action->add_action_bool("showlogs", sigc::mem_fun(*this, &rotor_visual::on_output_activate));    
+    log_item->change_state(false);
+    enc_dec_item = menu_action->add_action_bool("logstyleencrypt", sigc::mem_fun(*this, &rotor_visual::on_enc_state_activate));
+    enc_dec_item->change_state(false);
     
-    menu_action->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &rotor_visual::on_quit_activate));
+    menu_action->add_action("outputreset", sigc::mem_fun(*this, &rotor_visual::on_reset));    
+    menu_action->add_action("randomize", sigc::mem_fun(*this, &rotor_visual::on_randomize_machine));            
+    menu_action->add_action("processclipboard", sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));    
     
-    menu_action->add(Gtk::Action::create("MenuHelp", "_Help"));
+    menu_action->add_action("Quit", sigc::mem_fun(*this, &rotor_visual::on_quit_activate));
     
-    menu_action->add(Gtk::Action::create("howtouse", "How to use the simulato_r ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
-    menu_action->add(Gtk::Action::create("saverotorset", "Save rotor se_t data ..."), sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));    
-    menu_action->add(Gtk::Action::create("about", "A_bout ..."), sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
+    // Help menu    
+    menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
+    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));    
+    menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
-
-    ui_manager->insert_action_group(menu_action);
-    win->add_accel_group(ui_manager->get_accel_group());    
+    win->insert_action_group("rotorvis", menu_action); 
 
     Glib::ustring ui_info =
-        "<ui>"
-        "  <menubar name='MenuBar'>"
-        "    <menu action='MenuFile'>"
-        "      <menuitem action='loadsettings'/>"
-        "      <menuitem action='savesettingsas'/>"       
-        "      <menuitem action='savesettings'/>"             
-        "      <menuitem action='rotorpos'/>"            
-        "      <menuitem action='configure'/>"                
-        "      <menuitem action='showlogs'/>"
-        "      <menuitem action='logstyleencrypt'/>"
-        "      <menuitem action='randomize'/>"        
-        "      <menuitem action='outputreset'/>"   
-        "      <menuitem action='processclipboard'/>"                        
-        "      <separator/>"                
-        "      <menuitem action='Quit'/>"
-        "    </menu>" 
-        "    <menu action='MenuHelp'>"
-        "      <menuitem action='howtouse'/>"
-        "      <menuitem action='saverotorset'/>"        
-        "      <menuitem action='about'/>"
-        "    </menu>"                         
-        "  </menubar>"
-        "</ui>";
+    "<interface>"
+    "  <menu id='menubar'>"
+    "    <submenu>"
+    "      <attribute name='label' translatable='yes'>_Machine</attribute>"
+    "      <section>"    
+    "      <item>"
+    "        <attribute name='label' translatable='no'>_Load settings ...</attribute>"
+    "        <attribute name='action'>rotorvis.loadsettings</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>S_ave settings as ...</attribute>"
+    "        <attribute name='action'>rotorvis.savesettingsas</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Sa_ve settings ...</attribute>"
+    "        <attribute name='action'>rotorvis.savesettings</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Set rotor pos_itions ...</attribute>"
+    "        <attribute name='action'>rotorvis.rotorpos</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Confi_gure machine ...</attribute>"
+    "        <attribute name='action'>rotorvis.configure</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Sh_ow logs ...</attribute>"
+    "        <attribute name='action'>rotorvis.showlogs</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Mode: Encryption</attribute>"
+    "        <attribute name='action'>rotorvis.logstyleencrypt</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Rip _paper strip</attribute>"
+    "        <attribute name='action'>rotorvis.outputreset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Ran_domize state ...</attribute>"
+    "        <attribute name='action'>rotorvis.randomize</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Process _clipboard</attribute>"
+    "        <attribute name='action'>rotorvis.processclipboard</attribute>"
+    "      </item>"
+    "      </section>" 
+    "      <section>"       
+    "      <item>"    
+    "        <attribute name='label' translatable='no'>_Quit</attribute>"
+    "        <attribute name='action'>rotorvis.Quit</attribute>"
+    "      </item>"    
+    "      </section>"    
+    "    </submenu>"
+    "    <submenu>"
+    "      <attribute name='label' translatable='yes'>_Help</attribute>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
+    "        <attribute name='action'>rotorvis.howtouse</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Save rotor se_t data ...</attribute>"
+    "        <attribute name='action'>rotorvis.saverotorset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>A_bout ...</attribute>"
+    "        <attribute name='action'>rotorvis.about</attribute>"
+    "      </item>"    
+    "    </submenu>"
+    "  </menu>"
+    "</interface>";
 
-    ui_manager->add_ui_from_string(ui_info);
-    menu_bar = ui_manager->get_widget("/MenuBar");    
+    ref_builder->add_from_string(ui_info);
+
+    auto object = ref_builder->get_object("menubar");
+    auto gmenu = Glib::RefPtr<Gio::Menu>::cast_dynamic(object);    
+    
+    menu_bar = new Gtk::MenuBar(gmenu);
 }
 
 /*! \brief An application class that knows how to set up and run a rotor machine simulator application for the KL7, Typex, SIGABA, SG39 and Nema.
