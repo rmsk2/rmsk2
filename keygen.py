@@ -459,6 +459,7 @@ class KeyGenWindow(Gtk.Window):
     #        
     def select_directory(self, widget):
         dialog = Gtk.FileChooserDialog("Choose output directory", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+        dialog.set_create_folders(False)
 
         # Set folder initially displayed by the dialog
         if self._outdir_entry.get_text() != '':
