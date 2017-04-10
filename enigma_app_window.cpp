@@ -64,7 +64,6 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     // Setup main window (stacking menu bar and simulator GUI object on top of each other)
     vbox1 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
     menu_action = Gio::SimpleActionGroup::create();
-    //ui_manager = Gtk::UIManager::create();    
     setup_menus();
     
     vbox1->pack_start(*menu_bar, Gtk::PACK_SHRINK, 0);

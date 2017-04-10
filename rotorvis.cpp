@@ -748,6 +748,7 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed)); 
     win->signal_delete_event().connect(sigc::mem_fun(*this, &rotor_visual::on_my_delete_event));              
     on_mode_changed();
+    sync_log_grouping();
 }
 
 void rotor_visual::setup_menus()
