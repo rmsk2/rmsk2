@@ -19,6 +19,7 @@
  *         and Enigma.
  */
 
+#include<algorithm>
 #include<app_helpers.h>
 #include<rmsk_globals.h>
 #include<Enigma.xpm>
@@ -284,7 +285,6 @@ void clipboard_helper::process_clipboard()
  */
 bool clipboard_helper::timer_func()
 {
-    gunichar help;
     Glib::ustring clip_data, result_data;
     storage_logger storage(result_data);
     sigc::connection conn;
@@ -308,12 +308,8 @@ bool clipboard_helper::timer_func()
     // by the rotor machine. The string result_data then contains the produced output. 
     conn = simulator_gui->get_key_board()->signal_output_char().connect(sigc::mem_fun(storage, &storage_logger::report_char));
     
-    for (unsigned int count = 0; count < clip_data.length(); count++)
-    {
-        // Send each character read from clipboard through the rotor machine
-        help = clip_data[count];
-        simulator_gui->simulate_key_press(help);
-    }
+    // Send input characters through rotor machine
+    for_each(clip_data.begin(), clip_data.end(), [this](gunichar c){ simulator_gui->simulate_key_press(c); });
     
     // Disconnect our storage_logger again.
     conn.disconnect();
