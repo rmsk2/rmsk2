@@ -509,7 +509,8 @@ class SG39Test(EnigmaFuncTest):
 
 ## \brief This class serves the purpose to bundle tests for indivudual rotor machines into a composite test.
 #         Using the appropriate context object it can be used for verification tests based on the TLV interface 
-#         and the command line program.
+#         and the command line program. All subordinate test cases have to have a set_processor() method as defined
+#         in the class RotorMachineFuncTest.
 #
 class VerificationTests(simpletest.CompositeTest):
     ## \brief Constructor. 
