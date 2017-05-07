@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -109,6 +109,9 @@ class TlvFuncTest(simpletest.SimpleTest):
                     
                     if not last_result:
                         self.append_note("Unexpected number of objects returned")
+
+                    # Ask server for list of known objects
+                    self.append_note("Pseudo objects returned by server: " + str(s.list_pseudo_objects()))
                     
                     # Retrieve the list of providers known to the server and append it to the notes of this test
                     self.append_note("Providers known to server: " + str(s.list_providers()))                    

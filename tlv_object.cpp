@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,15 @@ int main(int argc, char *argv[])
     // Create the rotor machine provider
     random_provider *random_prov = new random_provider(&registry);
     string random_provider_name = random_prov->get_name();
+
+    // Create the root pseudo object
+    registry_manager *root_obj = new registry_manager(&registry);
+    string root_obj_name = root_obj->get_name();
     
     string address(argv[1]);
+    
+    // Add pseudo objects
+    registry.add_pseudo_object(root_obj_name, root_obj);
     
     // Add providers to registry
     registry.add_service_provider(provider_name, arith_provider);

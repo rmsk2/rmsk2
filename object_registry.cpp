@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,12 @@ void service_provider::make_handle(string& new_handle)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
- 
+
+object_registry::object_registry() 
+    : manager(this) 
+{ 
+    num_calls = 0; 
+} 
 
 void object_registry::delete_object(string& object_name)
 {
@@ -73,6 +78,7 @@ void object_registry::clear()
 object_registry::~object_registry()
 {
     map<string, service_provider *>::iterator iter;
+    map<string, pseudo_object *>::iterator iter2;    
 
     // Delete all objects
     clear();
@@ -82,8 +88,16 @@ object_registry::~object_registry()
     {
         delete iter->second;
     }
-    
+
     func_factory.clear();
+
+    // Delete all pseudo objcets
+    for (iter2 = pseudo_objects.begin(); iter2 != pseudo_objects.end(); ++iter2)
+    {
+        delete iter2->second;
+    }
+    
+    pseudo_objects.clear();
 }
 
 void object_registry::delete_service_provider(string& class_name)
@@ -121,6 +135,19 @@ void object_registry::delete_service_provider(string& class_name)
     }
 }
 
+void object_registry::add_pseudo_object(string& pseudo_name, pseudo_object *pseudo_obj)
+{
+    pseudo_objects[pseudo_name] = pseudo_obj;
+}
+
+void object_registry::delete_pseudo_object(string& pseudo_name)
+{
+    if (pseudo_objects.count(pseudo_name) != 0)
+    {
+        pseudo_objects.erase(pseudo_name);
+    }
+}
+
 tlv_callback *object_registry::get_processor(string& object_name, string& method)
 {   
     sigc::slot<unsigned int, tlv_entry&, tlv_stream *> *result = NULL;
@@ -143,11 +170,9 @@ tlv_callback *object_registry::get_processor(string& object_name, string& method
         }
         else
         {
-            // Call to the "root" pseudo object.
-            if (object_name == "root")
+            if (pseudo_objects.count(object_name) != 0)
             {
-                // Forward the call to the regsitry manager.
-                result = manager.get_handler(method);
+                result = pseudo_objects[object_name]->get_handler(method);
             }
         }                
     }
@@ -158,10 +183,12 @@ tlv_callback *object_registry::get_processor(string& object_name, string& method
 /* ------------------------------------------------------------------------------------------- */
 
 registry_manager::registry_manager(object_registry *rgstry) 
+    : pseudo_object("root")
 {
     registry = rgstry; 
     method_pointers["clear"] = &registry_manager::clear_processor;        
-    method_pointers["listobjects"] = &registry_manager::list_objects_processor;            
+    method_pointers["listobjects"] = &registry_manager::list_objects_processor; 
+    method_pointers["listpseudoobjects"] = &registry_manager::list_pseudo_objects_processor;     
     method_pointers["listproviders"] = &registry_manager::list_providers_processor;
     method_pointers["numcalls"] = &registry_manager::get_num_calls;                
 }
@@ -201,6 +228,24 @@ unsigned int registry_manager::clear_processor(tlv_entry& params, tlv_stream *ou
     
     // Write end of result stream marker, i.e. the result code
     result = out_stream->write_error_tlv(ERR_OK);
+    
+    return result;
+}
+
+unsigned int registry_manager::list_pseudo_objects_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry result_code, object_name;
+    map<string, pseudo_object *>::iterator iter;
+        
+    for (iter = registry->get_pseudo_objects().begin(); (iter != registry->get_pseudo_objects().end()) and (result == ERR_OK); ++iter)
+    {
+        object_name.to_string(iter->first);
+        result = out_stream->write_tlv(object_name);
+    }
+
+    // Write end of result stream marker, i.e. the result code    
+    (void)out_stream->write_error_tlv(result);
     
     return result;
 }

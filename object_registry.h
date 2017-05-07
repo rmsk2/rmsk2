@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,36 @@ protected:
     unsigned long int counter;
 };
 
+/*! \brief A TLV class that serves as the base class for all TLV pseudo objects. A pseudo object can be used to implement
+ *         methods that can be called without an underlying object. In that sense subclasses of this class can be used to
+ *         implement static methods.
+ */ 
+class pseudo_object {
+public:
+    /*! \brief Constructor. The parameter obj_name has to contain the name of the pseudo object.
+     */    
+    pseudo_object(const char *obj_name) { name = string(obj_name); } 
+
+    /*! \brief This method is used to determine the callback that is capable to handle a call of the static method given in parameter
+     *         method.
+     *
+     *  NULL is returned in case of an error.
+     */ 
+    virtual tlv_callback *get_handler(string& method) = 0;
+
+    /*! \brief Returns the name of the pseudo object.
+     */        
+    virtual string get_name() { return name; }    
+
+    /*! \brief Destructor.
+     */    
+    virtual ~pseudo_object() { ; }
+
+protected:
+    /*! \brief Holds the name of the pseudo object. */    
+    string name;
+};
+
 class registry_manager;
 typedef unsigned int (registry_manager::*manager_fun)(tlv_entry& params, tlv_stream *out_stream); 
 
@@ -122,7 +152,7 @@ typedef unsigned int (registry_manager::*manager_fun)(tlv_entry& params, tlv_str
  *  TLV methods provided by the registry_manager of an object_registry appear as methods of a special object
  *  with the handle "root".
  */ 
-class registry_manager {
+class registry_manager : public pseudo_object {
 public:
     /*! \brief Constructor. The parameter obj_registry has to point to the object_registry that is serviced
      *         by this registry_manager instance. 
@@ -161,6 +191,14 @@ public:
      */    
     virtual unsigned int list_providers_processor(tlv_entry& params, tlv_stream *out_stream);    
 
+    /*! \brief This method returns the names of all pseudo objects currently known to the object_registry to 
+     *         the client. The parameter params is not evaluated and can therfore reference any valid tlv_entry object.
+     *         The parameter out_stream is used to talk to the client.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int list_pseudo_objects_processor(tlv_entry& params, tlv_stream *out_stream);    
+
     /*! \brief This method returns the number of calls handled by the object registry managed by this registry_manager
      *         object to the client.
      *
@@ -188,7 +226,7 @@ class object_registry {
 public:
     /*! \brief Constructor.
      */ 
-    object_registry() : manager(this) { num_calls = 0; }
+    object_registry();
 
     /*! \brief This is the main method of an object_registry instance. It is called by the processor callback of the tlv_server.
      *         It is used to determine a callback that is capable to handle a call of the method (given in parameter
@@ -214,6 +252,18 @@ public:
     /*! \brief This method deletes all objects currently knwon to this object_regsitry instance.
      */     
     virtual void clear();
+
+    /*! \brief This method adds a new pseudo object to this object_regsitry instance.
+     */    
+    virtual void add_pseudo_object(string& pseudo_name, pseudo_object *pseudo_obj);
+
+    /*! \brief This method returns a reference to all the pseudo objects known by this object_registry instance.
+     */    
+    virtual map<string, pseudo_object *>& get_pseudo_objects() { return pseudo_objects; }
+
+    /*! \brief This method deletes an existing pseudo object from this object_regsitry instance.
+     */        
+    virtual void delete_pseudo_object(string& pseudo_name);
 
     /*! \brief Returns a reference to the internal data structure which maps each of the object handles currently known to this
      *         object_regsitry instance to a std::pair containing a pointer to the actual object and a pointer to the associated
@@ -256,11 +306,12 @@ protected:
     map<string, pair<void *, service_provider *> > objects;
     /*! Maps service provider names to the actual service_provider objects. */
     map<string, service_provider *> func_factory;
-    /*! Holds the registry manager associated with this object_regsitry instance. */    
+    /*! Holds the registry manager associated with this object_regsitry instance. */           
     registry_manager manager;
+    /*! Maps pseudo object names to pseudo objects. */
+    map<string, pseudo_object *> pseudo_objects;    
     /*! Holds the number of calls recorded by this object registry. */        
     unsigned long int num_calls;
 };
-
 
 #endif /* __object_registry__ */

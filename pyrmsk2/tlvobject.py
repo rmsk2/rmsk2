@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -587,6 +587,14 @@ class TlvServer:
     def list_objects(self):
         param = TlvEntry().to_null()
         return self.do_method_call("root", "listobjects", param)
+
+    ## \brief This method allows to retrieve the names of all pseudo objects known to this TLV server.
+    #
+    #  \returns A sequence of strings. Each component in the sequence is the name of a pseudo object.
+    #        
+    def list_pseudo_objects(self):
+        param = TlvEntry().to_null()
+        return self.do_method_call("root", "listpseudoobjects", param)
 
     ## \brief This method allows to retrieve the names of all service providers known to this TLV server.
     #
