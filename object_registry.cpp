@@ -19,7 +19,10 @@
  */ 
 
 #include<boost/lexical_cast.hpp>
+#include<boost/scoped_ptr.hpp>
 #include<object_registry.h>
+#include<rmsk_globals.h>
+#include<rotor_machine.h>
 
 
 void service_provider::make_handle(string& new_handle)
@@ -284,6 +287,61 @@ unsigned int registry_manager::list_providers_processor(tlv_entry& params, tlv_s
     
     // Write end of result stream marker, i.e. the result code    
     (void)out_stream->write_error_tlv(result);
+    
+    return result;
+}
+
+/* ------------------------------------------------------------------------------------------- */
+
+rmsk_pseudo_object::rmsk_pseudo_object()
+    : pseudo_object("rmsk2")
+{
+    ;
+}
+
+tlv_callback *rmsk_pseudo_object::get_handler(string& method)
+{
+    tlv_callback *result = NULL;
+    
+    if (method == "getdefaultstate")
+    {
+        result = new tlv_callback(sigc::mem_fun(*this, &rmsk_pseudo_object::get_default_state_processor));
+    }
+    
+    return result;
+}
+    
+unsigned int rmsk_pseudo_object::get_default_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    Glib::KeyFile ini_file;
+    Glib::ustring ini_data;
+    tlv_entry dumped_state;
+    
+    if (params.tag != TAG_STRING)
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {    
+        string machine_name((char *)params.value.c_str());
+        boost::scoped_ptr<rotor_machine> machine(rmsk::make_default_machine(machine_name));
+        
+        if (machine.get() != NULL)
+        {        
+            machine->save_ini(ini_file);
+            ini_data = ini_file.to_data();
+            dumped_state.tag = TAG_BYTE_ARRAY;
+            dumped_state.value = basic_string<unsigned char>((unsigned char *)ini_data.c_str(), ini_data.length());
+            
+            // Tell client about processing result and write end of result stream marker.    
+            result = out_stream->write_success_tlv(dumped_state);
+        }
+        else
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+        }
+    }
     
     return result;
 }

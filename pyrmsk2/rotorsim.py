@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -2306,6 +2306,20 @@ class RotorMachine(tlvobject.TlvProxy):
         result = result.strip()
             
         return result
+
+    ## \brief Returns a default state for the machine named in the parameter machine_name.
+    #
+    #  \param [machine_name] A string. It contains the name of the machine for which a default state is to be returned. Allowed
+    #         values are: Services, M3, M4, Railway, Tirpitz, Abwehr, KD, Typex, KL7, Nema, SG39, SIGABA.
+    #
+    #  \param [server_object] An object of type TlvServer which represents a running TLV server.
+    #
+    #  \returns A byte Array. This byte array contains the requested default state.
+    #
+    @staticmethod
+    def get_default_state(machine_name, server_object):
+        param = tlvobject.TlvEntry().to_string(machine_name)
+        return server_object.do_method_call("rmsk2", "getdefaultstate", param)
 
     ## \brief Loads a machine state saved in a file and accordingly changes the state of the proxied rotor machine.
     #

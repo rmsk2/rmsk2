@@ -55,11 +55,16 @@ int main(int argc, char *argv[])
     // Create the root pseudo object
     registry_manager *root_obj = new registry_manager(&registry);
     string root_obj_name = root_obj->get_name();
+
+    // Create the rmsk2 pseudo object
+    rmsk_pseudo_object *rmsk2_obj = new rmsk_pseudo_object();
+    string rmsk2_obj_name = rmsk2_obj->get_name();
     
     string address(argv[1]);
     
     // Add pseudo objects
     registry.add_pseudo_object(root_obj_name, root_obj);
+    registry.add_pseudo_object(rmsk2_obj_name, rmsk2_obj);    
     
     // Add providers to registry
     registry.add_service_provider(provider_name, arith_provider);

@@ -123,7 +123,7 @@ public:
      */    
     pseudo_object(const char *obj_name) { name = string(obj_name); } 
 
-    /*! \brief This method is used to determine the callback that is capable to handle a call of the static method given in parameter
+    /*! \brief This method is used to determine the callback that is capable of handling a call of the static method given in parameter
      *         method.
      *
      *  NULL is returned in case of an error.
@@ -217,6 +217,34 @@ protected:
      *         member function which implements that method.
      */            
     map<string, manager_fun> method_pointers;
+};
+
+/*! \brief A TLV class that implements static methods which can be called through the "rmsk2" pseudo object.
+ */ 
+class rmsk_pseudo_object : public pseudo_object {
+public:
+    /*! \brief Constructor.
+     */        
+    rmsk_pseudo_object();
+
+    /*! \brief This method is used to determine the callback that is capable of handling a call of the static method given in parameter
+     *         method.
+     *
+     *  NULL is returned in case of an error.
+     */ 
+    virtual tlv_callback *get_handler(string& method);
+    
+    /*! \brief This method returns default state data for a spcified machine to the caller. The parameter params represents 
+     *         a string that has to contain the name of the machine for which the default state is to be returned. 
+     *         The parameter out_stream is used to talk to the client.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int get_default_state_processor(tlv_entry& params, tlv_stream *out_stream);    
+
+    /*! \brief Destructor.
+     */            
+    virtual ~rmsk_pseudo_object() { ; }
 };
 
 /*! \brief A TLV class that manages all TLV objects known to a TLV server. It delegates the creation of new objects and
