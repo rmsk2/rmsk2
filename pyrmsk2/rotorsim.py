@@ -2312,14 +2312,15 @@ class RotorMachine(tlvobject.TlvProxy):
     #  \param [machine_name] A string. It contains the name of the machine for which a default state is to be returned. Allowed
     #         values are: Services, M3, M4, Railway, Tirpitz, Abwehr, KD, Typex, KL7, Nema, SG39, SIGABA.
     #
-    #  \param [server_object] An object of type TlvServer which represents a running TLV server.
+    #  \param [server_address] A string which holds the address of the TLV server to talk to.
     #
     #  \returns A byte Array. This byte array contains the requested default state.
     #
     @staticmethod
-    def get_default_state(machine_name, server_object):
+    def get_default_state(machine_name, server_address):
         param = tlvobject.TlvEntry().to_string(machine_name)
-        return server_object.do_method_call("rmsk2", "getdefaultstate", param)
+        res = tlvobject.TlvServer.method_call(server_address, "rmsk2", "getdefaultstate", param)
+        return res[0]
 
     ## \brief Loads a machine state saved in a file and accordingly changes the state of the proxied rotor machine.
     #

@@ -573,12 +573,31 @@ class TlvServer:
     #           server.
     #    
     def do_method_call(self, object_name, method_name, params):
+        return TlvServer.method_call(self.address, object_name, method_name, params)
+        
+    ## \brief This method allows to conduct a transaction with the TLV server. Which means it allows to call a method
+    #         of an object which is managed by this server.
+    #
+    #  \param [server_address] Is a string. It has to contain the address of the server to talk to.
+    #
+    #  \param [object_name] Is a string. It specifies the name of the object which is to be used in the method call.
+    #
+    #  \param [method_name] Is a string. It names the method which is to be called on the object specified by the
+    #         parameter object_name.
+    #
+    #  \param [params] Is a TlvEntry object. It represents the parameter which is to be used for the method call.
+    #
+    #  \returns A sequence. The type of the sequence components is generic and depends on the values sent back by the 
+    #           server.
+    #
+    @staticmethod    
+    def method_call(server_address, object_name, method_name, params):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.connect(self.address)    
+        sock.connect(server_address)    
         res = TlvStream.transact(sock, object_name, method_name, params)    
         sock.shutdown(socket.SHUT_RDWR)
         sock.close()
-        return res        
+        return res                
 
     ## \brief This method allows to retrieve the names of all objects known to this TLV server.
     #
@@ -603,7 +622,6 @@ class TlvServer:
     def list_providers(self):
         param = TlvEntry().to_null()
         return self.do_method_call("root", "listproviders", param)
-
 
     ## \brief This method allows to retrieve the number of calls made to this TLV server.
     #
