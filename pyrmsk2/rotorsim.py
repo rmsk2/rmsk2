@@ -2322,6 +2322,26 @@ class RotorMachine(tlvobject.TlvProxy):
         res = tlvobject.TlvServer.method_call(server_address, "rmsk2", "getdefaultstate", param)
         return res[0]
 
+    ## \brief Returns a state as defined in parameters machine_name, machine_state and rotor_pos
+    #
+    #  \param [machine_name] A string. It contains the name of the machine for which a default state is to be returned. Allowed
+    #         values are: Services, M3, M4, Railway, Tirpitz, Abwehr, KD, Typex, KL7, Nema, SG39, SIGABA.
+    #
+    #  \param [machine_state] A string to string dictionary. It has to specify the desired machine configuration
+    #
+    #  \param [server_address] A string which holds the address of the TLV server to talk to.
+    #
+    #  \param [rotor_pos] A string. Specifies the position of the rotors that is to be set on the returned state.
+    #    
+    #  \returns A byte Array. This byte array contains the requested state.
+    #
+    @staticmethod
+    def make_state(machine_name, machine_state, server_address, rotor_pos = ''):
+        params = [tlvobject.TlvEntry().to_string(machine_name), tlvobject.TlvDict.dict_to_tlv(machine_state), tlvobject.TlvEntry().to_string(rotor_pos)]
+        param = tlvobject.TlvEntry().to_sequence(params)
+        res = tlvobject.TlvServer.method_call(server_address, "rmsk2", "makestate", param)
+        return res[0]
+
     ## \brief Loads a machine state saved in a file and accordingly changes the state of the proxied rotor machine.
     #
     #  \param [file_name] A string. It contains name of a file which is used to store a machine state and is to be read.

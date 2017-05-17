@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public:
     void print();
 
     /*! \brief Parses the contents bytes. Does not do much, if tlv_entry::tag is not TAG_SEQUENCE. In case it is
-     *         TAG_SEQUNCE the contents bytes are parsed in order to fill the vector tlv_entry::children. 
+     *         TAG_SEQUENCE the contents bytes are parsed in order to fill the vector tlv_entry::children. 
      *
      *  Returns true in case the operation was successfull and false otherwise.      
      */ 

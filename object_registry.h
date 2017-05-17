@@ -242,6 +242,17 @@ public:
      */    
     virtual unsigned int get_default_state_processor(tlv_entry& params, tlv_stream *out_stream);    
 
+    /*! \brief This method creates state data for a requested machine type an configuration and returns it to the client. The parameter 
+     *         params has to be a vector of length three. The first element has to be a string that specifies the machine name, the second
+     *         has to be a string to string dirctionary that specifies a suitable machine configuration and the third has to specify a 
+     *         rotor position in the form of a string. If you do not want change the rotor position an empty string has to be provided as
+     *         the rotor position. The parameter out_stream is used to talk to the client.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int get_state_processor(tlv_entry& params, tlv_stream *out_stream);    
+
+
     /*! \brief Destructor.
      */            
     virtual ~rmsk_pseudo_object() { ; }

@@ -22,7 +22,9 @@
 #include<boost/scoped_ptr.hpp>
 #include<object_registry.h>
 #include<rmsk_globals.h>
+#include<configurator.h>
 #include<rotor_machine.h>
+#include<tlv_data_struct.h>
 
 
 void service_provider::make_handle(string& new_handle)
@@ -307,6 +309,13 @@ tlv_callback *rmsk_pseudo_object::get_handler(string& method)
     {
         result = new tlv_callback(sigc::mem_fun(*this, &rmsk_pseudo_object::get_default_state_processor));
     }
+    else
+    {
+        if (method == "makestate")
+        {
+            result = new tlv_callback(sigc::mem_fun(*this, &rmsk_pseudo_object::get_state_processor));
+        }
+    }
     
     return result;
 }
@@ -339,9 +348,115 @@ unsigned int rmsk_pseudo_object::get_default_state_processor(tlv_entry& params, 
         }
         else
         {
-            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            result = out_stream->write_error_tlv(ERR_OBJECT_CREATE);
         }
     }
+    
+    return result;
+}
+
+unsigned int rmsk_pseudo_object::get_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    string machine_name, rotor_positions;
+    ustring rotor_pos_unicode;
+    string config_name;
+    map<string, string> config_dict;
+    tlv_map tlv_config_dict;
+    Glib::KeyFile ini_file;
+    Glib::ustring ini_data;
+    tlv_entry dumped_state;    
+    
+    do
+    {
+        // Verify number and type of parameters
+        if (params.tag != TAG_SEQUENCE)
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+
+        if (!params.parse_all())
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;
+        }
+
+        if (params.children.size() != 3)
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;        
+        }        
+        
+        // Parse and convert elements of parameter vector        
+        if (tlv_config_dict.set_elements(params.children[1]))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;        
+        }
+        
+        if (!params.children[0].tlv_convert(machine_name))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;        
+        }
+
+        if (!params.children[2].tlv_convert(rotor_positions))
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+            break;        
+        }
+        
+        // Parameter verified correctly. Now do the real work. First create a default machine state.
+        boost::scoped_ptr<rotor_machine> machine(rmsk::make_default_machine(machine_name));
+        
+        if (machine.get() == NULL)
+        {
+            result = out_stream->write_error_tlv(ERR_OBJECT_CREATE);
+            break;        
+        }
+        
+        // Change machine state to desired configurataion
+        config_name = rmsk::get_config_name(machine.get());
+        
+        boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(config_name));
+        
+        if (c.get() == NULL)
+        {
+            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+            break;
+        }
+        
+        tlv_config_dict.tlv_convert(config_dict);
+                
+        if (c->configure_machine(config_dict, machine.get()) != ERR_OK)
+        {
+            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+            break;        
+        }
+        
+        // Set rotor positions to desired value       
+        Glib::ustring rotor_pos_unicode((char *)params.children[2].value.c_str());
+        
+        if (rotor_pos_unicode != "")
+        {
+            if (machine->move_all_rotors(rotor_pos_unicode))
+            {
+                result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                break;
+            }
+        }
+        
+        // Determine machine state
+        machine->save_ini(ini_file);
+        ini_data = ini_file.to_data();
+        dumped_state.tag = TAG_BYTE_ARRAY;
+        dumped_state.value = basic_string<unsigned char>((unsigned char *)ini_data.c_str(), ini_data.length());
+        
+        // Tell client about processing result and write end of result stream marker.    
+        result = out_stream->write_success_tlv(dumped_state);                                
+    
+    } while(0);
     
     return result;
 }
