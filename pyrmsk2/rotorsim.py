@@ -21,12 +21,9 @@
 #        C++ program tlv_object. On top of that these classes provide the functionality to
 #        create rotor machine state files which then can be used with the rotorsim program.
 
-import sys
 from gi.repository import GLib
-import os
 import datetime
 import pyrmsk2.tlvobject as tlvobject
-import binascii
 
 RESULT_OK = 0
 RESULT_ERROR = 42
@@ -173,7 +170,7 @@ class Permutation:
         return len(self.__val)
 
 
-## \brief This class is intended to bind a rotor position and a machine configuration together and therefore
+## \brief This class is intended to bind a rotor position, machine configuration and machine name together and therefore
 #         can be used to store all relevant elements of a rotor machine state.
 #
 class StateSpec:
@@ -184,6 +181,8 @@ class StateSpec:
     #
     #  \param [config] Is a string to string dictionary. It has to contain the the machine configuration that is
     #         stored in this StateSpec instance.      
+    #
+    #  \param [machine_name] Is a string which has to contain the name of the machine to which the config applies.      
     #
     def __init__(self, rotor_pos, config, machine_name = ''):
         self._rotor_pos = rotor_pos
@@ -217,8 +216,7 @@ class StateSpec:
 
 ## \brief This class allows to create a StateSpec object that specifies a default state for a SIGABA.
 #            
-class SigabaMachineState:
-        
+class SigabaMachineState:        
     ## \brief This static method returns the default machine configuration for a SIGABA.
     #
     #  \returns A StateSpec object. This object represents the SIGABA default state.
@@ -254,7 +252,7 @@ class NemaState:
 ## \brief This class allows to create a StateSpec object that specifies a default state for a KL7.
 #                      
 class KL7State:
-            ## \brief This static method returns the default machine configuration for a KL7.
+    ## \brief This static method returns the default machine configuration for a KL7.
     #
     #  \returns A StateSpec object. This object represents the KL7 default state.
     #    
@@ -298,7 +296,7 @@ class SG39State:
 ## \brief This class allows to create a StateSpec object that specifies a default state for a Typex.
 #             
 class TypexState:
-            ## \brief This static method returns the default machine configuration for a Typex.
+    ## \brief This static method returns the default machine configuration for a Typex.
     #
     #  \returns A StateSpec object. This object represents the Typex default state.
     #    
@@ -353,8 +351,7 @@ class UnsteckeredEnigmaState:
             config['rings'] = 'aaaa'
             name = 'Railway'            
             
-        return StateSpec(rotor_pos, config, name)            
-
+        return StateSpec(rotor_pos, config, name)
 
 
 ## \brief This class allows to create a StateSpec object that specifies a default state for an M3 or Services Enigma.
