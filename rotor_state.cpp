@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ protected:
 
     /*! \brief This method checks whether the command line parameters given on the command
      *         line for the machine specific parameters are valid or not. In case of an error
-     *         the string refrenced by parameter err_message is set to an error message.
+     *         the string referenced by parameter err_message is set to an error message.
      *
      *  Returns RETVAL_OK if the parameters are valid.
      */    
@@ -186,22 +186,13 @@ int rotor_state::check_machine_specific_options(string& err_message)
     // Verify dynamic per machine options
     for (iter_conf_map = config_map.begin(); (iter_conf_map != config_map.end()) && (return_code == RETVAL_OK); ++iter_conf_map)
     {
-        // Given value must not be empty
-        if (iter_conf_map->second == "")
+        // Check that true or false is used as a value for a boolean option
+        if (bool_config_map[iter_conf_map->first])
         {
-            err_message = "No value given for option " + iter_conf_map->first;
-            return_code = ERR_WRONG_COMMAND_LINE;
-        }
-        else
-        {
-            // Check that true or false is used as a value for a boolean option
-            if (bool_config_map[iter_conf_map->first])
+            if ((iter_conf_map->second != CONF_TRUE) && (iter_conf_map->second != CONF_FALSE))
             {
-                if ((iter_conf_map->second != CONF_TRUE) && (iter_conf_map->second != CONF_FALSE))
-                {
-                    err_message = "Value given for option " + iter_conf_map->first + " has to be either true or false";
-                    return_code = ERR_WRONG_COMMAND_LINE;
-                }
+                err_message = "Value given for option " + iter_conf_map->first + " has to be either true or false";
+                return_code = ERR_WRONG_COMMAND_LINE;
             }
         }
     }      

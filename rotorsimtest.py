@@ -33,9 +33,13 @@ class RotorMachineFuncTest(simpletest.SimpleTest):
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, name, proc):
+    #  \param [state_helper] Is an object that has a make_state method. It expected that instances of
+    #         rotorsim.StateHelper or cmdlinetest.CLIRotorState are used. 
+    #
+    def __init__(self, name, proc, state_helper = None):
         super().__init__(name)
         self._proc = proc
+        self._state_proc = state_helper
     
     ## \brief Sets the object that is used to perform decrytpion operations.
     #
@@ -46,6 +50,16 @@ class RotorMachineFuncTest(simpletest.SimpleTest):
     #        
     def set_processor(self, proc):
         self._proc = proc
+
+    ## \brief Sets the object that is used to generate state data.
+    #
+    #  \param [state_helper] Is an object that has a make_state method. It expected that instances of
+    #         rotorsim.StateHelper or cmdlinetest.CLIRotorState are used.
+    #
+    #  \returns Nothing.
+    #        
+    def set_state_proc(self, state_helper):
+        self._state_proc = state_helper
 
 
 ## \brief This class serves as a base class for the verification of all the Enigma variants.
@@ -61,9 +75,8 @@ class EnigmaFuncTest(RotorMachineFuncTest):
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, name, enig_rotor_set, proc):
+    def __init__(self, name, proc):
         super().__init__(name, proc)
-        self._rotor_set = enig_rotor_set
         self._help = Permutation()
 
 
@@ -72,14 +85,11 @@ class EnigmaFuncTest(RotorMachineFuncTest):
 class M4EnigmaTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("M4 Verification Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("M4 Verification Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -87,8 +97,9 @@ class M4EnigmaTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        enigma_M4_state = M4EnigmaState.get_default_state(self._rotor_set)                
-        self._proc.set_state(enigma_M4_state.render_state())
+        enigma_M4_config = M4EnigmaState.get_default_config()        
+        enigma_M4_state = self._state_proc.make_state('M4', enigma_M4_config.config, enigma_M4_config.rotor_pos);               
+        self._proc.set_state(enigma_M4_state)
         
         decryption_result = self._proc.decrypt('nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez')
         self.append_note("Decryption result: " + decryption_result)
@@ -102,14 +113,11 @@ class M4EnigmaTest(EnigmaFuncTest):
 class ServicesUhrTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Services Uhr Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Services Uhr Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -117,9 +125,13 @@ class ServicesUhrTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        enigma_I_state = ServicesEnigmaState.get_default_state('Services', self._rotor_set) 
-        enigma_I_state.set_stecker_brett('adcnetflgijvkzpuqywx', True, 27)               
-        self._proc.set_state(enigma_I_state.render_state())
+        enigma_I_config = ServicesEnigmaState.get_default_config('Services')
+        enigma_I_config.config['usesuhr'] = 'true'
+        enigma_I_config.config['plugs'] = '27:adcnetflgijvkzpuqywx'
+        
+        enigma_I_state = self._state_proc.make_state('Services', enigma_I_config.config, enigma_I_config.rotor_pos)
+
+        self._proc.set_state(enigma_I_state)
         
         decryption_result = self._proc.decrypt('ukpfhallqcdnbffcghudlqukrbpyiyrdlwyalykcvossffxsyjbhbghdxawukjadkelptyklgfxqahxmmfpioqnjsgaufoxzggomjfryhqpccdivyicgvyx')
         self.append_note("Decryption result: " + decryption_result)
@@ -133,14 +145,11 @@ class ServicesUhrTest(EnigmaFuncTest):
 class KDTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("KD Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("KD Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -148,8 +157,9 @@ class KDTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        enigma_kd_state = UnsteckeredEnigmaState.get_default_state('KDEnigma', self._rotor_set)                
-        self._proc.set_state(enigma_kd_state.render_state())
+        enigma_kd_config = UnsteckeredEnigmaState.get_default_config('KDEnigma')
+        enigma_kd_state = self._state_proc.make_state('KD', enigma_kd_config.config, enigma_kd_config.rotor_pos)                
+        self._proc.set_state(enigma_kd_state)
         
         decryption_result = self._proc.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr')
         self.append_note("Decryption result: " + decryption_result)
@@ -163,14 +173,11 @@ class KDTest(EnigmaFuncTest):
 class TypexTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Typex Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Typex Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -178,8 +185,9 @@ class TypexTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        typex_state = TypexState.get_default_state(self._rotor_set)                
-        self._proc.set_state(typex_state.render_state())
+        typex_config = TypexState.get_default_config()
+        typex_state = self._state_proc.make_state('Typex', typex_config.config, typex_config.rotor_pos)
+        self._proc.set_state(typex_state)
         
         decryption_result = self._proc.decrypt('ptwcichvmijbkvcazuschqyaykvlbswgqxrqujjnyqyqptrlaly')
         self.append_note("Decryption result: " + decryption_result)
@@ -193,14 +201,11 @@ class TypexTest(EnigmaFuncTest):
 class TypexTestY269(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Typex Test Y269", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Typex Test Y269", proc)
 
     ## \brief Performs the verification test.
     #
@@ -208,19 +213,16 @@ class TypexTestY269(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
+                
+        typex_config = {}
+        typex_config['rotorset'] = 'Y269'
+        typex_config['plugs'] = ''
+        typex_config['rings'] = 'aaaaa'
+        typex_config['rotors'] = 'aNbNcRdNeN'
+        typex_config['reflector'] = 'arbycudheqfsglixjpknmotwvz'
+        typex_state = self._state_proc.make_state('Typex', typex_config, 'aaaaa')
         
-        self._rotor_set.change_reflector(es.TYPEX_Y_269_UKW, 'arbycudheqfsglixjpknmotwvz')        
-        typex_state = TypexState(self._rotor_set)
-        
-        typex_state.default_set_name = 'Y269'
-        typex_state.insert_typex_rotor('stator1', es.TYPEX_Y_269_E, 'a', 'a')
-        typex_state.insert_typex_rotor('stator2', es.TYPEX_Y_269_D, 'a', 'a')        
-        typex_state.insert_typex_rotor('fast', es.TYPEX_Y_269_C, 'a', 'a', INSERT_REVERSE)
-        typex_state.insert_typex_rotor('middle', es.TYPEX_Y_269_B, 'a', 'a')        
-        typex_state.insert_typex_rotor('slow', es.TYPEX_Y_269_A, 'a', 'a')          
-        typex_state.insert_typex_rotor('umkehrwalze', es.TYPEX_Y_269_UKW, 'a', 'a')              
-        
-        self._proc.set_state(typex_state.render_state())
+        self._proc.set_state(typex_state)
         
         decryption_result = self._proc.decrypt('agdzdfthgeocgrmyjsbukuztd')
         self.append_note("Decryption result: " + decryption_result)
@@ -234,14 +236,11 @@ class TypexTestY269(EnigmaFuncTest):
 class TirpitzTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Tirpitz Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Tirpitz Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -249,8 +248,10 @@ class TirpitzTest(EnigmaFuncTest):
     #                
     def test(self):
         result = super().test()
-        enigma_t_state = UnsteckeredEnigmaState.get_default_state('TirpitzEnigma', self._rotor_set)                                
-        self._proc.set_state(enigma_t_state.render_state())
+
+        enigma_t_config = UnsteckeredEnigmaState.get_default_config('TirpitzEnigma')                                
+        enigma_t_state = self._state_proc.make_state('Tirpitz', enigma_t_config.config, enigma_t_config.rotor_pos)
+        self._proc.set_state(enigma_t_state)        
                                           
         decryption_result = self._proc.decrypt('rhmbwnbzgmmnkperufvnyjfkyqg')
         self.append_note("Decryption result: " + decryption_result)
@@ -264,14 +265,11 @@ class TirpitzTest(EnigmaFuncTest):
 class AbwehrTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Abwehr Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Abwehr Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -279,8 +277,10 @@ class AbwehrTest(EnigmaFuncTest):
     #                        
     def test(self):
         result = super().test()
-        enigma_abw_state = UnsteckeredEnigmaState.get_default_state('AbwehrEnigma', self._rotor_set)                        
-        self._proc.set_state(enigma_abw_state.render_state())
+        
+        enigma_abwehr_config = UnsteckeredEnigmaState.get_default_config('AbwehrEnigma')                                
+        enigma_abwehr_state = self._state_proc.make_state('Abwehr', enigma_abwehr_config.config, enigma_abwehr_config.rotor_pos)
+        self._proc.set_state(enigma_abwehr_state)        
         
         decryption_result = self._proc.decrypt('gjuiycmdguvttffqpzmxkvctzusobzldzumhqmjxwtzwmqnnuwidyeqpgvfzetolb')
         self.append_note("Decryption result: " + decryption_result)
@@ -294,14 +294,11 @@ class AbwehrTest(EnigmaFuncTest):
 class RailwayTest(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, enig_rotor_set, proc = None):
-        super().__init__("Railway Test", enig_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("Railway Test", proc)
     
     ## \brief Performs the verification test.
     #
@@ -309,8 +306,11 @@ class RailwayTest(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        enigma_rb_state = UnsteckeredEnigmaState.get_default_state('RailwayEnigma', self._rotor_set)                        
-        self._proc.set_state(enigma_rb_state.render_state())
+        
+        enigma_railway_config = UnsteckeredEnigmaState.get_default_config('RailwayEnigma')                                
+        enigma_railway_state = self._state_proc.make_state('Railway', enigma_railway_config.config, enigma_railway_config.rotor_pos)
+        self._proc.set_state(enigma_railway_state)        
+
         
         decryption_result = self._proc.decrypt('zbijbjetellsdidqbyocxeohngdsxnwlifuuvdqlzsyrbtbwlwlxpgujbhurbikgtkdztgtexjxhulfkiuqnjbeqgccryitomeyirckuji')
         self.append_note("Decryption result: " + decryption_result)
@@ -326,19 +326,11 @@ class SigabaTest(RotorMachineFuncTest):
     #
     #  \param [name] Is a string. It has to specifiy a textual description for the test.
     #    
-    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's crypt and driver rotors.
-    #
-    #  \param [index_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's index rotors.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, name, normal_rotor_set, index_rotor_set, proc = None):
+    def __init__(self, name, proc = None):
         super().__init__(name, proc)
-        self._rotor_set = normal_rotor_set 
-        self._index_rotor_set = index_rotor_set
 
 
 ## \brief This class implements a verification test for the CSP889 variant of the SIGABA.
@@ -346,17 +338,11 @@ class SigabaTest(RotorMachineFuncTest):
 class CSP889Test(SigabaTest):
     ## \brief Constructor. 
     #
-    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's crypt and driver rotors.
-    #
-    #  \param [index_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's index rotors.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, normal_rotor_set, index_rotor_set, proc = None):
-        super().__init__('CSP889 Test', normal_rotor_set, index_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__('CSP889 Test', proc)
 
     ## \brief Performs the verification test.
     #
@@ -364,8 +350,10 @@ class CSP889Test(SigabaTest):
     #        
     def test(self):
         result = super().test()
-        csp889_state = SigabaMachineState.get_default_state(self._rotor_set, self._index_rotor_set)                        
-        self._proc.set_state(csp889_state.render_state())
+        
+        csp889_config = SigabaMachineState.get_default_config()                
+        csp889_state = self._state_proc.make_state('SIGABA', csp889_config.config, csp889_config.rotor_pos)                        
+        self._proc.set_state(csp889_state)
         self._proc.sigaba_setup(1, 4)
         self._proc.sigaba_setup(3, 2)
         self._proc.sigaba_setup(5, 1)
@@ -382,17 +370,11 @@ class CSP889Test(SigabaTest):
 class CSP2900Test(SigabaTest):
     ## \brief Constructor. 
     #
-    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's crypt and driver rotors.
-    #
-    #  \param [index_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used for the SIGABA's index rotors.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, normal_rotor_set, index_rotor_set, proc = None):
-        super().__init__('CSP2900 Test', normal_rotor_set, index_rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__('CSP2900 Test', proc)
     
     ## \brief Performs the verification test.
     #
@@ -400,9 +382,12 @@ class CSP2900Test(SigabaTest):
     #         
     def test(self):
         result = super().test()
-        csp2900_state = SigabaMachineState.get_default_state(self._rotor_set, self._index_rotor_set)        
-        csp2900_state.csp_2900_flag = True                        
-        self._proc.set_state(csp2900_state.render_state())
+
+        csp2900_config = SigabaMachineState.get_default_config()
+        csp2900_config.config['csp2900'] = 'true'
+        csp2900_state = self._state_proc.make_state('SIGABA', csp2900_config.config, csp2900_config.rotor_pos)                        
+        self._proc.set_state(csp2900_state)
+
         self._proc.sigaba_setup(2, 3)
         self._proc.sigaba_setup(3, 3)
         self._proc.sigaba_setup(4, 3)
@@ -419,15 +404,11 @@ class CSP2900Test(SigabaTest):
 class NemaTest(RotorMachineFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors used by the Nema
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, normal_rotor_set, proc = None):
+    def __init__(self, proc = None):
         super().__init__('Nema Test', proc)
-        self._rotor_set = normal_rotor_set
     
     ## \brief Performs the verification test.
     #
@@ -435,8 +416,10 @@ class NemaTest(RotorMachineFuncTest):
     #         
     def test(self):
         result = super().test()
-        nema_state = NemaState.get_default_state(self._rotor_set)        
-        self._proc.set_state(nema_state.render_state())      
+        
+        nema_config = NemaState.get_default_config()        
+        nema_state = self._state_proc.make_state('Nema', nema_config.config, nema_config.rotor_pos)
+        self._proc.set_state(nema_state)      
                                           
         decryption_result = self._proc.decrypt('hrsbvootzucrwlmgrmgvwywovnf')
         self.append_note("Decryption result: " + decryption_result)
@@ -450,15 +433,11 @@ class NemaTest(RotorMachineFuncTest):
 class KL7Test(RotorMachineFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [normal_rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about the rotors and rings used by the KL7
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, normal_rotor_set, proc = None):
+    def __init__(self, proc = None):
         super().__init__('KL7 Test', proc)
-        self._rotor_set = normal_rotor_set
     
     ## \brief Performs the verification test.
     #
@@ -466,8 +445,9 @@ class KL7Test(RotorMachineFuncTest):
     #         
     def test(self):
         result = super().test()
-        kl7_state = KL7State.get_default_state(self._rotor_set)        
-        self._proc.set_state(kl7_state.render_state())      
+        kl7_config = KL7State.get_default_config()        
+        kl7_state = self._state_proc.make_state('KL7', kl7_config.config, kl7_config.rotor_pos)
+        self._proc.set_state(kl7_state)      
         self._proc.step()        
                                           
         decryption_result = self._proc.decrypt('lpzocrfybrjmwhzrtsiygtxhuodgyyiuogpamxkfcjpplqkhss')
@@ -482,14 +462,11 @@ class KL7Test(RotorMachineFuncTest):
 class SG39Test(EnigmaFuncTest):
     ## \brief Constructor. 
     #
-    #  \param [rotor_set] Is an object of type rotorsim.RotorSet. It specifies a rotor set
-    #         which contains information about SG39 rotors.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
-    def __init__(self, rotor_set, proc = None):
-        super().__init__("SG39 Test", rotor_set, proc)
+    def __init__(self, proc = None):
+        super().__init__("SG39 Test", proc)
 
     ## \brief Performs the verification test.
     #
@@ -497,8 +474,9 @@ class SG39Test(EnigmaFuncTest):
     #        
     def test(self):
         result = super().test()
-        sg39_state = SG39State.get_default_state(self._rotor_set)                
-        self._proc.set_state(sg39_state.render_state())
+        sg39_config = SG39State.get_default_config()
+        sg39_state = self._state_proc.make_state('SG39', sg39_config.config, sg39_config.rotor_pos)                
+        self._proc.set_state(sg39_state)
         
         decryption_result = self._proc.decrypt('obkjdynovmmlwecxvyqstbepogmdskbengespfrpkrjkfivhgugknhclgzlgdqjrkwwvoprwszturkjfioyfbudxsytietcyppnyocoufqxvgozqpskhkmprdzyzcjgcszepfuppqmcitghyvpoo')
         self.append_note("Decryption result: " + decryption_result)
@@ -518,57 +496,14 @@ class VerificationTests(simpletest.CompositeTest):
     #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
     #        be performed.      
     #
-    #  \param [rotor_set] Is a RotorSet object. It represents the relevant rotor set.
-    #         
-    #  \param [index_rotor_set] Is a RotorSet object. It represents the index rotor set. This is only relevant for
-    #         tests which make use of a SIGABA.
-    #
     #  \param [context] Is a callable object or function that takes a function f as an argument. That function f has to have the
     #         same signature as the method inner_test. The context object is responsible for creating the machine object with
     #         which f can be called and after that uses this machine object to call the function f that it was given as
     #         a parameter.
     #
-    def __init__(self, name, rotor_set, index_rotor_set, context):
+    def __init__(self, name, context):
         super().__init__(name)
-        self._r_set = rotor_set
-        self._index_r_set = index_rotor_set
         self._context = context
-
-    ## \brief Returns the rotor set that is used for the cipher and driver submachines.
-    #
-    #  \returns An object with the same interface as rotorsim.RotorSet.
-    #            
-    @property
-    def rotor_set(self):
-        return self._r_set
-
-    ## \brief Sets the rotor set that is used for the cipher and driver submachines.
-    #
-    #  \param [new_val] An object with the same interface as rotorsim.RotorSet that contains the new rotor set.
-    #
-    #  \returns Nothing.
-    #            
-    @rotor_set.setter
-    def rotor_set(self, new_val):
-        self._r_set = new_val
-
-    ## \brief Returns the rotor set that is used for the index submachine.
-    #
-    #  \returns An object with the same interface as rotorsim.RotorSet.
-    #            
-    @property
-    def index_rotor_set(self):
-        return self._index_r_set
-
-    ## \brief Sets the rotor set that is used for the index submachine.
-    #
-    #  \param [new_val] An object with the same interface as rotorsim.RotorSet that contains the new rotor set.
-    #
-    #  \returns Nothing.
-    #            
-    @index_rotor_set.setter
-    def index_rotor_set(self, new_val):
-        self._index_r_set = new_val
 
     ## \brief Sets the object that is used to perform decrytpion operations in all subordinate test cases.
     #
@@ -581,17 +516,32 @@ class VerificationTests(simpletest.CompositeTest):
         for i in self.test_cases:
             i.set_processor(proc)
 
+    ## \brief Sets the object that is used to generate state data in all subordinate test cases.
+    #
+    #  \param [state_helper] Is an object that has a make_state method. It expected that instances of
+    #         rotorsim.StateHelper or cmdlinetest.CLIRotorState are used. 
+    #
+    #  \returns Nothing.
+    #            
+    def set_state_proc(self, state_helper):
+        for i in self.test_cases:
+            i.set_state_proc(state_helper)
+
     ## \brief Performs the verification test.
     #
     #  \param [machine] Is an object with the same interface as rotorsim.RotorMachine. This object is used to
     #         do test en/decryptions.
     #
+    #  \param [state_helper] Is an object that has a make_state method. It expected that instances of
+    #         rotorsim.StateHelper or cmdlinetest.CLIRotorState are used. 
+    #    
     #  \returns A boolean. A return value of True means that the test was successfull.
     #    
-    def inner_test(self, machine):
+    def inner_test(self, machine, state_helper = None):
         result = True
         try:            
             self.set_processor(machine)
+            self.set_state_proc(state_helper)
             result = super().test()
         except:
             self.append_note("EXCEPTION!!!!")
@@ -611,9 +561,13 @@ class VerificationTests(simpletest.CompositeTest):
 #
 def tlv_context(inner_test):
     result = True
-    m4_state = M4EnigmaState.get_default_state().render_state()
-    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as machine:
-        result = inner_test(machine)        
+
+    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server:
+        state_helper = StateHelper(server.address)
+        m4_state = state_helper.get_default_state('M4')
+
+        with RotorMachine(m4_state, server.address) as machine:
+            result = inner_test(machine, state_helper)        
     
     return result       
     
@@ -636,90 +590,98 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
     #            
     def test(self):
         result = super().test()
-        
-        m4_state = M4EnigmaState.get_default_state().render_state()
-        csp889_state = SigabaMachineState.get_default_state().render_state()
-        sg39_state = SG39State.get_default_state().render_state()        
-            
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
-            try:
-                original_state = m4_obj.get_state()
-                
-                # Do a simple test decryption
-                dec_result = m4_obj.decrypt('nczwvusx')
-                last_result = (dec_result == 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                
-                # Verfiy that the machine's state has changed by the preceeding decryptions
-                dec_result = m4_obj.decrypt('nczwvusx')
-                last_result = (dec_result != 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                
-                # Restore original state
-                m4_obj.set_state(original_state)
-                
-                # Verify that the original state has been restored by performing the same test decryption again
-                dec_result = m4_obj.decrypt('nczwvusx')                
-                last_result = (dec_result == 'vonvonjl')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected M4 decryption result: " + dec_result)
-                                
-                m4_obj.set_state(original_state)                        
-                
-                # Verify step() method
-                step_result = m4_obj.step(5)                
-                last_result = ((len(step_result) == 5) and (step_result[4] == 'vjnf'))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor positon: " + str(step_result))
-                
-                # Test get_description() method
-                description = m4_obj.get_description()
-                last_result = (description == 'M4Enigma')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected machine description: " + description)
-                                
-                m4_obj.set_state(csp889_state)
-                                
-                # Verify that returned description changed to new machine type
-                description = m4_obj.get_description()
-                last_result = (description == 'CSP889')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected machine description: " + description)
-                
-                # Test sigaba_setup() method                
-                setup_step_result = m4_obj.sigaba_setup(1, 3)
-                last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000lomooolonm'))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor position: " + str(setup_step_result))
-               
-                m4_obj.set_state(sg39_state)
-                
-                # Test get_rotor_positions() method                                
-                rotor_pos = m4_obj.get_rotor_positions()
-                last_result = (rotor_pos == 'frqdaph')
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected rotor positions: " + rotor_pos)
                     
-                # Test get_permutations() method                                
-                perms = m4_obj.get_permutations(10)
-                last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
-                result = result and last_result
-                if not last_result:
-                    self.append_note("Unexpected permutation result: " + str(perms))                
-                
-            except:
-                self.append_note("EXCEPTON!!!!")
-                result = False
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server:
+            state_proc = StateHelper(server.address)
+            
+            m4_enigma_config = M4EnigmaState.get_default_config()
+            m4_state = state_proc.make_state('M4', m4_enigma_config.config, m4_enigma_config.rotor_pos)
+            
+            csp889_config = SigabaMachineState.get_default_config()
+            csp889_state = state_proc.make_state('SIGABA', csp889_config.config, csp889_config.rotor_pos)
+            
+            sg39_config = SG39State.get_default_config()
+            sg39_state = state_proc.make_state('SG39', sg39_config.config, sg39_config.rotor_pos)
+            
+            with RotorMachine(m4_state, server.address) as m4_obj:
+                try:
+                    original_state = m4_obj.get_state()
+                    
+                    # Do a simple test decryption
+                    dec_result = m4_obj.decrypt('nczwvusx')
+                    last_result = (dec_result == 'vonvonjl')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected M4 decryption result: " + dec_result)
+                    
+                    # Verfiy that the machine's state has changed by the preceeding decryptions
+                    dec_result = m4_obj.decrypt('nczwvusx')
+                    last_result = (dec_result != 'vonvonjl')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected M4 decryption result: " + dec_result)
+                    
+                    # Restore original state
+                    m4_obj.set_state(original_state)
+                    
+                    # Verify that the original state has been restored by performing the same test decryption again
+                    dec_result = m4_obj.decrypt('nczwvusx')                
+                    last_result = (dec_result == 'vonvonjl')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected M4 decryption result: " + dec_result)
+                                    
+                    m4_obj.set_state(original_state)                        
+                    
+                    # Verify step() method
+                    step_result = m4_obj.step(5)                
+                    last_result = ((len(step_result) == 5) and (step_result[4] == 'vjnf'))
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected rotor positon: " + str(step_result))
+                    
+                    # Test get_description() method
+                    description = m4_obj.get_description()
+                    last_result = (description == 'M4Enigma')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected machine description: " + description)
+                                    
+                    m4_obj.set_state(csp889_state)
+                                    
+                    # Verify that returned description changed to new machine type
+                    description = m4_obj.get_description()
+                    last_result = (description == 'CSP889')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected machine description: " + description)
+                    
+                    # Test sigaba_setup() method                
+                    setup_step_result = m4_obj.sigaba_setup(1, 3)
+                    last_result = ((len(setup_step_result) == 3) and (setup_step_result[2] == '00000lomooolonm'))
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected rotor position: " + str(setup_step_result))
+                   
+                    m4_obj.set_state(sg39_state)
+                    
+                    # Test get_rotor_positions() method                                
+                    rotor_pos = m4_obj.get_rotor_positions()
+                    last_result = (rotor_pos == 'frqdaph')
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected rotor positions: " + rotor_pos)
+                        
+                    # Test get_permutations() method                                
+                    perms = m4_obj.get_permutations(10)
+                    last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
+                    result = result and last_result
+                    if not last_result:
+                        self.append_note("Unexpected permutation result: " + str(perms))                
+                    
+                except:
+                    self.append_note("EXCEPTON!!!!")
+                    result = False
         
         return result                
 
@@ -746,28 +708,32 @@ class RotorMachinePerfTest(simpletest.SimpleTest):
     #  \returns A boolean. A return value of True means that the test was successfull.
     #            
     def test(self):
-        result = super().test()
-        
-        m4_state = M4EnigmaState.get_default_state().render_state()
+        result = super().test()       
 
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(m4_state, server.address) as m4_obj:
-            try:  
-                dec_result = m4_obj.decrypt('nczwvusx')  
-                result = result and (dec_result == 'vonvonjl')
-                
-                if not result:
-                    self.append_note("M4 message not properly decrypted: {}".format(dec_result))
-                else:                    
-                    jetzt = datetime.datetime.now()
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server: 
+            state_proc = StateHelper(server.address)
+            
+            m4_enigma_config = M4EnigmaState.get_default_config()
+            m4_state = state_proc.make_state('M4', m4_enigma_config.config, m4_enigma_config.rotor_pos)        
+        
+            with RotorMachine(m4_state, server.address) as m4_obj:
+                try:  
+                    dec_result = m4_obj.decrypt('nczwvusx')  
+                    result = result and (dec_result == 'vonvonjl')
                     
-                    for i in range(self._iterations):
-                        m4_obj.decrypt(self._test_data)
-                    
-                    spaeter = datetime.datetime.now()
-                    self.append_note("Time needed for {} decryptions: {}".format(self._iterations, str(spaeter - jetzt)))
-            except:
-                self.append_note("EXCEPTION!!!!")
-                result = False
+                    if not result:
+                        self.append_note("M4 message not properly decrypted: {}".format(dec_result))
+                    else:                    
+                        jetzt = datetime.datetime.now()
+                        
+                        for i in range(self._iterations):
+                            m4_obj.decrypt(self._test_data)
+                        
+                        spaeter = datetime.datetime.now()
+                        self.append_note("Time needed for {} decryptions: {}".format(self._iterations, str(spaeter - jetzt)))
+                except:
+                    self.append_note("EXCEPTION!!!!")
+                    result = False
         
         return result
 
@@ -788,36 +754,39 @@ class RandParmTest(simpletest.SimpleTest):
     #  \returns A boolean. A return value of True means that the test was successfull.
     #    
     def test(self):
-        result = super().test()
-        
-        machine_state = M4EnigmaState.get_default_state().render_state()
+        result = super().test()       
 
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(machine_state, server.address) as machine:
-            try:  
-                randomizer_params = machine.get_randomizer_params()
-                
-                result = result and (randomizer_params == [])
-                if not result:
-                    self.append_note("Incorrect list of randomizer parameters returned for M4: {}".format(str(randomizer_params)))
-                else:
-                    self.append_note("Randomizer parameters returned for M4: {}".format(str(randomizer_params)))
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server: 
+        
+            state_proc = StateHelper(server.address)            
+            machine_state = state_proc.get_default_state('M4')        
+            
+            with RotorMachine(machine_state, server.address) as machine:            
+                try:  
+                    randomizer_params = machine.get_randomizer_params()
                     
-                machine_state = SG39State.get_default_state().render_state()
-                machine.set_state(machine_state)
-                
-                randomizer_params = machine.get_randomizer_params()
-                this_result = (randomizer_params == ['one', 'two', 'three', 'enigma7', 'enigma5', 'enigma9', 'enigmam4'])
-                result = result and this_result
-                if not this_result:
-                    self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
-                else:
-                    self.append_note("Randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
-                
-                if result:        
-                    self.append_note('OK')
-            except:
-                self.append_note("EXCEPTION!!!!")
-                result = False
+                    result = result and (randomizer_params == [])
+                    if not result:
+                        self.append_note("Incorrect list of randomizer parameters returned for M4: {}".format(str(randomizer_params)))
+                    else:
+                        self.append_note("Randomizer parameters returned for M4: {}".format(str(randomizer_params)))
+                        
+                    machine_state = state_proc.get_default_state('SG39')
+                    machine.set_state(machine_state)
+                    
+                    randomizer_params = machine.get_randomizer_params()
+                    this_result = (randomizer_params == ['one', 'two', 'three', 'enigma7', 'enigma5', 'enigma9', 'enigmam4'])
+                    result = result and this_result
+                    if not this_result:
+                        self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
+                    else:
+                        self.append_note("Randomizer parameters returned for SG39: {}".format(str(randomizer_params)))
+                    
+                    if result:        
+                        self.append_note('OK')
+                except:
+                    self.append_note("EXCEPTION!!!!")
+                    result = False
         
         return result
 
@@ -831,7 +800,8 @@ class RandomizeTest(simpletest.SimpleTest):
     # \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
     #        be performed.   
     #   
-    # \param [list_of_states] Is a list of objects which have the same interface as GenericRotorMachineState.
+    # \param [list_of_states] Is a list of tuples. The first element a string and gives the machine name. The second
+    #        is a is StateSpec() object and specifies the state.
     #
     def __init__(self, name, list_of_states):
         super().__init__(name)
@@ -843,43 +813,40 @@ class RandomizeTest(simpletest.SimpleTest):
     #    
     def test(self):
         result = super().test()
-        
-        machine_state = M4EnigmaState.get_default_state().render_state()
 
-        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine(machine_state, server.address) as machine:
-            try:  
-                for i in self._all_states:
-                    # Set machine to test state
-                    machine.set_state(i.render_state())
-                    self.append_note("Testing {} state".format(machine.get_description()))                    
-                    # Randomize machine state
-                    machine.randomize_state()
-                    # Save randomized state
-                    state1 = machine.get_state()
-                    test_message = machine.encrypt('diesisteintest')
-                    # Destroy randomized state
-                    machine.randomize_state()
-                    
-                    # Attempt to reload randomized state
-                    if not i.load_from_data(state1):
-                        self.append_note("Loding failed!!")
-                        result = False
-                        break
-                    
-                    # Loading was successfull. Reset machine to randomized state
-                    machine.set_state(i.render_state())
-                    dec_result = machine.decrypt(test_message)
-                    
-                    # Check whether test decryption worked
-                    if dec_result != 'diesisteintest':
-                        self.append_note("Decryption failed!! Result: {}".format(dec_result))
-                        result = False
-                        break
-                    
-                    self.append_note('OK')
-            except:
-                self.append_note("EXCEPTION!!!!")
-                result = False
+        with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server: 
+            state_proc = StateHelper(server.address) 
+            machine_state = state_proc.get_default_state('M4')
+            
+            with RotorMachine(machine_state, server.address) as machine:
+                try:                      
+                    for i in self._all_states:
+                        # Set machine to test state
+                        state_help = state_proc.make_state(i[0], i[1].config, i[1].rotor_pos)
+                        machine.set_state(state_help)
+                        self.append_note("Testing {} state".format(machine.get_description()))                    
+                        # Randomize machine state
+                        machine.randomize_state()
+                        # Save original randomized state
+                        state1 = machine.get_state()
+                        test_message = machine.encrypt('diesisteintest')
+                        # Destroy original randomized state
+                        machine.randomize_state()
+                                                
+                        # Reset machine to original randomized state
+                        machine.set_state(state1)
+                        dec_result = machine.decrypt(test_message)
+                        
+                        # Check whether test decryption worked
+                        if dec_result != 'diesisteintest':
+                            self.append_note("Decryption failed!! Result: {}".format(dec_result))
+                            result = False
+                            break
+                        
+                        self.append_note('OK')
+                except:
+                    self.append_note("EXCEPTION!!!!")
+                    result = False
         
         return result
 
@@ -901,28 +868,28 @@ class RandomizeTest(simpletest.SimpleTest):
 #  \returns A simpletest.CompositeTest object.
 #                
 def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_iterations = 2500, context = tlv_context, verification_only = False):
-    enigma_verification_test = VerificationTests("Enigma verification test", RotorSet.get_std_set('enigma'), None, context)
-    enigma_verification_test.add(M4EnigmaTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(ServicesUhrTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(KDTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(TirpitzTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(AbwehrTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(RailwayTest(enigma_verification_test.rotor_set))    
-    enigma_verification_test.add(TypexTest(enigma_verification_test.rotor_set))
-    enigma_verification_test.add(TypexTestY269(enigma_verification_test.rotor_set))    
+    enigma_verification_test = VerificationTests("Enigma verification test", context)
+    enigma_verification_test.add(M4EnigmaTest())
+    enigma_verification_test.add(ServicesUhrTest())    
+    enigma_verification_test.add(KDTest())
+    enigma_verification_test.add(TirpitzTest())    
+    enigma_verification_test.add(AbwehrTest())
+    enigma_verification_test.add(RailwayTest())    
+    enigma_verification_test.add(TypexTest())
+    enigma_verification_test.add(TypexTestY269())    
 
-    sigaba_verification_test = VerificationTests("SIGABA verification test", RotorSet.get_std_set('sigaba'), RotorSet.get_std_set('sigaba_index'), context)
-    sigaba_verification_test.add(CSP889Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))
-    sigaba_verification_test.add(CSP2900Test(sigaba_verification_test.rotor_set, sigaba_verification_test.index_rotor_set))    
+    sigaba_verification_test = VerificationTests("SIGABA verification test", context)
+    sigaba_verification_test.add(CSP889Test())
+    sigaba_verification_test.add(CSP2900Test())    
 
-    nema_verification_test = VerificationTests("Nema verification test", RotorSet.get_std_set('nema'), None, context)
-    nema_verification_test.add(NemaTest(nema_verification_test.rotor_set))
+    nema_verification_test = VerificationTests("Nema verification test", context)
+    nema_verification_test.add(NemaTest())
 
-    kl7_verification_test = VerificationTests("KL7 verification test", RotorSet.get_std_set('kl7'), None, context)
-    kl7_verification_test.add(KL7Test(kl7_verification_test.rotor_set))
+    kl7_verification_test = VerificationTests("KL7 verification test", context)
+    kl7_verification_test.add(KL7Test())
 
-    sg39_verification_test = VerificationTests("SG39 verification test", RotorSet.get_std_set('sg39'), None, context)
-    sg39_verification_test.add(SG39Test(sg39_verification_test.rotor_set))
+    sg39_verification_test = VerificationTests("SG39 verification test", context)
+    sg39_verification_test.add(SG39Test())
     
     all_tests = simpletest.CompositeTest('rotorsim')    
     
@@ -930,17 +897,17 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
         performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
         functional_test = RotorMachineFuncTests("rotorsim functional test")
         test_states = []
-        test_states.append(M4EnigmaState.get_default_state())
-        test_states.append(ServicesEnigmaState.get_default_state('Services'))        
-        test_states.append(UnsteckeredEnigmaState.get_default_state('AbwehrEnigma'))
-        test_states.append(UnsteckeredEnigmaState.get_default_state('KDEnigma'))
-        test_states.append(UnsteckeredEnigmaState.get_default_state('TirpitzEnigma'))
-        test_states.append(UnsteckeredEnigmaState.get_default_state('RailwayEnigma'))
-        test_states.append(SigabaMachineState.get_default_state())
-        test_states.append(KL7State.get_default_state())
-        test_states.append(SG39State.get_default_state())
-        test_states.append(TypexState.get_default_state())
-        test_states.append(NemaState.get_default_state())        
+        test_states.append(('M4', M4EnigmaState.get_default_config()))
+        test_states.append(('Services', ServicesEnigmaState.get_default_config('Services')))        
+        test_states.append(('Abwehr', UnsteckeredEnigmaState.get_default_config('AbwehrEnigma')))
+        test_states.append(('KD', UnsteckeredEnigmaState.get_default_config('KDEnigma')))
+        test_states.append(('Tirpitz', UnsteckeredEnigmaState.get_default_config('TirpitzEnigma')))
+        test_states.append(('Railway', UnsteckeredEnigmaState.get_default_config('RailwayEnigma')))
+        test_states.append(('SIGABA', SigabaMachineState.get_default_config()))
+        test_states.append(('KL7', KL7State.get_default_config()))
+        test_states.append(('SG39', SG39State.get_default_config()))
+        test_states.append(('Typex', TypexState.get_default_config()))
+        test_states.append(('Nema', NemaState.get_default_config()))        
         rand_test = RandomizeTest('State randomization test', test_states)
         rand_parm_test = RandParmTest('Randomizer parameter test')    
         all_tests.add(functional_test)

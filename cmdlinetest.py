@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -282,7 +282,7 @@ class CLIRotorState:
             proc_arguments = proc_arguments + ['-p', rotor_positions]
         
         for i in configuration_params.keys():
-            proc_arguments.append("--" + i)
+            proc_arguments.append("--" + i)            
             proc_arguments.append(configuration_params[i])
             
         proc_arguments = proc_arguments + additional_params            
@@ -388,11 +388,11 @@ class RotorStateTest(simpletest.SimpleTest):
             # Check whether randomization parameter works as intended
             state = r_state.make_rand_parm_state('SIGABA', 'csp2900')
             self.append_note('Checking randomizer parameter usage')
-            state_parser = rotorsim.SigabaMachineState.get_default_state()
-            state_parser.load_from_data(state)            
-            self.append_note('Is generated machine state a CSP2900? {}'.format(state_parser.csp_2900_flag))
+            p.set_state(state)
+            test_conf = p.get_config()
+            self.append_note('Is generated machine state a CSP2900? {}'.format(test_conf['csp2900']))
             
-            result = result and (state_parser.csp_2900_flag)
+            result = result and (test_conf['csp2900'] == 'true')
             
             # Check whether rotorsim and rotorstate interoperate with respect to configuration information
             state = r_state.make_rand_parm_state('Services', 'fancy')
@@ -416,9 +416,11 @@ class RotorStateTest(simpletest.SimpleTest):
 ## \brief This function serves as the context "object" for verification tests using the command line program.
 #
 def cli_context(inner_test):
-    m4_state = rotorsim.M4EnigmaState.get_default_state().render_state()
+    state_helper = CLIRotorState()
+    m4_default_conf = rotorsim.M4EnigmaState.get_default_config()
+    m4_state = state_helper.make_state('M4', m4_default_conf.config, m4_default_conf.rotor_pos)
     machine = Processor(m4_state)
-    result = inner_test(machine)
+    result = inner_test(machine, state_helper)
     
     return result
     

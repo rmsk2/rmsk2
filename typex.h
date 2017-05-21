@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,19 @@ public:
 
      /*! \brief Destructor.     
      */       
-    virtual ~typex() { ; }        
+    virtual ~typex() { ; }  
+    
+protected:
+
+    /*! \brief This method saves the (optional) plugboard wiring. ini_file has to specify a Glib::KeyFile
+     *         object into which this data is written.
+     */                      
+    virtual void save_additional_components(Glib::KeyFile& ini_file);
+
+    /*! \brief This method loads the (optional) plugboard wiring. It returns
+     *         false if no error occurred and true otherwise.
+     */         
+    virtual bool load_additional_components(Glib::KeyFile& ini_file);          
 };
 
 #endif /* __typex_h__ */

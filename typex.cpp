@@ -27,6 +27,8 @@
 #include<configurator.h>
 
 #define ETW "eintrittswalze"
+#define SECT_PLUGBOARD "plugboard"
+#define KEY_PLUGBOARD "entry"
 
 /*! \brief Set of input chars used when in letters mode.
  */
@@ -150,7 +152,7 @@ bool typex::randomize(string& param)
         ring_positions = rmsk::std_alpha()->get_random_string(5);
         rotor_positions = rmsk::std_alpha()->get_random_string(5);        
         
-        for(unsigned int count = 0; count < 5; count++)
+        for (unsigned int count = 0; count < 5; count++)
         {
             selected_rotors += known_rotors[rotor_selection_perm.encrypt(count)];
             selected_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
@@ -173,6 +175,51 @@ bool typex::randomize(string& param)
     catch(...)
     {
         result = true;
+    }    
+    
+    return result;
+}
+
+void typex::save_additional_components(Glib::KeyFile& ini_file)
+{
+    enigma_family_base::save_additional_components(ini_file);
+    vector<int> plugboard_perm;
+    
+    if (get_input_transform().get() != NULL)
+    {
+        for (unsigned int count = 0; count < 26; count++)
+        {
+            plugboard_perm.push_back((int)get_input_transform()->encrypt(count));
+        }
+        
+        ini_file.set_integer_list(SECT_PLUGBOARD, KEY_PLUGBOARD, plugboard_perm);
+    }
+}
+
+bool typex::load_additional_components(Glib::KeyFile& ini_file)
+{
+    bool result = enigma_family_base::load_additional_components(ini_file);
+    vector<int> plugboard_perm;
+    vector<unsigned int> entry_perm;
+    
+    if (!result)
+    {        
+        if ((ini_file.has_group(SECT_PLUGBOARD)) && (ini_file.has_key(SECT_PLUGBOARD, KEY_PLUGBOARD)))
+        {                        
+            plugboard_perm = ini_file.get_integer_list(SECT_PLUGBOARD, KEY_PLUGBOARD);
+            
+            result = plugboard_perm.size() != 26;
+            
+            if (!result)
+            {
+                for (unsigned int count = 0; count < 26; count++)
+                {
+                    entry_perm.push_back((unsigned int)plugboard_perm[count]);
+                }
+                
+                set_input_transform(boost::shared_ptr<encryption_transform>(new permutation(entry_perm)));
+            }
+        }
     }    
     
     return result;

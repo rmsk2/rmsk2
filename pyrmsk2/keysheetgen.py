@@ -817,16 +817,17 @@ class Keysheet:
     #  \param [other_sheet] Is a Keysheet object. The machine states stored in other_sheet.machine_states are recycled
     #         for generating the values for this sheet. 
     #
-    #  \param [machine_state] Is an object with the same interface as rotorsim.GenericRotorMachineState.
+    #  \param [machine_state] Is a rotorsim.StateSpec() object.
     #
     #  \returns Nothing.
     #
     def fill_from_sheet(self, other_sheet, machine_state):        
         self._settings = []
         self._machine_states = []
+        state_proc = rotorsim.StateHelper(self._server.address)
         
-        with rotorsim.RotorMachine(machine_state.render_state(), self._server.address) as machine, \
-             rotorrandom.RotorRandom('abcdefghijklmnopqrstuvwxyz', self._server.address) as random: 
+        with rotorsim.RotorMachine(state_proc.make_state(machine_state.name, machine_state.config, machine_state.rotor_pos), \
+             self._server.address) as machine, rotorrandom.RotorRandom('abcdefghijklmnopqrstuvwxyz', self._server.address) as random: 
             self._machine_name = machine.get_description()
                                        
             for i in range(1, 32):
@@ -836,7 +837,7 @@ class Keysheet:
     ## \brief This method generates the machine settings for a whole month consisting of 31 days. The machine states
     #         used for this are randomly generated.
     #  
-    #  \param [machine_state] Is an object with the same interface as rotorsim.GenericRotorMachineState.
+    #  \param [machine_state] Is an rotorsim.StateSpec() object.
     #
     #  \param [parameters] Is a string. This string is used as a randomizer parameter for rotorsim.RotorMachine.randomize_state().
     #
@@ -846,8 +847,10 @@ class Keysheet:
         self._settings = []
         self._machine_states = []
         
-        with rotorsim.RotorMachine(machine_state.render_state(), self._server.address) as machine, \
-             rotorrandom.RotorRandom('abcdefghijklmnopqrstuvwxyz', self._server.address) as random: 
+        state_proc = rotorsim.StateHelper(self._server.address)
+        
+        with rotorsim.RotorMachine(state_proc.make_state(machine_state.name, machine_state.config, machine_state.rotor_pos), \
+             self._server.address) as machine, rotorrandom.RotorRandom('abcdefghijklmnopqrstuvwxyz', self._server.address) as random: 
             self._machine_name = machine.get_description()
                                        
             for i in range(1, 32):
@@ -1261,7 +1264,7 @@ class RenderController:
     #  \param [classification] Is a string. Specifies the classification level of the sheet.
     #        
     #  \returns A dictionary containing the string keys:
-    #           'state': Maps to a rotorsim.GenericRotorMachineState object that represents the default state for
+    #           'state': Maps to a rotorsim.StateSpec() object that represents the default state for
     #                    the given machine type.
     #           'randparam': Maps to a string object that serves as a randomizer parameter in Keysheet.fill().
     #           'isgerman': Maps to a boolean that is True if the language on the sheet is German.
@@ -1290,7 +1293,7 @@ class RenderController:
             else:
                 keysheet.column_mapping['Walzenlage'].col_width = 11
             
-            result['state'] = rotorsim.ServicesEnigmaState.get_default_state(machine_name)
+            result['state'] = rotorsim.ServicesEnigmaState.get_default_config(machine_name)
             result['randparm'] = 'basic'
             
         elif (machine_name == 'M3D') or (machine_name == 'ServicesD'): # M3 and Services with Umkehrwalze D
@@ -1302,7 +1305,7 @@ class RenderController:
             else:
                 keysheet.column_mapping['Walzenlage'].col_width = 11
 
-            result['state'] = rotorsim.ServicesEnigmaState.get_default_state(machine_name[:-1])
+            result['state'] = rotorsim.ServicesEnigmaState.get_default_config(machine_name[:-1])
             result['randparm'] = 'ukwdonly'
             
         elif machine_name == 'ServicesUhr': # Services with Uhr and Umkehrwalze D
@@ -1311,21 +1314,21 @@ class RenderController:
         
             keysheet.column_mapping['Walzenlage'].col_width = 11
         
-            result['state'] = rotorsim.ServicesEnigmaState.get_default_state('Services')
+            result['state'] = rotorsim.ServicesEnigmaState.get_default_config('Services')
             result['randparm'] = 'fancy'
             
         elif machine_name == 'M4': # Enigma M4 without Kenngruppen
             # Columns to include            
             keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett']
             
-            result['state'] = rotorsim.M4EnigmaState.get_default_state()
+            result['state'] = rotorsim.M4EnigmaState.get_default_config()
             result['randparm'] = 'egal'    
             
         elif machine_name == 'M4KGr': # Enigma M4 with Kenngruppen
             
             keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
             
-            result['state'] = rotorsim.M4EnigmaState.get_default_state()
+            result['state'] = rotorsim.M4EnigmaState.get_default_config()
             result['randparm'] = 'egal'    
             
         elif (machine_name == 'Railway') or (machine_name == 'Abwehr'): # Railway and Abwehr Enigma
@@ -1334,7 +1337,7 @@ class RenderController:
             
             keysheet.column_mapping['Walzenlage'].col_width = 10            
             
-            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_state(machine_name + 'Enigma')
+            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_config(machine_name + 'Enigma')
             result['randparm'] = 'egal'
             
         elif machine_name == 'KD': # KD Enigma
@@ -1343,7 +1346,7 @@ class RenderController:
             
             keysheet.column_mapping['Walzenlage'].col_width = 10
             
-            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_state(machine_name + 'Enigma')
+            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_config(machine_name + 'Enigma')
             result['randparm'] = 'ukwdonly'
             
         elif machine_name == 'Tirpitz': # Tirpitz Enigma
@@ -1352,7 +1355,7 @@ class RenderController:
             
             keysheet.column_mapping['Walzenlage'].col_width = 12
             
-            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_state(machine_name + 'Enigma')
+            result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_config(machine_name + 'Enigma')
             result['randparm'] = 'egal'
             
         elif (machine_name == 'Typex') or (machine_name == 'TypexY269'): # Typex
@@ -1368,7 +1371,7 @@ class RenderController:
             keysheet.columns = ['Wheel settings', 'Rings', 'Reflector']
             
             result['isgerman'] = False
-            result['state'] = rotorsim.TypexState.get_default_state()
+            result['state'] = rotorsim.TypexState.get_default_config()
             
             if machine_name == 'Typex':            
                 result['randparm'] = 'sp02390'
@@ -1384,7 +1387,7 @@ class RenderController:
             # Columns to include
             keysheet.columns = ['Walzen', 'Nockenringe', 'Codewort']
             
-            result['state'] = rotorsim.NemaState.get_default_state()
+            result['state'] = rotorsim.NemaState.get_default_config()
             result['randparm'] = machine_name[4:].lower()
                                     
         elif (machine_name == 'CSP889') or (machine_name == 'CSP2900'): # SIGABA CSP889 and CSP2900 models
@@ -1401,7 +1404,7 @@ class RenderController:
             keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', '26-30 Check']
             
             result['isgerman'] = False            
-            result['state'] = rotorsim.SigabaMachineState.get_default_state()
+            result['state'] = rotorsim.SigabaMachineState.get_default_config()
             result['state'].csp_2900_flag = (machine_name == 'CSP2900')
             result['randparm'] = 'egal'
             
@@ -1418,7 +1421,7 @@ class RenderController:
             keysheet.columns = ['Rotors', 'Alphabet Ring Pos', 'Notch Rings', 'Notch Ring Pos', 'Basic Alignment', '36-45 Check']
             
             result['isgerman'] = False
-            result['state'] = rotorsim.KL7State.get_default_state()
+            result['state'] = rotorsim.KL7State.get_default_config()
             result['randparm'] = 'egal'
             
         elif machine_name == 'SG39': # SG39
@@ -1460,7 +1463,7 @@ class RenderController:
             for i in keysheet.columns:
                 keysheet.column_mapping[i].uppercase = False
             
-            result['state'] = rotorsim.SG39State.get_default_state()
+            result['state'] = rotorsim.SG39State.get_default_config()
             result['randparm'] = 'egal'
         
         result['sheets'].append(keysheet)
