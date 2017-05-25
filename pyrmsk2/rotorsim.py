@@ -434,6 +434,15 @@ class StateHelper:
         res = tlvobject.TlvServer.method_call(self._server_address, "rmsk2", "makestate", param)
         return res[0]    
 
+    ## \brief Returns a state as defined by the parameter state_spec
+    #
+    #  \param [state_spec] A StateSpec object that specifies the desired machine state.
+    #    
+    #  \returns A byte Array. This byte array contains the requested state.
+    #
+    def make_from_state_spec(self, state_spec):
+        return self.make_state(state_spec.name, state_spec.config, state_spec.rotor_pos)
+
 
 ## \brief This class allows access to objects provided by the rotor_machine_provider and thereby makes
 #         rotor machine functionality available to the python3 side of the TLV infrastructure.
@@ -472,7 +481,7 @@ class RotorMachine(tlvobject.TlvProxy):
     @classmethod
     def from_machine_spec(cls, machine_spec, server_address):
         h = StateHelper(server_address)
-        state = h.make_state(machine_spec.name, machine_spec.config, machine_spec.rotor_pos)
+        state = h.make_from_state_spec(machine_spec)
         return cls(state, server_address)
 
     ## \brief Creates a new rotor machine object on the TLV server.

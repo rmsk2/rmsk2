@@ -562,12 +562,9 @@ class VerificationTests(simpletest.CompositeTest):
 def tlv_context(inner_test):
     result = True
 
-    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server:
+    with tlvobject.TlvServer(server_address='sock_fjsdhfjshdkfjh') as server, RotorMachine.from_machine_name('M4', server.address) as machine:
         state_helper = StateHelper(server.address)
-        m4_state = state_helper.get_default_state('M4')
-
-        with RotorMachine(m4_state, server.address) as machine:
-            result = inner_test(machine, state_helper)        
+        result = inner_test(machine, state_helper)        
     
     return result       
     
