@@ -312,7 +312,7 @@ class TypexState:
         return StateSpec('aaaaa', config, 'Typex')        
     
 
-## \brief This class allows to create a StateSpec object that specifies a default state for an usteckered Enigma.
+## \brief This class allows to create a StateSpec object that specifies a default state for an unsteckered Enigma.
 #            
 class UnsteckeredEnigmaState:        
     ## \brief This static method returns the default machine configuration for various types of unsteckered Enigmas

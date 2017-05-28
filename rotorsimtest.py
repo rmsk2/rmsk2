@@ -532,7 +532,7 @@ class VerificationTests(simpletest.CompositeTest):
     #  \param [machine] Is an object with the same interface as rotorsim.RotorMachine. This object is used to
     #         do test en/decryptions.
     #
-    #  \param [state_helper] Is an object that has a make_state method. It expected that instances of
+    #  \param [state_helper] Is an object that has a make_state method. It is expected that instances of
     #         rotorsim.StateHelper or cmdlinetest.CLIRotorState are used. 
     #    
     #  \returns A boolean. A return value of True means that the test was successfull.
