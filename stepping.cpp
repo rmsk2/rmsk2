@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,7 @@ void rotor_stack::set_feedback_points(set<unsigned int>& new_feedback_points)
 }
 
 void rotor_stack::copy(const rotor_stack& s)
-{
-    vector<rotor *> help;
-    
+{    
     is_reflecting_stack = s.is_reflecting_stack;
     stack_size = s.stack_size;
     
@@ -196,6 +194,12 @@ void rotor_stack::set_reflecting_flag(bool new_val)
     rmsk::simple_assert(stack_size < 2, "programmer error: number of rotors too small for a reflecting rotor stack");
 
     is_reflecting_stack = new_val; 
+}
+
+rotor_stack::~rotor_stack() 
+{ 
+    //cout << "Stack destroyed" << endl;
+    ;
 }
 
 /* ----------------------------------------------------------- */

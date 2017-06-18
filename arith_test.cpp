@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include<configurator.h>
 #include<arith_test.h>
 #include<tlv_data_struct.h>
+#include<algorithm>
 
 unsigned int arithmetic::add_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -692,12 +693,9 @@ void rotor_machine_proxy::perm_to_byte_array(vector<unsigned int>& perm, tlv_ent
 {
     byte_array.value.clear();
     byte_array.tag = TAG_BYTE_ARRAY;
-    vector<unsigned int>::iterator iter;
     
-    for (iter = perm.begin(); iter != perm.end(); ++iter)
-    {
-        byte_array.value.push_back((unsigned char)*iter);
-    }
+    auto append_lambda = [&byte_array] (unsigned int iter) { byte_array.value.push_back((unsigned char)iter); };
+    for_each(perm.begin(), perm.end(), append_lambda);
 }
 
 /* ---------------------------------------------------------------------------------------------- */

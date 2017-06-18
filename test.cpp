@@ -21,6 +21,7 @@
 
 #include<vector>
 #include<iostream>
+#include<memory>
 #include<boost/scoped_ptr.hpp>
 #include<rmsk_globals.h>
 #include<stepping.h>
@@ -151,7 +152,7 @@ bool alles_andere::test()
         rotor_spec.push_back(id_7);    
         rotor_spec.push_back(id_8);        
         
-        kl7 *enc = new kl7(rotor_spec);
+        unique_ptr<kl7> enc(new kl7(rotor_spec));
         unsigned int letter_ring_offset = 26;
         unsigned int notch_ring_offset = 13;
         unsigned int l_ring_offset = 16;
@@ -177,9 +178,10 @@ bool alles_andere::test()
         }
         
         append_note("KL7 rotor sets end");
-        
-        delete enc;       
-        
+    }
+    
+    // Enigma configurator experiments
+    {    
         append_note("Enigma configurator get_config test start");    
         
         vector<pair<char, char> > cabling;
@@ -259,50 +261,50 @@ bool alles_andere::test()
             append_note("Unable to create machine object");
         }
                          
-        append_note("Enigma configurator make_machine test end");    
+        append_note("Enigma configurator make_machine test end"); 
+    }   
+    
+    // Experiment to use SG39 as an M4        
+    {
         append_note("SG39 as M4 test begin");    
+        enigma_M4 *enigma_t2 = new enigma_M4(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_IV, WALZE_I);
+        vector<pair<char, char> > stecker_settings_t2;
         
-        {
-            enigma_M4 *enigma_t2 = new enigma_M4(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_IV, WALZE_I);
-            vector<pair<char, char> > stecker_settings_t2;
-            
-            // "at", "bl", "df", "gj", "hm", "nw", "op", "qy", "rz", "vx"        
-            stecker_settings_t2.push_back(pair<char, char>('a', 't'));
-            stecker_settings_t2.push_back(pair<char, char>('b', 'l'));
-            stecker_settings_t2.push_back(pair<char, char>('d', 'f'));
-            stecker_settings_t2.push_back(pair<char, char>('g', 'j'));
-            stecker_settings_t2.push_back(pair<char, char>('h', 'm'));                
-            stecker_settings_t2.push_back(pair<char, char>('n', 'w'));
-            stecker_settings_t2.push_back(pair<char, char>('o', 'p'));
-            stecker_settings_t2.push_back(pair<char, char>('q', 'y'));
-            stecker_settings_t2.push_back(pair<char, char>('r', 'z'));
-            stecker_settings_t2.push_back(pair<char, char>('v', 'x'));
-            
-            enigma_t2->set_stecker_brett(stecker_settings_t2, false);
+        // "at", "bl", "df", "gj", "hm", "nw", "op", "qy", "rz", "vx"        
+        stecker_settings_t2.push_back(pair<char, char>('a', 't'));
+        stecker_settings_t2.push_back(pair<char, char>('b', 'l'));
+        stecker_settings_t2.push_back(pair<char, char>('d', 'f'));
+        stecker_settings_t2.push_back(pair<char, char>('g', 'j'));
+        stecker_settings_t2.push_back(pair<char, char>('h', 'm'));                
+        stecker_settings_t2.push_back(pair<char, char>('n', 'w'));
+        stecker_settings_t2.push_back(pair<char, char>('o', 'p'));
+        stecker_settings_t2.push_back(pair<char, char>('q', 'y'));
+        stecker_settings_t2.push_back(pair<char, char>('r', 'z'));
+        stecker_settings_t2.push_back(pair<char, char>('v', 'x'));
+        
+        enigma_t2->set_stecker_brett(stecker_settings_t2, false);
 
-            enigma_t2->get_enigma_stepper()->set_ringstellung("griechenwalze", 'a');
-            enigma_t2->get_enigma_stepper()->set_ringstellung("slow", 'a');
-            enigma_t2->get_enigma_stepper()->set_ringstellung("middle", 'a');
-            enigma_t2->get_enigma_stepper()->set_ringstellung("fast", 'v');
-            enigma_t2->move_all_rotors("vjna");
-                
-            ustring spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
-            ustring spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");  
-            ustring spruch = spruch1 + spruch2;
-            ustring plain;
+        enigma_t2->get_enigma_stepper()->set_ringstellung("griechenwalze", 'a');
+        enigma_t2->get_enigma_stepper()->set_ringstellung("slow", 'a');
+        enigma_t2->get_enigma_stepper()->set_ringstellung("middle", 'a');
+        enigma_t2->get_enigma_stepper()->set_ringstellung("fast", 'v');
+        enigma_t2->move_all_rotors("vjna");
             
-            schluesselgeraet39 *sg39 = new schluesselgeraet39(SG39_ROTOR_5, SG39_ROTOR_1, SG39_ROTOR_4, SG39_ROTOR_3);                      
-            
-            sg39->configure_from_m4(enigma_t2);
-            sg39->save("sg39_as_m4.ini");
-            sg39->get_keyboard()->symbols_typed_decrypt(spruch, plain);            
-            
-            append_note(plain.c_str());
-        }
+        ustring spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
+        ustring spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");  
+        ustring spruch = spruch1 + spruch2;
+        ustring plain;
         
+        schluesselgeraet39 *sg39 = new schluesselgeraet39(SG39_ROTOR_5, SG39_ROTOR_1, SG39_ROTOR_4, SG39_ROTOR_3);                      
+        
+        sg39->configure_from_m4(enigma_t2);
+        sg39->save("sg39_as_m4.ini");
+        sg39->get_keyboard()->symbols_typed_decrypt(spruch, plain);            
+        
+        append_note(plain.c_str());
         append_note("SG39 as M4 test end");    
     }
-            
+                
     return result;
 }
 

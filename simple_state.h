@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
  */
 
 #include<set>
+#include<memory>
 #include<glibmm.h>
 
 using namespace std;
@@ -137,7 +138,7 @@ public:
     
 protected:
     /*! \brief Holds the main window of the application. */            
-    Gtk::Window *win;
+    unique_ptr<Gtk::Window> win;
 
     /*! \brief Holds a set of machine names which are known to this simulator application. These names are allowed
      *         to be used as the first argument to the main program.

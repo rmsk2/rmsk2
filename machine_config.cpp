@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2016 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include<boost/lexical_cast.hpp>
 #include<boost/regex.hpp>
+#include<memory>
 #include<machine_config.h>
 #include<enigma_sim.h>
 #include<rand_gen.h>
@@ -1331,8 +1332,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
     vector<pair<char, char> > temp_set; 
     set<char> test_set;
     vector<int> ukwd_wiring_help;
-    vector<unsigned int> ukwd_wiring;
-    enigma_base *enigma = NULL;
+    vector<unsigned int> ukwd_wiring;    
     
     try
     {
@@ -1346,7 +1346,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
             }
             
             // Create an enigma object and use it to read the general settings from the ini file
-            enigma = make_machine(get_machine_type());
+            unique_ptr<enigma_base> enigma(make_machine(get_machine_type()));
             result = enigma->load_ini(ini_file);
             
             if (result)
@@ -1422,7 +1422,7 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
             if (has_plugboard)
             {
                 // Cast has to work, because enigma->load_ini() was successfull
-                steckered_enigma *steckered_machine = dynamic_cast<steckered_enigma *>(enigma);
+                steckered_enigma *steckered_machine = dynamic_cast<steckered_enigma *>(enigma.get());
                 steckered_machine->get_stecker_brett(inserted_plugs);                               
                 
                 uses_uhr = steckered_machine->uses_uhr();
@@ -1447,8 +1447,6 @@ bool machine_config::load_settings(const Glib::ustring& file_name)
     {
         result = true; 
     }
-    
-    delete enigma;
         
     return result;
 }

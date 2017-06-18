@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
  *  \brief Contains the implementation of the tlv_server and uxdomain_socket_server classes.
  */ 
 
+#include<memory>
 #include<tlv_server.h>
 #include<sys/types.h>
 #include<sys/socket.h>
@@ -46,8 +47,7 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
     unsigned int result = ERR_OK;        
     int serv_len;
     socklen_t client_address_len;
-    struct sockaddr_un  client_address, server_address;
-    socket_tlv_stream *tlv_stream;
+    struct sockaddr_un  client_address, server_address;    
     struct timeval timeout;
 
     (void)unlink(address_path.c_str());
@@ -101,10 +101,9 @@ unsigned int uxdomain_socket_server::start(sigc::slot<unsigned int, tlv_stream *
             // When reading data from the client wait only for the specified time period until the read operation
             // fails.
             setsockopt(new_sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-            tlv_stream = new socket_tlv_stream(new_sock_fd);            
+            unique_ptr<socket_tlv_stream> tlv_stream(new socket_tlv_stream(new_sock_fd));
             // Handle request
-            result = processor(tlv_stream, registry);            
-            delete tlv_stream;
+            result = processor(tlv_stream.get(), registry);            
         }
        
         close(sock_fd); 

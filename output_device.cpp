@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,20 +198,20 @@ enigma_real_lamp_board::enigma_real_lamp_board(string port, int pos_x, int pos_y
 {
     try
     {
-        serial = new boost::asio::serial_port(io, port);  
+        serial.reset(new boost::asio::serial_port(io, port));  
         serial_port = port; 
         serial->set_option(boost::asio::serial_port_base::baud_rate(9600));
     }
     catch(...)
     {
-        serial = NULL;
+        serial.reset();
         cout << "error opening serial port " << port << endl;
     }    
 }
 
 enigma_real_lamp_board::~enigma_real_lamp_board()
 {
-    delete serial;
+    ;
 }
 
 void enigma_real_lamp_board::output_symbol_start(Cairo::RefPtr<Cairo::Context> cr, gunichar symbol)
@@ -222,15 +222,14 @@ void enigma_real_lamp_board::output_symbol_start(Cairo::RefPtr<Cairo::Context> c
     // Send symbol to serial port
     try
     {
-        if ((serial != NULL) && (serial->is_open()))
+        if ((serial.get() != nullptr) && (serial->is_open()))
         {
             boost::asio::write(*serial, boost::asio::buffer(&val, 1));
         }
     }
     catch(...)
     {
-        delete serial;
-        serial = NULL;
+        serial.reset();
     }
     
     // Switch lamp on in simulated lampboard    
@@ -246,15 +245,14 @@ void enigma_real_lamp_board::output_symbol_stop(Cairo::RefPtr<Cairo::Context> cr
     // Send symbol to serial port
     try
     {    
-        if ((serial != NULL) && (serial->is_open()))
+        if ((serial.get() != nullptr) && (serial->is_open()))
         {
             boost::asio::write(*serial, boost::asio::buffer(&val, 1));        
         }
     }
     catch(...)
     {
-        delete serial;
-        serial = NULL;
+        serial.reset();
     }
 
     // Switch lamp off in simulated lampboard    

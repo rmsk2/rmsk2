@@ -279,7 +279,7 @@ unsigned int registry_manager::list_providers_processor(tlv_entry& params, tlv_s
     unsigned int result = ERR_OK;
     tlv_entry result_code, object_handle;
     map<string, service_provider *>::iterator iter;
-            
+    
     
     for (iter = registry->get_providers().begin(); (iter != registry->get_providers().end()) and (result == ERR_OK); ++iter)
     {

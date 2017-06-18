@@ -880,17 +880,17 @@ public:
 
     /*! \brief Destructor. 
      */     
-    virtual ~rotorvis_simulator_app() { delete rotor_viz; delete win; }
+    virtual ~rotorvis_simulator_app() { ; }
     
 protected:
     /*! \brief Holds the object that manages the application GUI. */         
-    rotor_visual *rotor_viz;
+    unique_ptr<rotor_visual> rotor_viz;
 };
 
 rotorvis_simulator_app::rotorvis_simulator_app(set<string>& valid_names)
     : simulator_app("rotorvis_sim.ini", valid_names, false)
 {
-    rotor_viz = NULL;
+    ;
 }
      
 void rotorvis_simulator_app::init(int argc, char **argv)
@@ -900,8 +900,8 @@ void rotorvis_simulator_app::init(int argc, char **argv)
         m_name = MNAME_SG39;
     }
            
-    win = new Gtk::Window();
-    rotor_viz = new rotor_visual(win, m_name);
+    win.reset(new Gtk::Window());
+    rotor_viz.reset(new rotor_visual(win.get(), m_name));
 }
 
 void rotorvis_simulator_app::restore_state()

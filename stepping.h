@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public:
     
     /*! \brief Destructor. The rotors of this stack are not deleted by the destructor.
      */                     
-    virtual ~rotor_stack() { ; }
+    virtual ~rotor_stack();
     
 protected:
     // Last rotor is defined to be the (only) reflecting rotor

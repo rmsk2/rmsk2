@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
  *         using an odometer_stepping_gear which is used in a test_case.
  */ 
 
+#include<memory>
 #include<string>
 #include<boost/shared_ptr.hpp>
 
@@ -84,7 +85,7 @@ public:
      
     /*! \brief Destructor.
      */               
-    virtual ~test_machine() { delete odo_step; }
+    virtual ~test_machine() { ; }
     
 protected:
 
@@ -115,7 +116,7 @@ protected:
     
     /*! \brief Points to the odometer_stepping_gear used by this machine.
      */                       
-    odometer_stepping_gear *odo_step;
+    unique_ptr<odometer_stepping_gear> odo_step;
 };
 
 /*! The permutations are borrowed from the Enigma simulator.
@@ -139,7 +140,7 @@ test_machine::test_machine()
     rotor_names.push_back("slow");
     rotor_names.push_back("reflecting");
     
-    odo_step = new odometer_stepping_gear(rotor_names, rmsk::std_alpha()->get_size());
+    odo_step.reset(new odometer_stepping_gear(rotor_names, rmsk::std_alpha()->get_size()));
     
     rotors.push_back(boost::shared_ptr<rotor>(new rotor(p_fast, NULL)));
     rotors.push_back(boost::shared_ptr<rotor>(new rotor(p_medium, NULL)));
@@ -148,7 +149,7 @@ test_machine::test_machine()
     
     odo_step->insert_all_rotors(rotors);
     
-    set_stepping_gear(odo_step);
+    set_stepping_gear(odo_step.get());
     set_input_transform(p_in);
     set_output_transform(p_out);
 }

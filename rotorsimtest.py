@@ -669,9 +669,10 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
                     if not last_result:
                         self.append_note("Unexpected rotor positions: " + rotor_pos)
                         
-                    # Test get_permutations() method                                
+                    # Test get_permutations() method 
+                    m4_obj.set_state(original_state)                               
                     perms = m4_obj.get_permutations(10)
-                    last_result = ((len(perms) == 11) and (len(perms[5]) == 26))
+                    last_result = ((len(perms) == 11) and (len(perms[5]) == 26) and (perms[0] == [12, 4, 3, 2, 1, 7, 21, 5, 11, 22, 16, 8, 0, 14, 13, 18, 10, 23, 15, 24, 25, 6, 9, 17, 19, 20]))
                     result = result and last_result
                     if not last_result:
                         self.append_note("Unexpected permutation result: " + str(perms))                

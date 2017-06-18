@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public:
 
     /*! \brief Destructor. 
      */    
-    virtual ~enigma_simulator_app() { delete window1; }
+    virtual ~enigma_simulator_app() { ; }
 
 protected:
     /*! \brief Holds the main window of the enigma simulator that has been derived from Gtk::Window. */
@@ -110,7 +110,7 @@ void enigma_simulator_app::init(int argc, char **argv)
         }
     }
     
-    win = window1;
+    win.reset(window1);
 }
 
 /*! \brief This is the main function for the Enigma simulators.

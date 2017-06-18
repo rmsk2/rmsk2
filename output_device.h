@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
  *  \brief Header file for the GUI classes that implement the simulated lampboard and printer.
  */ 
 
+#include<memory>
 #include<sigc++/functors/slot.h>
 #include<boost/asio.hpp>
 #include<base_elements.h>
@@ -254,7 +255,7 @@ protected:
     boost::asio::io_service io;
     
     /*! \brief Boost object that abstracts the serial port to use. */    
-    boost::asio::serial_port *serial;    
+    unique_ptr<boost::asio::serial_port> serial;    
 };
 
 /*! \brief A struct that contains parameters that influence how a printer_visualizer is drawn.

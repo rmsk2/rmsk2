@@ -55,7 +55,7 @@ public:
     
     /*! \brief Destructor.
      */    
-    ~enigma_app_window() { delete enigma; delete rotor_dialog; delete plugs_dialog; delete display_window; delete ukw_d_wiring_dialog; delete disp; }
+    virtual ~enigma_app_window() { delete enigma; delete rotor_dialog; delete plugs_dialog; delete display_window; delete ukw_d_wiring_dialog; delete disp; }
 
     /*! \brief Callback that is executed, when the "Rotor settings ..." menu entry is selected.
      */    
