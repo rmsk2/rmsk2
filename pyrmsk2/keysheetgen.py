@@ -30,7 +30,7 @@ import pyrmsk2.rotorrandom as rotorrandom
 
 
 MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
-                 'Tirpitz', 'Typex', 'TypexY269', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
+                 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
 
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
@@ -1358,10 +1358,10 @@ class RenderController:
             result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_config(machine_name + 'Enigma')
             result['randparm'] = 'egal'
             
-        elif (machine_name == 'Typex') or (machine_name == 'TypexY269'): # Typex
+        elif (machine_name == 'Typex') or (machine_name == 'TypexY269')  or (machine_name == 'TypexPlugsY269'): # Typex
             # Set up column mapping            
             keysheet.column_mapping = {'Wheel settings':PlugsColumn(14, 'rotors'), 'Rings':Column(5, 'rings'), \
-                                       'Reflector':Column(26, 'reflector')}
+                                       'Reflector':Column(26, 'reflector'), 'Plugboard':Column(26, 'plugs')}
                                        
             keysheet.column_mapping['Wheel settings'].uppercase = False
             keysheet.column_mapping['Rings'].uppercase = False
@@ -1370,13 +1370,20 @@ class RenderController:
             # Columns to include
             keysheet.columns = ['Wheel settings', 'Rings', 'Reflector']
             
+            if machine_name == 'TypexPlugsY269':
+                keysheet.columns.append('Plugboard')
+                keysheet.column_mapping['Plugboard'].uppercase = False
+            
             result['isgerman'] = False
             result['state'] = rotorsim.TypexState.get_default_config()
             
             if machine_name == 'Typex':            
                 result['randparm'] = 'sp02390'
             else:
-                result['randparm'] = 'y269'
+                if machine_name == 'TypexPlugsY269':
+                    result['randparm'] = 'plugsy269'
+                else:
+                    result['randparm'] = 'y269'
                                
         elif (machine_name == 'NemaWar') or ((machine_name == 'NemaTraining')): # Nema war and training models
             # Set up column mapping            

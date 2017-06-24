@@ -151,6 +151,14 @@ can be used to set up the rotor machines in question.</p>.
         </p></td>
     </tr>
     <tr>
+        <td><p>Typex with plugboard</p></td>
+        <td><p>TypexPlugsY269</p></td>
+        <td><p>Key sheets contain wheel settings, ring settings, a specification of the thirteen plugs to be set on the rewirable
+        reflector and a plugboard configuration. The rotor set in use is fixed to Y269. When pasting the rotor settings from a key sheet into
+        the correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces have to be removed.
+        </p></td>
+    </tr>    
+    <tr>
         <td><p>Nema war and training model</p></td>
         <td><p>NemaWar, NemaTraining</p></td>
         <td><p>Key sheets contain wheel settings (Walzen), the notch ring settings (Nockenringe) and a ten letter basic setting (Codewort) which
@@ -189,7 +197,7 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>Key sheets for the SG39 consist of two pages. The first page specifies the wheel settings (Walzen), the ring settings (Ringe),
         a permutation for the plugboard (Steckerbrett) and the thirteen plugs for the rewirable reflector (Umkehrwalze). Additionally
         a basic positon of the four rotors and three notch wheels and some Kenngruppen are specified. The second page contains the specification
-        of the pins to set on the three moving rotors (Walze Eins, Walze Zwei and Walze Drei) and the notch wheels (Rad Eisn, Rad Zwei, 
+        of the pins to set on the three moving rotors (Walze Eins, Walze Zwei and Walze Drei) and the notch wheels (Rad Eins, Rad Zwei, 
         Rad Drei).
         </p></td>
     </tr>

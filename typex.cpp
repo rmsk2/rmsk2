@@ -30,6 +30,12 @@
 #define SECT_PLUGBOARD "plugboard"
 #define KEY_PLUGBOARD "entry"
 
+#define RAND_PARM_SP02390 "sp02390"
+#define RAND_PARM_Y269 "y269"
+#define RAND_PARM_PLUGS_SP02390 "plugs02390"
+#define RAND_PARM_PLUGS_Y269 "plugsy269"
+
+
 /*! \brief Set of input chars used when in letters mode.
  */
 ustring str_norm_chars =    "abcdefghijklmnopqrstu<w y>";
@@ -123,14 +129,15 @@ bool typex::randomize(string& param)
     string known_rotors("abcdefg");
     string name_rotor_set = get_default_set_name();
     string ring_positions, rotor_positions, selected_rotors;
+    string plugs = "";
     map<string, string> machine_conf;
     
-    if (param == "y269")
+    if ((param == RAND_PARM_Y269) || (param == RAND_PARM_PLUGS_Y269))
     {
         name_rotor_set = Y269;
     }
     
-    if (param == "sp02390")
+    if ((param == RAND_PARM_SP02390) || (param == RAND_PARM_PLUGS_SP02390))
     {
         name_rotor_set = DEFAULT_SET;
     }    
@@ -157,12 +164,18 @@ bool typex::randomize(string& param)
             selected_rotors += known_rotors[rotor_selection_perm.encrypt(count)];
             selected_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
         }
+
+        if ((param == RAND_PARM_PLUGS_Y269) || (param == RAND_PARM_PLUGS_SP02390))
+        {
+            permutation perm = rmsk::std_alpha()->get_random_permutation(); 
+            plugs = rmsk::std_alpha()->perm_as_string(perm);           
+        }
         
         machine_conf[KW_TYPEX_ROTOR_SET] = name_rotor_set;
         machine_conf[KW_TYPEX_ROTORS] = selected_rotors;
         machine_conf[KW_TYPEX_RINGS] = ring_positions;
         machine_conf[KW_TYPEX_REFLECTOR] = rmsk::std_alpha()->perm_as_string(reflector_perm);
-        machine_conf[KW_TYPEX_PLUGBOARD] = "";
+        machine_conf[KW_TYPEX_PLUGBOARD] = plugs;
         boost::scoped_ptr<configurator> c(configurator_factory::get_configurator(machine_name));
         c->configure_machine(machine_conf, this);
         
@@ -282,8 +295,10 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     prepare_rotor(slow_id, SLOW);    
     prepare_rotor(ukw_id, UMKEHRWALZE);
     
-    randomizer_params.push_back(randomizer_descriptor("sp02390", "Force rotor set SP02390"));
-    randomizer_params.push_back(randomizer_descriptor("y269", "Force rotor set Y269"));            
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_SP02390, "Force rotor set SP02390 and no plugboard"));
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_Y269, "Force rotor set Y269 and no plugboard"));
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_SP02390, "Include plugboard and rotor set SP02390"));
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_Y269, "Include plugboard and rotor set Y269"));            
     
     unvisualized_rotor_names.insert(ETW);        
     unvisualized_rotor_names.insert(UMKEHRWALZE);  

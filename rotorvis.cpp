@@ -884,7 +884,7 @@ public:
     
 protected:
     /*! \brief Holds the object that manages the application GUI. */         
-    unique_ptr<rotor_visual> rotor_viz;
+    shared_ptr<rotor_visual> rotor_viz;
 };
 
 rotorvis_simulator_app::rotorvis_simulator_app(set<string>& valid_names)

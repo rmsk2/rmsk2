@@ -138,7 +138,7 @@ public:
     
 protected:
     /*! \brief Holds the main window of the application. */            
-    unique_ptr<Gtk::Window> win;
+    shared_ptr<Gtk::Window> win;
 
     /*! \brief Holds a set of machine names which are known to this simulator application. These names are allowed
      *         to be used as the first argument to the main program.

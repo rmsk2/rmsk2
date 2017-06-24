@@ -116,7 +116,7 @@ protected:
     
     /*! \brief Points to the odometer_stepping_gear used by this machine.
      */                       
-    unique_ptr<odometer_stepping_gear> odo_step;
+    shared_ptr<odometer_stepping_gear> odo_step;
 };
 
 /*! The permutations are borrowed from the Enigma simulator.
