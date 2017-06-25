@@ -70,12 +70,11 @@ public:
 
 void alles_andere::append_config_notes(map<string, string> config_data)
 {
-    map<string, string>::iterator conifg_iter;
     string help;
         
-    for (conifg_iter = config_data.begin(); conifg_iter != config_data.end(); ++conifg_iter)
+    for (const auto &iter: config_data)
     {
-        help = conifg_iter->first + ": " + conifg_iter->second;
+        help = iter.first + ": " + iter.second;
         append_note(help);
     }    
 }
