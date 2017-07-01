@@ -35,42 +35,28 @@ int main(int argc, char *argv[])
         printf("Missing argument\n");
         exit(0);
     }
+    
+    // Create providers
+    arithmetic_provider *arith_provider = new arithmetic_provider(&registry); // Create test arithmetic provider    
+    echo_provider *echo_prov = new echo_provider(&registry); // Create test echo provider    
+    rotor_machine_provider *rotor_machine_prov = new rotor_machine_provider(&registry); // Create the rotor machine provider    
+    random_provider *random_prov = new random_provider(&registry); // Create the rotor random provider
 
-    // Create test arithmetic provider
-    arithmetic_provider *arith_provider = new arithmetic_provider(&registry);
-    string provider_name = arith_provider->get_name();
-
-    // Create test echo provider
-    echo_provider *echo_prov = new echo_provider(&registry);
-    string echo_provider_name = echo_prov->get_name();
-
-    // Create the rotor machine provider
-    rotor_machine_provider *rotor_machine_prov = new rotor_machine_provider(&registry);
-    string rotor_machine_provider_name = rotor_machine_prov->get_name();
-
-    // Create the rotor machine provider
-    random_provider *random_prov = new random_provider(&registry);
-    string random_provider_name = random_prov->get_name();
-
-    // Create the root pseudo object
-    registry_manager *root_obj = new registry_manager(&registry);
-    string root_obj_name = root_obj->get_name();
-
-    // Create the rmsk2 pseudo object
-    rmsk_pseudo_object *rmsk2_obj = new rmsk_pseudo_object();
-    string rmsk2_obj_name = rmsk2_obj->get_name();
+    // Create pseudo objects
+    registry_manager *root_obj = new registry_manager(&registry); // Create the root pseudo object    
+    rmsk_pseudo_object *rmsk2_obj = new rmsk_pseudo_object(); // Create the rmsk2 pseudo object
     
     string address(argv[1]);
     
-    // Add pseudo objects
-    registry.add_pseudo_object(root_obj_name, root_obj);
-    registry.add_pseudo_object(rmsk2_obj_name, rmsk2_obj);    
+    // Add pseudo objects to registry
+    registry.add_pseudo_object(root_obj);
+    registry.add_pseudo_object(rmsk2_obj);    
     
     // Add providers to registry
-    registry.add_service_provider(provider_name, arith_provider);
-    registry.add_service_provider(echo_provider_name, echo_prov);
-    registry.add_service_provider(rotor_machine_provider_name, rotor_machine_prov);
-    registry.add_service_provider(random_provider_name, random_prov);    
+    registry.add_service_provider(arith_provider);
+    registry.add_service_provider(echo_prov);
+    registry.add_service_provider(rotor_machine_prov);
+    registry.add_service_provider(random_prov);    
     
     // Create the server object and start the server
     uxdomain_socket_server tlv_server(address);

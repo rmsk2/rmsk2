@@ -294,7 +294,7 @@ public:
 
     /*! \brief This method adds a new pseudo object to this object_regsitry instance.
      */    
-    virtual void add_pseudo_object(string& pseudo_name, pseudo_object *pseudo_obj);
+    virtual void add_pseudo_object(pseudo_object *pseudo_obj);
 
     /*! \brief This method returns a reference to all the pseudo objects known by this object_registry instance.
      */    
@@ -321,7 +321,7 @@ public:
      *  Important: The object_registry instance takes ownership of the object referenced through the parameter provider and deletes
      *  it when this becomes necessary.
      */
-    virtual void add_service_provider(string& class_name, service_provider *provider);
+    virtual void add_service_provider(service_provider *provider);
 
     /*! \brief Returns the number of calls recorded by this object registry. 
      */        

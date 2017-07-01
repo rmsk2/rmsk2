@@ -63,9 +63,9 @@ void object_registry::add_object(string& object_name, pair<void *, service_provi
     objects[object_name] = new_object;
 }
 
-void object_registry::add_service_provider(string& class_name, service_provider *provider)
+void object_registry::add_service_provider(service_provider *provider)
 {
-    func_factory[class_name] = provider;
+    func_factory[provider->get_name()] = provider;
 }
 
 void object_registry::clear()
@@ -140,9 +140,9 @@ void object_registry::delete_service_provider(string& class_name)
     }
 }
 
-void object_registry::add_pseudo_object(string& pseudo_name, pseudo_object *pseudo_obj)
+void object_registry::add_pseudo_object(pseudo_object *pseudo_obj)
 {
-    pseudo_objects[pseudo_name] = pseudo_obj;
+    pseudo_objects[pseudo_obj->get_name()] = pseudo_obj;
 }
 
 void object_registry::delete_pseudo_object(string& pseudo_name)
