@@ -66,6 +66,24 @@ public:
     /*! \brief Destructor.
      */       
     virtual ~alles_andere() { ; }
+
+protected:
+    /*! \brief Method to demonstrate that the resulting tranformation of the Uhr depends
+     *         on the sequence of the Uhr cabling
+     */    
+    bool uhr_cabling_test();
+
+    /*! \brief Contains code which was used to verify the KL7 implementation against Mr. Rijmenants simulator.
+     */     
+    bool kl7_verification_test();
+
+    /*! \brief Contains code for Enigma configurator experiments
+     */    
+    bool enigma_configurator_test();
+
+    /*! \brief Demonstration that SG39 can be operated in such a way that it is compatible with an M4
+     */        
+    bool sg39_as_m4_test();
 };
 
 void alles_andere::append_config_notes(map<string, string> config_data)
@@ -79,21 +97,198 @@ void alles_andere::append_config_notes(map<string, string> config_data)
     }    
 }
 
-/*! 
- *  Currently this method implements testroutines for the Enigma Uhr and the KL7. Put
- *  your own test here if you do not want to implement them in a separate class.
- *  
- */
-bool alles_andere::test()
+bool alles_andere::enigma_configurator_test()
 {
-    bool result = test_case::test();
+    bool result = true;
+
+    append_note("Enigma configurator get_config test start");    
     
-    append_note("**************************************************");
-    append_note("********* Demonstrations and experiments *********");
-    append_note("**************************************************");
+    vector<pair<char, char> > cabling;
     
-    // Code to demonstrate that the resulting tranformation of the Uhr depends
-    // on the sequence of the Uhr cabling
+    cabling.push_back(pair<char, char>('a', 'd'));
+    cabling.push_back(pair<char, char>('c', 'n'));    
+    cabling.push_back(pair<char, char>('e', 't')); 
+    cabling.push_back(pair<char, char>('f', 'l'));       
+    cabling.push_back(pair<char, char>('g', 'i'));    
+    cabling.push_back(pair<char, char>('j', 'v'));  
+    cabling.push_back(pair<char, char>('k', 'z')); 
+    cabling.push_back(pair<char, char>('p', 'u'));  
+    cabling.push_back(pair<char, char>('q', 'y'));           
+    cabling.push_back(pair<char, char>('w', 'x'));                   
+    
+    enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
+    machine.get_enigma_stepper()->set_ringstellung("slow", 'q');
+    machine.get_enigma_stepper()->set_ringstellung("middle", 'r');
+    machine.get_enigma_stepper()->set_ringstellung("fast", 'b');
+    machine.move_all_rotors("cfm");
+    
+    machine.set_stecker_brett(cabling, false);
+    
+    map<string, string> config_data;
+    string egal = machine.get_machine_type();
+    boost::scoped_ptr<configurator> cnf(configurator_factory::get_configurator(egal));
+    
+    try
+    {
+        cnf->get_config(config_data, &machine);
+        append_config_notes(config_data);
+    }
+    catch(...)
+    {
+        append_note("ERROR: Unable to retrieve config"); 
+        result = false;
+    }
+    
+    string visualized_rotor_positions = machine.visualize_all_positions();
+    append_note("rotor positions: " + visualized_rotor_positions);
+            
+    append_note("Enigma configurator get_config test end"); 
+    append_note("Enigma configurator make_machine test start"); 
+
+    machine_config test_conf2;
+    
+    map<string, string> kw;
+    string enigma_model = "Services";
+    boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
+    kw[KW_ENIG_ROTOR_SELECTION] = "1153";
+    kw[KW_ENIG_RINGSTELLUNG] = "abc";
+    kw[KW_ENIG_STECKERBRETT] = "17:adcnetflgijvkzpuqywx";
+    kw[KW_USES_UHR] = CONF_TRUE;
+    kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+    boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
+    
+    result = result && (test_machine.get() != NULL);
+    
+    if (result)
+    {        
+        try
+        {
+            cnf2->get_config(config_data, test_machine.get());
+            append_config_notes(config_data);
+        }
+        catch(...)
+        {
+            append_note("ERROR: Unable to retrieve config"); 
+            result = false;
+        }        
+
+        visualized_rotor_positions = test_machine->visualize_all_positions();
+        append_note("rotor positions: " + visualized_rotor_positions);       
+    }
+    else
+    {
+        append_note("Unable to create machine object");
+    }
+                     
+    append_note("Enigma configurator make_machine test end"); 
+    
+    return result;
+}
+
+bool alles_andere::sg39_as_m4_test()
+{
+    bool result = true;
+
+    append_note("SG39 as M4 test begin");    
+    enigma_M4 *enigma_t2 = new enigma_M4(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_IV, WALZE_I);
+    vector<pair<char, char> > stecker_settings_t2;
+    
+    // "at", "bl", "df", "gj", "hm", "nw", "op", "qy", "rz", "vx"        
+    stecker_settings_t2.push_back(pair<char, char>('a', 't'));
+    stecker_settings_t2.push_back(pair<char, char>('b', 'l'));
+    stecker_settings_t2.push_back(pair<char, char>('d', 'f'));
+    stecker_settings_t2.push_back(pair<char, char>('g', 'j'));
+    stecker_settings_t2.push_back(pair<char, char>('h', 'm'));                
+    stecker_settings_t2.push_back(pair<char, char>('n', 'w'));
+    stecker_settings_t2.push_back(pair<char, char>('o', 'p'));
+    stecker_settings_t2.push_back(pair<char, char>('q', 'y'));
+    stecker_settings_t2.push_back(pair<char, char>('r', 'z'));
+    stecker_settings_t2.push_back(pair<char, char>('v', 'x'));
+    
+    enigma_t2->set_stecker_brett(stecker_settings_t2, false);
+
+    enigma_t2->get_enigma_stepper()->set_ringstellung("griechenwalze", 'a');
+    enigma_t2->get_enigma_stepper()->set_ringstellung("slow", 'a');
+    enigma_t2->get_enigma_stepper()->set_ringstellung("middle", 'a');
+    enigma_t2->get_enigma_stepper()->set_ringstellung("fast", 'v');
+    enigma_t2->move_all_rotors("vjna");
+        
+    ustring spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
+    ustring spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");  
+    ustring spruch = spruch1 + spruch2;
+    ustring plain;
+    
+    schluesselgeraet39 *sg39 = new schluesselgeraet39(SG39_ROTOR_5, SG39_ROTOR_1, SG39_ROTOR_4, SG39_ROTOR_3);                      
+    
+    sg39->configure_from_m4(enigma_t2);
+    sg39->save("sg39_as_m4.ini");
+    sg39->get_keyboard()->symbols_typed_decrypt(spruch, plain);            
+    
+    append_note(plain.c_str());
+    append_note("SG39 as M4 test end");    
+    
+    return result;
+}
+
+bool alles_andere::kl7_verification_test()
+{
+    bool result = true;
+
+    //ustring plain("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), cipher;
+    ustring plain("bqvwjbfitszteyfjljdhiyluhkwqxrypkbqwokucfjphao"), cipher;
+    vector<string> rotor_set_names;
+        
+    
+    rotor_id id_1(KL7_ROTOR_A, KL7_RING_1);
+    rotor_id id_2(KL7_ROTOR_B, KL7_RING_2);
+    rotor_id id_3(KL7_ROTOR_C, KL7_RING_3);
+    rotor_id id_4(KL7_ROTOR_L, KL7_RING_WIDE);
+    rotor_id id_5(KL7_ROTOR_D, KL7_RING_4);
+    rotor_id id_6(KL7_ROTOR_E, KL7_RING_5);
+    rotor_id id_7(KL7_ROTOR_F, KL7_RING_6);
+    rotor_id id_8(KL7_ROTOR_G, KL7_RING_7);        
+    
+    vector<rotor_id> rotor_spec;
+    rotor_spec.push_back(id_1);
+    rotor_spec.push_back(id_2);
+    rotor_spec.push_back(id_3);        
+    rotor_spec.push_back(id_4);
+    rotor_spec.push_back(id_5);
+    rotor_spec.push_back(id_6);    
+    rotor_spec.push_back(id_7);    
+    rotor_spec.push_back(id_8);        
+    
+    unique_ptr<kl7> enc(new kl7(rotor_spec));
+    unsigned int letter_ring_offset = 26;
+    unsigned int notch_ring_offset = 13;
+    unsigned int l_ring_offset = 16;
+    unsigned int rotor_pos = 0;
+    enc->get_kl7_stepper()->set_kl7_rings(KL7_ROT_1, letter_ring_offset, notch_ring_offset);
+    enc->get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_1, rotor_pos);
+    enc->get_kl7_stepper()->set_stationary_rotor_ring_pos(l_ring_offset);
+            
+    enc->step_rotors();
+    
+    cipher = enc->get_keyboard()->symbols_typed_decrypt(plain); 
+    append_note("KL-7 Testdecryption");           
+    append_note(cipher);
+    append_note("KL-7 Testdecryption end"); 
+            
+    // Code that prints the rotor sets which are currently supported by the KL7 implementation
+    rotor_set_names = enc->get_rotor_set_names();
+    append_note("KL7 rotor sets:");
+    
+    for_each(rotor_set_names.begin(), rotor_set_names.end(), [this] (const string& set_name) { append_note(set_name); } );
+        
+    append_note("KL7 rotor sets end");
+    
+    return result;
+}
+
+bool alles_andere::uhr_cabling_test()
+{
+    bool result = true;
+
     append_note("Uhr Test start");
     enigma_uhr uhr;
     
@@ -102,10 +297,11 @@ bool alles_andere::test()
     uhr.set_dial_pos(27);
     vector<unsigned int> enc_res, dec_res;
     
-    for (unsigned int count = 0; count < 25; count++)
+    auto get_enc_dec_result = [&enc_res, &dec_res, &uhr] (unsigned int input) { enc_res.push_back(uhr.encrypt(input)); dec_res.push_back(uhr.decrypt(enc_res.back())); };
+    
+    for (unsigned int count = 0; count < 26; count++)
     {
-        enc_res.push_back(uhr.encrypt(count));
-        dec_res.push_back(uhr.decrypt(enc_res[count]));
+        get_enc_dec_result(count);
     }
     
     append_note(rmsk::std_alpha()->to_string(enc_res));
@@ -115,194 +311,34 @@ bool alles_andere::test()
     uhr.set_dial_pos(27);
     enc_res.clear(); dec_res.clear();
     
-    for (unsigned int count = 0; count < 25; count++)
+    for (unsigned int count = 0; count < 26; count++)
     {
-        enc_res.push_back(uhr.encrypt(count));
-        dec_res.push_back(uhr.decrypt(enc_res[count]));
+        get_enc_dec_result(count); 
     }
     
     append_note(rmsk::std_alpha()->to_string(enc_res));
     append_note("Uhr Test end");
     
-    // Code which was used to verify the KL7 implementation against Mr. Rijmenants simulator
-    {
-        //ustring plain("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), cipher;
-        ustring plain("bqvwjbfitszteyfjljdhiyluhkwqxrypkbqwokucfjphao"), cipher;
-        vector<string> rotor_set_names;
-        vector<string>::iterator iter;
-        
-        
-        rotor_id id_1(KL7_ROTOR_A, KL7_RING_1);
-        rotor_id id_2(KL7_ROTOR_B, KL7_RING_2);
-        rotor_id id_3(KL7_ROTOR_C, KL7_RING_3);
-        rotor_id id_4(KL7_ROTOR_L, KL7_RING_WIDE);
-        rotor_id id_5(KL7_ROTOR_D, KL7_RING_4);
-        rotor_id id_6(KL7_ROTOR_E, KL7_RING_5);
-        rotor_id id_7(KL7_ROTOR_F, KL7_RING_6);
-        rotor_id id_8(KL7_ROTOR_G, KL7_RING_7);        
-        
-        vector<rotor_id> rotor_spec;
-        rotor_spec.push_back(id_1);
-        rotor_spec.push_back(id_2);
-        rotor_spec.push_back(id_3);        
-        rotor_spec.push_back(id_4);
-        rotor_spec.push_back(id_5);
-        rotor_spec.push_back(id_6);    
-        rotor_spec.push_back(id_7);    
-        rotor_spec.push_back(id_8);        
-        
-        unique_ptr<kl7> enc(new kl7(rotor_spec));
-        unsigned int letter_ring_offset = 26;
-        unsigned int notch_ring_offset = 13;
-        unsigned int l_ring_offset = 16;
-        unsigned int rotor_pos = 0;
-        enc->get_kl7_stepper()->set_kl7_rings(KL7_ROT_1, letter_ring_offset, notch_ring_offset);
-        enc->get_kl7_stepper()->move_to_letter_ring_pos(KL7_ROT_1, rotor_pos);
-        enc->get_kl7_stepper()->set_stationary_rotor_ring_pos(l_ring_offset);
-                
-        enc->step_rotors();
-        
-        cipher = enc->get_keyboard()->symbols_typed_decrypt(plain); 
-        append_note("KL-7 Testdecryption");           
-        append_note(cipher);
-        append_note("KL-7 Testdecryption end"); 
-                
-        // Code that prints the rotor sets which are currently supported by the KL7 implementation
-        rotor_set_names = enc->get_rotor_set_names();
-        append_note("KL7 rotor sets:");
-        
-        for (iter = rotor_set_names.begin(); iter != rotor_set_names.end(); ++iter)
-        {
-            append_note(*iter);
-        }
-        
-        append_note("KL7 rotor sets end");
-    }
+    return result;
+}
+
+/*! 
+ *  Currently this method calls testroutines for the Enigma (Uhr), SG39 and the KL7. Put
+ *  your own tests here if you do not want to implement them in a separate class or method.
+ *  
+ */
+bool alles_andere::test()
+{
+    bool result = test_case::test();
     
-    // Enigma configurator experiments
-    {    
-        append_note("Enigma configurator get_config test start");    
-        
-        vector<pair<char, char> > cabling;
-        
-        cabling.push_back(pair<char, char>('a', 'd'));
-        cabling.push_back(pair<char, char>('c', 'n'));    
-        cabling.push_back(pair<char, char>('e', 't')); 
-        cabling.push_back(pair<char, char>('f', 'l'));       
-        cabling.push_back(pair<char, char>('g', 'i'));    
-        cabling.push_back(pair<char, char>('j', 'v'));  
-        cabling.push_back(pair<char, char>('k', 'z')); 
-        cabling.push_back(pair<char, char>('p', 'u'));  
-        cabling.push_back(pair<char, char>('q', 'y'));           
-        cabling.push_back(pair<char, char>('w', 'x'));                   
-        
-        enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
-        machine.get_enigma_stepper()->set_ringstellung("slow", 'q');
-        machine.get_enigma_stepper()->set_ringstellung("middle", 'r');
-        machine.get_enigma_stepper()->set_ringstellung("fast", 'b');
-        machine.move_all_rotors("cfm");
-        
-        machine.set_stecker_brett(cabling, false);
-        
-        map<string, string> config_data;
-        string egal = machine.get_machine_type();
-        boost::scoped_ptr<configurator> cnf(configurator_factory::get_configurator(egal));
-        
-        try
-        {
-            cnf->get_config(config_data, &machine);
-            append_config_notes(config_data);
-        }
-        catch(...)
-        {
-            append_note("ERROR: Unable to retrieve config"); 
-            result = false;
-        }
-        
-        string visualized_rotor_positions = machine.visualize_all_positions();
-        append_note("rotor positions: " + visualized_rotor_positions);
-                
-        append_note("Enigma configurator get_config test end"); 
-        append_note("Enigma configurator make_machine test start"); 
+    append_note("**************************************************");
+    append_note("********* Demonstrations and experiments *********");
+    append_note("**************************************************");
 
-        machine_config test_conf2;
-        
-        map<string, string> kw;
-        string enigma_model = "Services";
-        boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
-        kw[KW_ENIG_ROTOR_SELECTION] = "1153";
-        kw[KW_ENIG_RINGSTELLUNG] = "abc";
-        kw[KW_ENIG_STECKERBRETT] = "17:adcnetflgijvkzpuqywx";
-        kw[KW_USES_UHR] = CONF_TRUE;
-        kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
-        boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
-        
-        result = result && (test_machine.get() != NULL);
-        
-        if (result)
-        {        
-            try
-            {
-                cnf2->get_config(config_data, test_machine.get());
-                append_config_notes(config_data);
-            }
-            catch(...)
-            {
-                append_note("ERROR: Unable to retrieve config"); 
-                result = false;
-            }        
-
-            visualized_rotor_positions = test_machine->visualize_all_positions();
-            append_note("rotor positions: " + visualized_rotor_positions);       
-        }
-        else
-        {
-            append_note("Unable to create machine object");
-        }
-                         
-        append_note("Enigma configurator make_machine test end"); 
-    }   
-    
-    // Experiment to use SG39 as an M4        
-    {
-        append_note("SG39 as M4 test begin");    
-        enigma_M4 *enigma_t2 = new enigma_M4(UKW_B_DN, WALZE_BETA, WALZE_II, WALZE_IV, WALZE_I);
-        vector<pair<char, char> > stecker_settings_t2;
-        
-        // "at", "bl", "df", "gj", "hm", "nw", "op", "qy", "rz", "vx"        
-        stecker_settings_t2.push_back(pair<char, char>('a', 't'));
-        stecker_settings_t2.push_back(pair<char, char>('b', 'l'));
-        stecker_settings_t2.push_back(pair<char, char>('d', 'f'));
-        stecker_settings_t2.push_back(pair<char, char>('g', 'j'));
-        stecker_settings_t2.push_back(pair<char, char>('h', 'm'));                
-        stecker_settings_t2.push_back(pair<char, char>('n', 'w'));
-        stecker_settings_t2.push_back(pair<char, char>('o', 'p'));
-        stecker_settings_t2.push_back(pair<char, char>('q', 'y'));
-        stecker_settings_t2.push_back(pair<char, char>('r', 'z'));
-        stecker_settings_t2.push_back(pair<char, char>('v', 'x'));
-        
-        enigma_t2->set_stecker_brett(stecker_settings_t2, false);
-
-        enigma_t2->get_enigma_stepper()->set_ringstellung("griechenwalze", 'a');
-        enigma_t2->get_enigma_stepper()->set_ringstellung("slow", 'a');
-        enigma_t2->get_enigma_stepper()->set_ringstellung("middle", 'a');
-        enigma_t2->get_enigma_stepper()->set_ringstellung("fast", 'v');
-        enigma_t2->move_all_rotors("vjna");
-            
-        ustring spruch1 = ustring("nczwvusxpnyminhzxmqxsfwxwlkjahshnmcoccakuqpmkcsmhkseinjusblkiosxckubhmllxcsjusrrdvkohulxwccbgvliyxeoahxrhkkfvdrewez");
-        ustring spruch2 = ustring("lxobafgyujqukgrtvukameurbveksuhhvoyhabcjwmaklfklmyfvnrizrvvrtkofdanjmolbgffleoprgtflvrhowopbekvwmuqfmpwparmfhagkxiibg");  
-        ustring spruch = spruch1 + spruch2;
-        ustring plain;
-        
-        schluesselgeraet39 *sg39 = new schluesselgeraet39(SG39_ROTOR_5, SG39_ROTOR_1, SG39_ROTOR_4, SG39_ROTOR_3);                      
-        
-        sg39->configure_from_m4(enigma_t2);
-        sg39->save("sg39_as_m4.ini");
-        sg39->get_keyboard()->symbols_typed_decrypt(spruch, plain);            
-        
-        append_note(plain.c_str());
-        append_note("SG39 as M4 test end");    
-    }
+    result = result && uhr_cabling_test();
+    result = result && kl7_verification_test();
+    result = result && enigma_configurator_test();
+    result = result && sg39_as_m4_test();
                 
     return result;
 }
