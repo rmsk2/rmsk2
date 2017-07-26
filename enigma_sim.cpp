@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ void enigma_base::save_additional_components(Glib::KeyFile& ini_file)
     rotor_descriptor& desc = get_enigma_stepper()->get_descriptor(UMKEHRWALZE);
     vector<unsigned int> perm_data_raw;
     vector<int> perm_data;
-    int std_ukwd_perm[26] = {13, 21, 20, 9, 16, 24, 25, 17, 19, 3, 23, 15, 22, 0, 18, 11, 4, 7, 14, 8, 2, 1, 12, 10, 5, 6};
+    int std_ukwd_perm[26] = {5, 14, 22, 20, 11, 0, 16, 24, 18, 17, 19, 4, 25, 21, 1, 23, 6, 9, 8, 10, 3, 13, 2, 15, 7, 12};
     
     
     ini_file.set_string("machine", "machinetype", machine_type);

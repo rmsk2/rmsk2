@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,13 +70,14 @@ class rotor_machine;
 
 /*! \brief Alphabet that specifies the mapping of contacts on a UKW D to the letters on its circumfence
  */
-#define UKWD_ALPHA_CIRCUMFENCE "yzxwvutsrqponjmlkihgfedcba"
+//#define UKWD_ALPHA_CIRCUMFENCE "abcdefghijklmnopqrstuvwxyz"
+#define UKWD_ALPHA_CIRCUMFENCE   "ayzxwvutsrqponjmlkihgfedcb"
 
 /*! \brief Holds the contact number of the upper fixed contact in a UKW D plugable reflector. */      
-const unsigned int UKWD_FIXED_CONTACT_Y = 0;
+const unsigned int UKWD_FIXED_CONTACT_Y = 1;
 
 /*! \brief Holds the contact number of the lower fixed contact in a UKW D plugable reflector. */      
-const unsigned int UKWD_FIXED_CONTACT_J = 13;
+const unsigned int UKWD_FIXED_CONTACT_J = 14;
 
 /*! \brief Constant which specifies that a printing_device or rotor_keyboard is in FIGURE state.  
  */

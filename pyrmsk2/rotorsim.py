@@ -338,7 +338,7 @@ class UnsteckeredEnigmaState:
             rotor_pos = 'cfm'
             config['rotors'] = '265'
             config['rings'] = 'qrb'                        
-            config['ukwdperm'] = 'azbpcxdqetfogshvirknlmuw'
+            config['ukwdperm'] = 'avboctdmezfngxhqiskrlupw'
             name = 'KD'
         elif machine_name == 'AbwehrEnigma':
             rotor_pos = 'aaaa'

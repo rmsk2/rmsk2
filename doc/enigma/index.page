@@ -82,13 +82,9 @@ cryptographically accurate results. The reference implementations used for verif
     <item><p><link href="http://cryptocellar.org/simula/index.html">Enigma simulators of the Crypto Simulation Group</link></p></item>
 </list>
 <p>These simulators have been used to verify the implementation of the following Enigma variants in this simulator: M3, Abwehr, Tirpitz Services with Uhr
-and Railway. In some instances (Services, M4) plain- and ciphertext of messages that have been prepared with the real machines are available and have been 
-used to verify the correctness of this simulator.
-</p>
-<p>
-The author of this software is not aware of simulators or real messages that make use of Umkehrwalze D (or Dora) and therefore any machine 
-setting using Umkehrwalze D has to be considered unverified. The same is true for the same reasons for any setting of the simulator of the KD
-variant.
+and Railway. In some instances (Services, M4, Services with UKW D) plain- and ciphertext of messages that have been prepared with the real machines are 
+available and have been used to verify the correctness of this simulator. The author of this software is not aware of other simulators for or real messages 
+prepared using a KD Enigma, so this machine has to be considered unverified.
 </p>
 </section>
 

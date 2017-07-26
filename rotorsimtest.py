@@ -158,10 +158,10 @@ class KDTest(EnigmaFuncTest):
     def test(self):
         result = super().test()
         enigma_kd_config = UnsteckeredEnigmaState.get_default_config('KDEnigma')
-        enigma_kd_state = self._state_proc.make_state('KD', enigma_kd_config.config, enigma_kd_config.rotor_pos)                
+        enigma_kd_state = self._state_proc.make_state('KD', enigma_kd_config.config, enigma_kd_config.rotor_pos)  
         self._proc.set_state(enigma_kd_state)
         
-        decryption_result = self._proc.decrypt('xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr')
+        decryption_result = self._proc.decrypt('zvzdycwqbkqzsspmmojkguikuigwhgrqslrlckpzfrayhxrxgbfflxigesewydqufsulhojvuhaybaav')
         self.append_note("Decryption result: " + decryption_result)
         result = (decryption_result.lower() == 'obwohldierotorverdrahtungenderkdenigmanichtbekanntsindsimulierenwirdiesemaschine')
         

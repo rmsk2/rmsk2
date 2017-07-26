@@ -156,7 +156,7 @@ PERM_GAMMA= "fsokanuerhmbtiycwlqpzxvgjd"
 PERM_UKW_A    = "ejmzalyxvbwfcrquontspikhgd"
 PERM_UKW_B    = "yruhqsldpxngokmiebfzcwvjat"
 PERM_UKW_C    = "fvpjiaoyedrzxwgctkuqsbnmhl"
-PERM_UKW_D    = "nzxfsdvtrwyuqapomiehlgjckb"
+PERM_UKW_D    = "fowulaqysrtezvbxgjikdncphm"
 PERM_UKW_B_DN = "enkqauywjicopblmdxzvfthrgs"
 PERM_UKW_C_DN = "rdobjntkvehmlfcwzaxgyipsuq"
 

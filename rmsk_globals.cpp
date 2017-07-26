@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,7 +230,8 @@ vector<pair<char, char> > ukw_d_wiring_helper::perm_to_plugs(permutation& perm)
     vector<pair<char, char> > result;
     set<pair<unsigned int, unsigned int> > involution;
     set<pair<unsigned int, unsigned int> >::iterator iter;
-    pair<unsigned int, unsigned int> fixed_connection(UKWD_FIXED_CONTACT_Y, UKWD_FIXED_CONTACT_J);
+    pair<unsigned int, unsigned int> fixed_connection(UKWD_FIXED_CONTACT_J, UKWD_FIXED_CONTACT_Y);
+    pair<unsigned int, unsigned int> fixed_connection_rev(UKWD_FIXED_CONTACT_Y, UKWD_FIXED_CONTACT_J);
     char f, s;
     vector<pair<char, char> > data_sorted;
 
@@ -238,7 +239,7 @@ vector<pair<char, char> > ukw_d_wiring_helper::perm_to_plugs(permutation& perm)
     result.push_back(pair<char, char>('J', 'Y'));
     perm.test_for_involution(involution); // The set involution is cleared if perm is no involution
     
-    if (involution.find(fixed_connection) != involution.end())
+    if ((involution.find(fixed_connection) != involution.end()) || (involution.find(fixed_connection_rev) != involution.end()))
     {
         //  Required connection is included. Good!
         

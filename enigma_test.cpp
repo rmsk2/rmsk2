@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
  */ 
 #include<set>
 #include<utility>
+#include<boost/scoped_ptr.hpp>
 
 #include<rmsk_globals.h>
 #include<enigma_test.h>
@@ -43,6 +44,10 @@ decipherment_test enigma_machine_config_test("Machine config Test Uhr");
 /*! \brief Verification test for machine config with UKW D
  */
 decipherment_test enigma_machine_config_ukw_d_test("Machine config Test UKWD");
+
+/*! \brief Verification test for machine config with UKW D
+ */
+decipherment_test enigma_machine_real_ukw_d_test("Services with UKWD");
 
 /*! \brief Verification test for Abwehr Enigma.
  */
@@ -266,7 +271,7 @@ void register_tests(composite_test_case *container)
     enigma_kd->get_enigma_stepper()->set_rotor_pos("fast", 'm');      
       
     expected_plain = "obwohldierotorverdrahtungenderkdenigmanichtbekanntsindsimulierenwirdiesemaschine";
-    spruch = "xlmwoizeczzbfvmahnhrzerhnpwkjjorrxtebozcxncvdemaexvcfuxokbyntyjdongpgwwchftplrzr";
+    spruch = "zvzdycwqbkqzsspmmojkguikuigwhgrqslrlckpzfrayhxrxgbfflxigesewydqufsulhojvuhaybaav";
     
     kd_enigma *enigma_kd_load = new kd_enigma(WALZE_KD_I, WALZE_KD_II, WALZE_KD_III);
     
@@ -356,7 +361,8 @@ void register_tests(composite_test_case *container)
     
     enigma_machine_config_test.set_test_parms(spruch, expected_plain, enigma_mit_uhr_m_config, load_uhr_m_config);
     
-    container->add(&enigma_machine_config_test);       
+    container->add(&enigma_machine_config_test);    
+       
 /* ----------------------------------------------------------------- */
 
     // UKW D verification test for machine config getting/setting
@@ -392,7 +398,35 @@ void register_tests(composite_test_case *container)
     
     enigma_machine_config_ukw_d_test.set_test_parms(spruch, expected_plain, enigma_kd_m_config, enigma_kd_load_m_config);        
     container->add(&enigma_machine_config_ukw_d_test);
+    
+    /* ----------------------------------------------------------------- */    
 
+    // UKW D verification test using an original message that was encrypted in march 1945 using a Services Engima with UKW D. 
+    // See http://cryptocellar.org/pubs/HMCE_UKWD.pdf
+
+    map<string, string> machine_conf;
+    boost::scoped_ptr<configurator> c(configurator_factory::get_configurator("Services")); 
+    
+    machine_conf[KW_ENIG_ROTOR_SELECTION] = "3125";
+    machine_conf[KW_ENIG_RINGSTELLUNG] = "plx";
+    machine_conf[KW_ENIG_STECKERBRETT] = "ajcpdofugimxqzrwsvty";
+    machine_conf[KW_USES_UHR] = CONF_FALSE;
+    machine_conf[KW_UKW_D_PERM] = "avboctdmezfngxhqiskrlupw";
+    
+    rotor_machine *ukwd_enigma = c->make_machine(machine_conf);
+    dynamic_cast<enigma_family_base *>(ukwd_enigma)->move_all_rotors("rej");
+    enigma_I *ukwd_enigma_load = new enigma_I(UKW_B, WALZE_I, WALZE_IV, WALZE_III);    
+    
+    spruch1 = "dkrkicuzafmnsdcawxvjdvznhdmoznnwrjckkjqoekwikxduufecegnounnqciizxfutnfbtnwigoeckcmyuckttybzmdtuwcnwhoxofxervqwjucvypqacqebmxenoqk";
+    spruch2 = "flwrwrlgkxzbpywrgqvygwjdgaqxkvcmqqjjpvslgwfzjzhhwqgyfcqqrmvrrqqidqqvviwljlbhlhhdiofwuyjjqgxbwpz";
+    spruch = spruch1 + spruch2;
+    expected_plain1 = "zweitensjagdeinsatzdoppelpkqjabojagdimerwwitertengrsqwaderuntetbringbngsraumxariundtieffliegerbekaempfungxjagdvorstoszxa";
+    expected_plain2 = "larmstartxplatzbeziehungswmisebegleitsqutzxwettererkundungxdrittensaufklaerungseinsatzxluftbilderkundung";
+    expected_plain = expected_plain1 + expected_plain2;
+    
+    enigma_machine_real_ukw_d_test.set_test_parms(spruch, expected_plain, ukwd_enigma, ukwd_enigma_load);      
+
+    container->add(&enigma_machine_real_ukw_d_test);
 }
 
 }
