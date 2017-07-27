@@ -339,6 +339,15 @@ bool alles_andere::test()
     result = result && kl7_verification_test();
     result = result && enigma_configurator_test();
     result = result && sg39_as_m4_test();
+    
+    append_note("UKW D notation test start");
+    string  bp_perm("afcwduelgqhyisjrktmznvpxbo");
+    string gaf_perm("avboctdmezfngxhqiskrlupwjy");    
+    string gaf_as_bp = ukw_d_wiring_helper::GAF_to_BP_wiring(gaf_perm);
+    string bp_as_gaf = ukw_d_wiring_helper::BP_to_GAF_wiring(bp_perm);
+    append_note("GAF to BP UKW D: " + gaf_as_bp);
+    append_note("BP to GAF UKW D: " + bp_as_gaf);    
+    append_note("UKW D notation test end");    
                 
     return result;
 }

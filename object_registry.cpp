@@ -298,23 +298,61 @@ unsigned int registry_manager::list_providers_processor(tlv_entry& params, tlv_s
 rmsk_pseudo_object::rmsk_pseudo_object()
     : pseudo_object("rmsk2")
 {
-    ;
+    rmsk_pseudo_object_proc["getdefaultstate"] = &rmsk_pseudo_object::get_default_state_processor;
+    rmsk_pseudo_object_proc["makestate"] = &rmsk_pseudo_object::get_state_processor;
+    rmsk_pseudo_object_proc["bptogafwiring"] = &rmsk_pseudo_object::ukwd_bp_to_gaf_processor;
+    rmsk_pseudo_object_proc["gaftobpwiring"] = &rmsk_pseudo_object::ukwd_gaf_to_bp_processor;
 }
 
 tlv_callback *rmsk_pseudo_object::get_handler(string& method)
 {
     tlv_callback *result = NULL;
     
-    if (method == "getdefaultstate")
+    if (rmsk_pseudo_object_proc.count(method) > 0)
     {
-        result = new tlv_callback(sigc::mem_fun(*this, &rmsk_pseudo_object::get_default_state_processor));
+        result = new tlv_callback(sigc::mem_fun(*this, rmsk_pseudo_object_proc[method]));
+    }
+    
+    return result;
+}
+
+unsigned int rmsk_pseudo_object::ukwd_bp_to_gaf_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry gaf_perm;
+    
+    if (params.tag != TAG_STRING)
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
     }
     else
+    {    
+        string bp_perm((char *)params.value.c_str());
+        string gaf_perm_str = ukw_d_wiring_helper::BP_to_GAF_wiring(bp_perm);
+        gaf_perm.to_string(gaf_perm_str);
+        
+        result = out_stream->write_success_tlv(gaf_perm);
+    }
+    
+    return result;
+}
+
+unsigned int rmsk_pseudo_object::ukwd_gaf_to_bp_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    tlv_entry bp_perm;
+    
+    if (params.tag != TAG_STRING)
     {
-        if (method == "makestate")
-        {
-            result = new tlv_callback(sigc::mem_fun(*this, &rmsk_pseudo_object::get_state_processor));
-        }
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {    
+        string gaf_perm((char *)params.value.c_str());
+        string bp_perm_str = ukw_d_wiring_helper::GAF_to_BP_wiring(gaf_perm);
+        bp_perm.to_string(bp_perm_str);
+        
+        result = out_stream->write_success_tlv(bp_perm);
     }
     
     return result;

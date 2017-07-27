@@ -417,10 +417,10 @@ void register_tests(composite_test_case *container)
     dynamic_cast<enigma_family_base *>(ukwd_enigma)->move_all_rotors("rej");
     enigma_I *ukwd_enigma_load = new enigma_I(UKW_B, WALZE_I, WALZE_IV, WALZE_III);    
     
-    spruch1 = "dkrkicuzafmnsdcawxvjdvznhdmoznnwrjckkjqoekwikxduufecegnounnqciizxfutnfbtnwigoeckcmyuckttybzmdtuwcnwhoxofxervqwjucvypqacqebmxenoqk";
+    spruch1 = "dkrkicuzafmnsdcawxvjdvznhdmoznnwrjckkjqoelwikxduufrcegnounnqciizxfutnfbtnwigoeckcmyuckttybzmdtuwcnwhoxofxervqwjucvypqacqebmxenoqk";
     spruch2 = "flwrwrlgkxzbpywrgqvygwjdgaqxkvcmqqjjpvslgwfzjzhhwqgyfcqqrmvrrqqidqqvviwljlbhlhhdiofwuyjjqgxbwpz";
     spruch = spruch1 + spruch2;
-    expected_plain1 = "zweitensjagdeinsatzdoppelpkqjabojagdimerwwitertengrsqwaderuntetbringbngsraumxariundtieffliegerbekaempfungxjagdvorstoszxa";
+    expected_plain1 = "zweitensjagdeinsatzdoppelpkqjabojagdimerweitertengesqwaderuntetbringbngsraumxariundtieffliegerbekaempfungxjagdvorstoszxa";
     expected_plain2 = "larmstartxplatzbeziehungswmisebegleitsqutzxwettererkundungxdrittensaufklaerungseinsatzxluftbilderkundung";
     expected_plain = expected_plain1 + expected_plain2;
     

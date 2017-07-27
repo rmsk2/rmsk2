@@ -275,9 +275,47 @@ vector<pair<char, char> > ukw_d_wiring_helper::perm_to_plugs(permutation& perm)
     return result;
 }
 
+string ukw_d_wiring_helper::GAF_to_BP_wiring(string& gaf_perm)
+{
+    string result;
+    alphabet<char> bp_alpha("azyxwvutsorqpnmlkjihgfedbc", 26);
+    
+    for (char a : gaf_perm)
+    {
+        result += bp_alpha.to_val(rmsk::std_alpha()->from_val(a));;
+    }
+    
+    return result;
+}
+    
+string ukw_d_wiring_helper::BP_to_GAF_wiring(string& bp_perm)
+{
+    string result;
+    
+    for (char a : bp_perm)
+    {
+        result += ukwd_alpha.to_val(rmsk::std_alpha()->from_val(a));;
+    }
+    
+    return result;
+}
+
 permutation ukw_d_wiring_helper::plugs_to_perm(vector<pair<char, char> >& plugs)
 {
     permutation result = ukwd_alpha.make_involution(plugs);
+    
+    return result;
+}
+
+vector<pair<char, char> > ukw_d_wiring_helper::string_to_plugs(string& perm_spec)
+{
+    vector<pair<char, char> > result;
+    unsigned int num_pairs = perm_spec.length() / 2;
+    
+    for (unsigned int count = 0; count < num_pairs; count++)
+    {
+        result.push_back(pair<char, char>(perm_spec[2 * count], perm_spec[2 * count + 1]));
+    }    
     
     return result;
 }

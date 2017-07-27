@@ -399,9 +399,44 @@ class M4EnigmaState:
         return StateSpec('vjna', config, 'M4')
 
 
+## \brief This class allows to convert between the different notations for UKW D plugs.
+#
+class UKWDHelper:
+    ## \brief Constructor.
+    #
+    def __init__(self, server_address):
+        self._server_address = server_address
+    
+    ## \brief Transforms a UKW D wiring specification in Bletchley Park notation into the notation used by the German Air force in WWII.
+    #
+    #  \param [plug_spec] A string. It contains the specification of a UKW D wiring in Bletchley Park notation (contact bo fixed) in lower
+    #         case letters.
+    #
+    #  \returns A string. This string contains the UKW D wiring specification in German Air Force notation.
+    #
+    def bp_to_gaf_wiring(self, plug_spec):
+        param = tlvobject.TlvEntry().to_string(plug_spec)
+        res = tlvobject.TlvServer.method_call(self._server_address, "rmsk2", "bptogafwiring", param)
+        return res[0]
+
+    ## \brief Transforms a UKW D wiring specification in German Air Force notation into the notation used by Bletchley Park in WWII.
+    #
+    #  \param [plug_spec] A string. It contains the specification of a UKW D wiring in German Air Force notation (contact jy fixed) in lower
+    #         case letters.
+    #
+    #  \returns A string. This string contains the UKW D wiring specification in Bletchley Park notation.
+    #
+    def gaf_to_bp_wiring(self, plug_spec):
+        param = tlvobject.TlvEntry().to_string(plug_spec)
+        res = tlvobject.TlvServer.method_call(self._server_address, "rmsk2", "gaftobpwiring", param)
+        return res[0]
+
+
 ## \brief This class allows to create machine states which can then be used to construct RotorMachine objects.
 #
 class StateHelper:
+    ## \brief Constructor.
+    #
     def __init__(self, server_address):
         self._server_address = server_address
     

@@ -70,7 +70,6 @@ class rotor_machine;
 
 /*! \brief Alphabet that specifies the mapping of contacts on a UKW D to the letters on its circumfence
  */
-//#define UKWD_ALPHA_CIRCUMFENCE "abcdefghijklmnopqrstuvwxyz"
 #define UKWD_ALPHA_CIRCUMFENCE   "ayzxwvutsrqponjmlkihgfedcb"
 
 /*! \brief Holds the contact number of the upper fixed contact in a UKW D plugable reflector. */      
@@ -217,14 +216,27 @@ struct randomizer_descriptor {
 class ukw_d_wiring_helper {
 public:
     /*! \brief Method that can be used to parse the permutation given in parameter perm and which specifies an involution into
-     *         the character pairs that make up that involution. 
+     *         the character pairs that make up that involution. Uses the german notation for UKW D plugs. I.e. the fixed contacts
+     *         are J and Y.
      */    
     static vector<pair<char, char> > perm_to_plugs(permutation& perm);
 
+    /*! \brief This method transforms a UKW D wiring in German Air Force notation into Bletchley Park notation (Fixed contacts B,O).
+     */        
+    static string GAF_to_BP_wiring(string& gaf_perm);
+
+    /*! \brief This method transforms a UKW D wiring in Bletchley Park notation into German Air Force notation (Fixed contacts J,Y).
+     */            
+    static string BP_to_GAF_wiring(string& bp_perm);
+
     /*! \brief Does the inverse of perm_to_plugs(). Transforms the vector of character pairs referenced by
-     *         parameter plugs into a permutation.
+     *         parameter plugs into a permutation. Uses the german notation for UKW D plugs.
      */    
     static permutation plugs_to_perm(vector<pair<char, char> >& plugs);
+
+    /*! \brief Converts a string into a sequence of pairs.
+     */        
+    static vector<pair<char, char> > string_to_plugs(string& perm_spec);
     
 protected:
     /*! \brief Helper method to compare two character pairs by their first element.

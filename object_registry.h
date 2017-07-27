@@ -22,6 +22,7 @@
  */ 
 
 #include<string>
+#include<unordered_map>
 #include<utility>
 #include<map>
 #include<sigc++/functors/slot.h>
@@ -219,6 +220,11 @@ protected:
     map<string, manager_fun> method_pointers;
 };
 
+class rmsk_pseudo_object;
+
+/*! \brief typedef for a pointer to a member function of class rotor_machine_proxy which is suitable as a tlv_callback. */
+typedef unsigned int (rmsk_pseudo_object::*rmsk_pseudo_object_fun)(tlv_entry& params, tlv_stream *out_stream); 
+
 /*! \brief A TLV class that implements static methods which can be called through the "rmsk2" pseudo object.
  */ 
 class rmsk_pseudo_object : public pseudo_object {
@@ -252,10 +258,28 @@ public:
      */    
     virtual unsigned int get_state_processor(tlv_entry& params, tlv_stream *out_stream);    
 
+    /*! \brief This method transforms an UKW D plug specification in Bletchley Park format to the format used by the German Air Force in WWII.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int ukwd_bp_to_gaf_processor(tlv_entry& params, tlv_stream *out_stream);    
+
+    /*! \brief This method transforms an UKW D plug specification in German Air Force format to the format used by Bletchley Park in WWII.
+     *
+     *  In case of success ERR_OK is returned. 
+     */    
+    virtual unsigned int ukwd_gaf_to_bp_processor(tlv_entry& params, tlv_stream *out_stream);    
+
 
     /*! \brief Destructor.
      */            
     virtual ~rmsk_pseudo_object() { ; }
+
+protected:
+    /*! \brief Maps each allowed method name to a pointer of type rmsk_pseudo_object_fun, where that pointer points to a method of 
+     *         rmsk_pseudo_object that knows how to perform the requested method call.
+     */
+    unordered_map<string, rmsk_pseudo_object_fun> rmsk_pseudo_object_proc;
 };
 
 /*! \brief A TLV class that manages all TLV objects known to a TLV server. It delegates the creation of new objects and
