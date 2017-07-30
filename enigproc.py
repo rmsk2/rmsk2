@@ -416,8 +416,7 @@ class Formatter:
     #        
     @limits.setter
     def limits(self, limits):
-        self._group_size = limits[0]
-        self._groups_per_line = limits[1]
+        self._group_size, self._groups_per_line = limits
     
     ## \brief Children have to override this method. It is intended to return a formatted ciphertext during encryptions 
     #         together with the character and group count of the message part in form of dictionary.
@@ -604,9 +603,9 @@ class EnigmaFormatter(Formatter):
 # ----------------------------------------------------------------------------------------------------    
 
 
-## \brief This class controls do en-/decryptions with a rotor machine. Longer messages are divided into parts. The
+## \brief This class controls doing en-/decryptions with a rotor machine. Longer messages are divided into parts. The
 #         maximum number of characters per part can be set using the msg_size property. In order to implement its
-#         functionality objects of this class uses a TransportEncoder, a Formatter and an IndicatorProcessor object.
+#         functionality objects of this class use a TransportEncoder, a Formatter and an IndicatorProcessor object.
 #
 # In short the encoder knows how to transform the original plaintext, maybe containing characters which
 # are not in the input alphabet of the rotor machine, into a string that only contains characters the rotor machine
@@ -769,28 +768,18 @@ class MessageProcedure:
         
         return result
 
-    ## \brief This method decrypts a ciphertext specified in parameter ciphertext. If the encrypted message
-    #         has several parts then these parts have to be appended to each other before calling this method.
+    ## \brief This method splits a ciphertext consisting of several message parts into the message parts.
     #
-    #  It is expected by this method that the string ciphertext has the following structure: Header and body
-    #  of each message part are seperated by at least one empty line. All message parts (apart fom the last)
-    #  are also to be followed by at least one empty line.
+    #  \param [ciphertext] A string. It has to contain the combined formatted ciphertext message parts.
     #
-    #  \param [ciphertext] A string. Has to contain the combined formatted ciphertext message parts.
-    #
-    #  \returns A string. Holds the plaintext of the message.
+    #  \returns A sequence of dictionaries that map strings to strings. Each dict contains the keys 'body'
+    #           and 'header' which to the body and header of the correspinding message part.
     #                                
-    def decrypt(self, ciphertext):
-        result = ""        
-        # Holds the parts of the message as determined by the "parser".
+    def parse_message_part(self, ciphertext):
         parts = []
         look_for_header = True
         last_line_empty = True
-        current_part = {'body':'', 'header':''}
-        
-        self.indicator_proc.reset()
-        self.formatter.reset()
-        
+        current_part = {'body':'', 'header':''}  
         lines = ciphertext.split('\n')
         
         # Parse input text into message parts
@@ -816,6 +805,28 @@ class MessageProcedure:
         # Add last part, if we were looking for lines in body when input was exhausted
         if not look_for_header:
             parts.append(current_part)
+        
+        return parts
+              
+
+    ## \brief This method decrypts a ciphertext specified in parameter ciphertext. If the encrypted message
+    #         has several parts then these parts have to be appended to each other before calling this method.
+    #
+    #  It is expected by this method that the string ciphertext has the following structure: Header and body
+    #  of each message part are seperated by at least one empty line. All message parts (apart fom the last)
+    #  are also to be followed by at least one empty line.
+    #
+    #  \param [ciphertext] A string. Has to contain the combined formatted ciphertext message parts.
+    #
+    #  \returns A string. Holds the plaintext of the message.
+    #                                
+    def decrypt(self, ciphertext):
+        result = ""        
+        
+        self.indicator_proc.reset()
+        self.formatter.reset()
+        
+        parts = self.parse_message_part(ciphertext)
         
         # Input text is now parsed into a sequence of dictionaries with the keys 'body' and 'header'
         # each of which represents a message part.
