@@ -22,6 +22,7 @@
 #include<vector>
 #include<iostream>
 #include<memory>
+#include<algorithm>
 #include<boost/scoped_ptr.hpp>
 #include<rmsk_globals.h>
 #include<stepping.h>
@@ -330,6 +331,7 @@ bool alles_andere::uhr_cabling_test()
 bool alles_andere::test()
 {
     bool result = test_case::test();
+    string note;
     
     append_note("**************************************************");
     append_note("********* Demonstrations and experiments *********");
@@ -341,12 +343,22 @@ bool alles_andere::test()
     result = result && sg39_as_m4_test();
     
     append_note("UKW D notation test start");
+    
     string  bp_perm("afcwduelgqhyisjrktmznvpxbo");
     string gaf_perm("avboctdmezfngxhqiskrlupwjy");    
+    
+    note = "GAF to BP UKW D: ";
     string gaf_as_bp = ukw_d_wiring_helper::GAF_to_BP_wiring(gaf_perm);
+    auto plugs = ukw_d_wiring_helper::string_to_plugs(gaf_as_bp);    
+    for_each(plugs.begin(), plugs.end(), [&note](pair<char, char> in) { note += (string("") + in.first + in.second + " "); });
+    append_note(note);
+
+    note = "BP to GAF UKW D: ";        
     string bp_as_gaf = ukw_d_wiring_helper::BP_to_GAF_wiring(bp_perm);
-    append_note("GAF to BP UKW D: " + gaf_as_bp);
-    append_note("BP to GAF UKW D: " + bp_as_gaf);    
+    plugs = ukw_d_wiring_helper::string_to_plugs(bp_as_gaf);
+    for_each(plugs.begin(), plugs.end(), [&note](pair<char, char> in) { note += (string("") + in.first + in.second + " "); });
+    append_note(note);
+
     append_note("UKW D notation test end");    
                 
     return result;

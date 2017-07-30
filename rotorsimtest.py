@@ -69,9 +69,6 @@ class EnigmaFuncTest(RotorMachineFuncTest):
     #
     #  \param [name] Is a string. It has to specifiy a textual description for the test.
     #
-    #  \param [enig_rotor_set] Is an object of type rotorsim.EnigmaRotorSet. It specifies a rotor set
-    #         which contains information about Enigma rotors and rings.
-    #
     #  \param [proc] Is an object that has the same interface as rotorsim.RotorMachine. It is used to conduct
     #         the decryption operations during the verification tests.
     #
