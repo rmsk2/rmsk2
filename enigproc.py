@@ -33,7 +33,7 @@ import re
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
 # 1534 = 15tle = 15tl = 167 = RJF GNZ =
-HEADER_EXP = '^[0-9]{4} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{3}) ([A-Z]{3}) =$'
+ENIGMA_HEADER_EXP = '^[0-9]{4} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{3}) ([A-Z]{3}) =$'
 MESSAGE_KEY = 'message_key'
 HEADER_GRP_1 = 'start_pos'
 HEADER_GRP_2 = 'encrypted_message_key'
@@ -383,7 +383,165 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         
         return result
 
+## \brief This class implements an indicator system that uses a fixed rotor alignment (the Grundstellung) to derive.
+#         the message key from a randomly selected indicator. In principle instances of this class can be used with any
+#         rotor machine. It creates only one indicator group the size of which has to be equal to the number of
+#         settable rotors in the underlying rotor machine.
+#
+class GrundstellungIndicatorProc(IndicatorProcessor):
+    ## \brief Constructor.
+    #
+    #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
+    #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
+    #  \param [indicator size] An integer. It has to specify the number of characters in an indicator group.
+    #
+    def __init__(self,  server, rand_gen, indicator_size):
+        super().__init__(server, rand_gen)
+        ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
+        self._grundstellung = ''
+        ## \brief Holds the size in characters of the indicator group.
+        self._indicator_size = indicator_size
+        ## \brief Specifies the key word that can be used by a formatter to create or parse the header lines.
+        self._key_words = ['rand_indicator']
+        ## \brief Verifies that an indicator candidate is valid.
+        self._verifier = (lambda x: len(x) == self._indicator_size)
+        ## \brief Transforms an indicator candidate if that is necessary.
+        self._transformer = lambda x: x
+
+    ## \brief This property returns the key words that can be used by an object with the same interface as Formatter.
+    #
+    #  \returns A sequence of strings.
+    #    
+    @property
+    def key_words(self):
+        return self._key_words
+    
+    ## \brief This property returns the grundstellung.
+    #
+    #  \returns A string. The grundstellung
+    #
+    @property
+    def grundstellung(self):
+        return self._grundstellung
+
+    ## \brief This property setter allows to change the grundstellung.
+    #
+    #  \param [new_grundsellung] A string. The new grundstellung.
+    #
+    #  \returns Nothing
+    #
+    @grundstellung.setter
+    def grundstellung(self, new_grundstellung):
+        self._grundstellung = new_grundstellung
+        
+    ## \brief This property returns the verifier that is used to check message key candidates.
+    #
+    #  \returns A callable object that takes a string and returns a bool. It is used to verify a message key candidate.
+    #
+    @property
+    def verifier(self):
+        return self._verifier
+
+    ## \brief This property setter allows to change the verifier.
+    #
+    #  \param [new_verifier] A callable object that takes a string and returns a bool.
+    #
+    #  \returns Nothing
+    #
+    @verifier.setter
+    def verifier(self, new_verifier):
+        self._verifier = new_verifier        
+
+    ## \brief This property returns the transformer that can be used to transform message key candidates.
+    #
+    #  \returns A callable object that takes a string and returns a string.
+    #
+    @property
+    def transformer(self):
+        return self._transformer
+
+    ## \brief This property setter allows to change the transformer.
+    #
+    #  \param [new_ntransformer] A callable object that takes a string and returns a string.
+    #
+    #  \returns Nothing
+    #
+    @transformer.setter
+    def transformer(self, new_transformer):
+        self._transformer = new_transformer        
+
+    ## \brief This method creates the indicator groups for the messaging procedure in force before 1940.
+    #
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
+    #         is called.
+    #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
+    #         operation.
+    #
+    #  \returns A dictionary that maps strings to strings. It contains the keys:
+    #           MESSAGE_KEY: The starting position for the rotors when the body of the message part is encrypted.
+    #           'rand_indicator': The random indicator.
+    #    
+    def create_indicators(self, machine, this_part, num_parts):
+        result = {}
+        indicator_found = False
+        indicator_candidate = ''
+        
+        while not indicator_found:
+            indicator_candidate = self._rand_gen.get_rand_string(self._indicator_size)
+            indicator_found = self._verifier(self._transformer(indicator_candidate))
+                
+        machine.set_rotor_positions(self.grundstellung)
+        result['rand_indicator'] = indicator_candidate
+        result[MESSAGE_KEY] = machine.encrypt(self._transformer(result['rand_indicator']))
+        
+        return result    
+
+    ## \brief This method recreates the message key from the indicator groups.
+    #
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to decrypt the message key.
+    #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
+    #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption. I.e.
+    #         it has to contain at least the the keys contained in self._key_words.
+    #
+    #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY that specifies the the starting 
+    #           position for the rotors when the body of a message part is decrypted.
+    #        
+    def derive_message_key(self, machine, already_parsed_indicators):
+        result = already_parsed_indicators
+        machine.set_rotor_positions(self.grundstellung)
+        rand_indicator = self._transformer(result['rand_indicator'])
+        
+        if self._verifier(rand_indicator):        
+            result[MESSAGE_KEY] = machine.encrypt(rand_indicator)
+        else:
+            raise EnigmaException('Indicator invalid')
+        
+        return result
+
+
 # ----------------------------------------------------------------------------------------------------        
+
+## \brief This class is a simple struct used by the methods of Formatter and its children.
+#
+class BodyStruct:
+    def __init__(self):
+        ## \brief A string containing the formatted ciphertext.
+        self.text = ''
+        ## \brief An integer. Holds the number of chars in the formatted ciphertext.
+        self.num_chars = 0
+        ## \brief An integer containing the number of groups in the formatted ciphertext.
+        self.num_groups = 0
+
+## \brief This class is a simple struct used by the methods of Formatter and its children.
+#    
+class ParsedBodyStruct:
+    def __init__(self):
+        ## \brief A string containing the formatted ciphertext without the indicator groups.
+        self.text = ''
+        ## \brief A dictionary mapping strings to strings containing the retrieved indicator groups.
+        #         The keys used depend on the IndicatorProcessor in use.
+        self.indicators = {}
 
 ## \brief This class serves as the base class for "a thing" that knows how to format and parse the bodies and headers of 
 #         message parts during encryption an decryption. Children of this class know for instance where to put indicator
@@ -425,13 +583,10 @@ class Formatter:
     #  \param [indicators] A dictionary that maps strings to strings. It has to contain the indicator groups generated
     #         for this message, which may be placed in the message body.
     #
-    #  \returns A dictionary using the following keys:
-    #           'text': A string containing the formatted ciphertext.
-    #           'num_chars': An integer. Holds the number of chars in the formatted ciphertext.
-    #           'num_groups': An integer containing the number of groups in the formatted ciphertext.
+    #  \returns A BodyStruct object.
     #
     def format_body(self, ciphertext, indicators):
-        result = {'text':'', 'num_chars':0, 'num_groups':0}
+        result = BodyStruct()
         
         return result
 
@@ -441,13 +596,10 @@ class Formatter:
     #
     #  \param [body] A string specifying the formatted the ciphertext body of a message part.
     #
-    #  \returns A dictionary using the following keys:
-    #           'text': A string containing the formatted ciphertext without the indicator groups.
-    #           'indicators': A dictionary mapping strings to strings containing the retrieved indicator groups.
-    #                         The keys used depend on the IndicatorProcessor in use.
+    #  \returns A ParsedBodyStruct object.
     #
     def parse_ciphertext_body(self, body):
-        result = {'text':'', 'indicators':{}}
+        result = ParsedBodyStruct()
         
         return result
     
@@ -495,6 +647,149 @@ class Formatter:
         pass
 
 
+## \brief This class implements a generic formatter that can be used with any rotor machine. It creates a header of the
+#         form "Message number of this part/Number of all parts = Number of groups = header groups separated by space =".
+#         The number and size of the header groups can be selected during object construction. 
+#
+#  Example: 345TT = 4/5 = 49 = ESF = 
+#  
+#  In this case there is one header group of size 3 
+#
+#  452TU = 4/5 = 50 = ESFTG JJUZG =
+# 
+#  And here we have two header groups of size 5.
+#
+class GenericFormatter(Formatter):
+    ## \brief This method formats the body of a rotor machine message.
+    #
+    #  \param [num_of_header_groups] An integer specifying how many groups are part of the header.
+    #  \param [header_group_size] An integer. It has to contain the size in characters of the groups that are part of the header.
+    #  \param [group_key_words] A sequence of strings. The first sequence element is used to reference the first header group, the
+    #         second element the second header group and so on.
+    #
+    def __init__(self, num_of_header_groups, header_group_size, group_key_words):
+        super().__init__()
+        self._num_header_groups = num_of_header_groups
+        self._key_words = group_key_words
+        self._header_group_size = header_group_size
+        self._system_indicator = 'A0000'
+
+    ## \brief This property returns the system indicator which identifies the key or crpyto net to which the message belongs.
+    #
+    #  \returns A string.
+    #
+    @property
+    def system_indicator(self):
+        return self._system_indicator
+
+    ## \brief This property setter allows to change the system indicator.
+    #
+    #  \param [new_system_indicator] A string. The new system indicator to use.
+    #
+    #  \returns Nothing
+    #        
+    @system_indicator.setter
+    def system_indicator(self, new_system_indicator):
+        self._system_indicator = new_system_indicator
+        
+    ## \brief This method formats the body of a rotor machine message.
+    #
+    #  \param [ciphertext] A string specifying the unformatted ciphertext.
+    #  \param [indicators] A dictionary that maps strings to strings. The indicators parameter is igonred by this implementation
+    #         of format_body().
+    #
+    #  \returns A BodyStruct object.
+    #
+    def format_body(self, ciphertext, indicators):
+        result = BodyStruct()
+        result.num_chars = len(ciphertext)
+        result.num_groups = len(ciphertext) // self._group_size
+        
+        if (len(ciphertext) % self._group_size) != 0:
+            result.num_groups += 1
+        
+        result.text = rotorsim.RotorMachine.group_text(ciphertext, True, self._group_size, self._groups_per_line)        
+        
+        return result
+
+    ## \brief This method parses the body of a rotor machine message. It simply converers the ciphertext to lowercase.
+    #
+    #  \param [body] A string specifying the formatted the ciphertext body of a message part.
+    #
+    #  \returns A ParsedBodyStruct object.
+    #
+    def parse_ciphertext_body(self, body):
+        result = ParsedBodyStruct()
+        
+        result.text = body.lower()
+        
+        return result
+
+    ## \brief This method creates a header for a rotor machine message.
+    #
+    #  \param [formatted_body] A string specifying the already formatted ciphertext body of a message part.
+    #  \param [indicators] A dictionary that maps strings to strings. It has to contain at least the indicator groups 
+    #         referenced by self._key_words.
+    #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
+    #         is called.
+    #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
+    #         operation.
+    #
+    #  \returns A string containing the created header.
+    #    
+    def format_header(self, formatted_body, indicators, this_part, num_parts):
+        result = ''
+
+        
+        header = self._system_indicator + ' = '+ str(this_part) + '/' + str(num_parts) + ' = '
+        header = header + str(formatted_body.num_groups) + ' = '
+        
+        indicator_groups = ''
+        
+        for i in self._key_words:        
+            indicator_groups += indicators[i] + ' '
+        
+        indicator_groups = indicator_groups.strip()
+        indicator_groups = indicator_groups.upper()
+        
+        result = header + indicator_groups + ' ='
+        
+        return result
+
+    ## \brief This method retrieves the indicator groups specified in self._key_words from the header of a message
+    #
+    #  \param [indicators] A dictionary that maps strings to strings. It has to contain the indicator groups that have
+    #         already been retreived from the message body. This method then adds the indicator groups found in the
+    #         header.
+    #  \param [header] A string. It has to contain the header of the current message part.
+    #
+    #  \returns A dictionary that maps strings to strings. The returned dictionary is the dictionary given in parameter
+    #           indicators to which the indicator groups named in self._key_words are added.
+    #                    
+    def parse_ciphertext_header(self, indicators, header):
+        result = indicators
+        exp = '^[A-Z0-9]+ = ([0-9])+/([0-9])+ = ([0-9])+ = '
+        
+        for i in self._key_words:
+            exp += '([A-Z]{{{0}}}) '.format(self._header_group_size)
+        
+        exp = exp.strip()
+        exp += ' =$'
+        
+        header_exp = re.compile(exp)
+        
+        match = header_exp.search(header)
+        if match != None:
+            exp_group_index = 4
+            for i in self._key_words:
+                result[i] = match.group(exp_group_index).lower()
+                exp_group_index += 1
+        else:        
+            raise EnigmaException('Header has wrong format')
+            
+        return result
+        
+
 ## \brief This class knows how to format and parse message bodies and headers during en- and decryptions done with three
 #         rotor Enigma machines using the rules in force during WWII in the german Army and Air Force.
 #
@@ -511,21 +806,18 @@ class EnigmaFormatter(Formatter):
     #         for this message part. In particular there has to be a key 'kenngruppe' which maps to the kenngruppe that is
     #         placed as the first group of the formatted ciphertext.
     #
-    #  \returns A dictionary using the following keys:
-    #           'text': A string containing the formatted ciphertext.
-    #           'num_chars': An integer. Holds the number of chars in the formatted ciphertext.
-    #           'num_groups': An integer containing the number of groups in the formatted ciphertext.
+    #  \returns A BodyStruct object.
     #
     def format_body(self, ciphertext, indicators):
-        result = {'text':'', 'num_chars':0, 'num_groups':0}
+        result = BodyStruct()
         ciphertext = indicators['kenngruppe'] + ciphertext
-        result['num_chars'] = len(ciphertext)
-        result['num_groups'] = len(ciphertext) // self._group_size
+        result.num_chars = len(ciphertext)
+        result.num_groups = len(ciphertext) // self._group_size
         
         if (len(ciphertext) % self._group_size) != 0:
-            result['num_groups'] += 1
+            result.num_groups += 1
         
-        result['text'] = rotorsim.RotorMachine.group_text(ciphertext, True, self._group_size, self._groups_per_line)        
+        result.text = rotorsim.RotorMachine.group_text(ciphertext, True, self._group_size, self._groups_per_line)        
         
         return result
 
@@ -534,18 +826,16 @@ class EnigmaFormatter(Formatter):
     #
     #  \param [body] A string specifying the formatted the ciphertext body of a message part.
     #
-    #  \returns A dictionary using the following keys:
-    #           'text': A string containing the formatted ciphertext without the kenngruppe.
-    #           'indicators': A dictionary mapping strings to strings containing the retrieved kenngruppe.
+    #  \returns A ParsedBodyStruct object.
     #
     def parse_ciphertext_body(self, body):
-        result = {'text':'', 'indicators':{}}
+        result = ParsedBodyStruct()
         
         if len(body) < 5:
             raise EnigmaException('Ciphertext has to contain at least one group')
         
-        result['indicators']['kenngruppe'] = body[:5].lower()
-        result['text'] = body[5:].lower()
+        result.indicators['kenngruppe'] = body[:5].lower()
+        result.text = body[5:].lower()
         
         return result
 
@@ -570,7 +860,7 @@ class EnigmaFormatter(Formatter):
             teile_text = 'tl' 
         
         header = now.strftime('%H%M') + ' = ' + str(num_parts) + teile_text + ' = ' + str(this_part) + 'tl' + ' = '
-        header = header + str(formatted_body['num_chars']) + ' = '
+        header = header + str(formatted_body.num_chars) + ' = '
         result = header + (indicators[HEADER_GRP_1] + ' ' + indicators[HEADER_GRP_2] + ' =').upper()
         
         return result
@@ -588,7 +878,7 @@ class EnigmaFormatter(Formatter):
     #                    
     def parse_ciphertext_header(self, indicators, header):
         result = indicators
-        header_exp = re.compile(HEADER_EXP)
+        header_exp = re.compile(ENIGMA_HEADER_EXP)
         
         match = header_exp.search(header)
         if match != None:
@@ -602,6 +892,14 @@ class EnigmaFormatter(Formatter):
 
 # ----------------------------------------------------------------------------------------------------    
 
+## \brief This class is a simple struct used by the methods of MessageProcedure.
+#
+class MsgPartStruct:
+    def __init__(self):
+        ## \brief A string containing the body of a message part.
+        self.body = ''
+        ## \brief A string containing the header of the message part.
+        self.header = ''
 
 ## \brief This class controls doing en-/decryptions with a rotor machine. Longer messages are divided into parts. The
 #         maximum number of characters per part can be set using the msg_size property. In order to implement its
@@ -764,7 +1062,7 @@ class MessageProcedure:
         header = self.formatter.format_header(body, indicator_inputs, this_part, num_parts)        
         
         # Create fully formatted ciphertext
-        result = header + '\n\n' + body['text']
+        result = header + '\n\n' + body.text
         
         return result
 
@@ -772,14 +1070,13 @@ class MessageProcedure:
     #
     #  \param [ciphertext] A string. It has to contain the combined formatted ciphertext message parts.
     #
-    #  \returns A sequence of dictionaries that map strings to strings. Each dict contains the keys 'body'
-    #           and 'header' which to the body and header of the correspinding message part.
+    #  \returns A sequence of MsgPartStruct objects.
     #                                
     def parse_message_part(self, ciphertext):
         parts = []
         look_for_header = True
         last_line_empty = True
-        current_part = {'body':'', 'header':''}  
+        current_part = MsgPartStruct() 
         lines = ciphertext.split('\n')
         
         # Parse input text into message parts
@@ -788,15 +1085,15 @@ class MessageProcedure:
                 last_line_empty = False
                 
                 if look_for_header:
-                    current_part['header'] += i.strip()
+                    current_part.header += i.strip()
                 else:
-                    current_part['body'] += i.strip()
+                    current_part.body += i.strip()
             else:
                 if not last_line_empty:                
                     if not look_for_header:
                         # part is finished
                         parts.append(current_part)
-                        current_part = {'body':'', 'header':''}
+                        current_part = MsgPartStruct()
                                             
                     look_for_header = not look_for_header
                     
@@ -841,16 +1138,15 @@ class MessageProcedure:
 
     ## \brief This method decrypts a message part the ciphertext of which is specified in parameter cipher_text_part.
     #
-    #  \param [cipher_text_part] A dictionary that maps strings to strings. Has to contain the keys 'body' and 'header'.
-    #         The first one maps to the body of the message part. The second one to the header lines.
+    #  \param [cipher_text_part] A MsgPartStruct object containing the header and body of the message part to decrypt,
     #
     #  \returns A string. Holds the plaintext of this message part.
     #        
     def decrypt_part(self, cipher_text_part):
-        help = self.formatter.parse_ciphertext_body(cipher_text_part['body']) # Determine ciphertext and potentially indicator information contained in the body
-        ciphertext = help['text']
-        indicators = help['indicators']
-        indicators = self.formatter.parse_ciphertext_header(indicators, cipher_text_part['header']) # Determine rest of indicators from header           
+        help = self.formatter.parse_ciphertext_body(cipher_text_part.body) # Determine ciphertext and potentially indicator information contained in the body
+        ciphertext = help.text
+        indicators = help.indicators
+        indicators = self.formatter.parse_ciphertext_header(indicators, cipher_text_part.header) # Determine rest of indicators from header           
         indicators = self.indicator_proc.derive_message_key(self._machine, indicators) # Derive message key from indicators   
         self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
 
@@ -916,12 +1212,16 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
         enigma_proc = MessageProcedure(self.machine, self.random, self.server)
-        enigma_proc.formatter = EnigmaFormatter()
-        enigma_proc.formatter.limits = (5, 10)
-        enigma_proc.msg_len = 245
+        #enigma_proc.indicator_proc = GrundstellungIndicatorProc(self.server, self.random, 3)
         enigma_proc.indicator_proc = Post1940EnigmaIndicatorProc(self.server, self.random, [])
         #enigma_proc.indicator_proc = Pre1940EnigmaIndicatorProc(self.server, self.random, [])
-        #enigma_proc.indicator_proc.grundstellung = 'ehu'
+        #enigma_proc.indicator_proc.grundstellung = 'fgh'
+
+        enigma_proc.formatter = EnigmaFormatter()
+        #enigma_proc.formatter = GenericFormatter(1, 3, enigma_proc.indicator_proc.key_words)
+        enigma_proc.formatter.limits = (5, 10)
+        #enigma_proc.formatter.system_indicator = '48135'
+        enigma_proc.msg_size = 245
         enigma_proc.encoder = ArmyEncoder()
         
         # Load input text
