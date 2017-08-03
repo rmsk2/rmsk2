@@ -136,7 +136,7 @@ class TlvServerApp:
     #  \returns Nothing.
     #            
     def exception_handler(self, e):        
-        #exc_type, exc_value, exc_traceback = sys.exc_info()
-        #traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
         print(e)
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,12 @@ public:
      *  Returns ERR_OK (i.e. 0) in case of success.     
      */
     virtual unsigned int set_state_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method makes sure the proxied rotor machine is in letters mode.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.     
+     */
+    virtual unsigned int go_to_letter_state_processor(tlv_entry& params, tlv_stream *out_stream);
 
     /*! \brief This method handles randomize requests sent by the client. The parameter params has to contain a string
      *         tlv_entry which holds the randomization parameter. The parameter out_stream is used to talk to the client.

@@ -423,6 +423,17 @@ unsigned int rotor_machine_proxy::get_positions_processor(tlv_entry& params, tlv
     return result;
 }
 
+unsigned int rotor_machine_proxy::go_to_letter_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    
+    machine->go_to_letter_state();
+    result = out_stream->write_error_tlv(ERR_OK);
+    
+    return result;
+}
+
+
 unsigned int rotor_machine_proxy::set_positions_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
@@ -718,6 +729,7 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["getconfig"] = &rotor_machine_proxy::get_config_processor;
     rotor_proxy_proc["setconfig"] = &rotor_machine_proxy::set_config_processor;
     rotor_proxy_proc["getrandparm"] = &rotor_machine_proxy::get_randparm_processor;    
+    rotor_proxy_proc["gotoletterstate"] = &rotor_machine_proxy::go_to_letter_state_processor;
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

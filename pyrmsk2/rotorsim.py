@@ -651,11 +651,19 @@ class RotorMachine(tlvobject.TlvProxy):
     #  \param [new_config] A dictionary with strings as keys and values. It has to specify the new machine 
     #         configuration.
     #
-    #  \returns Nothing. Throws exception when ot fails.
+    #  \returns Nothing. Throws exception when it fails.
     #                
     def set_config(self, new_config):
         param = tlvobject.TlvDict.dict_to_tlv(new_config)    
         res = self.do_method_call(self._handle, 'setconfig', param)
+
+    ## \brief Makes sure the underlying rotor machine is in letter state.
+    #
+    #  \returns Nothing. Throws exception when it fails.
+    #                
+    def go_to_letter_state(self):
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'gotoletterstate', param)
 
     ## \brief Changes the current state of the TLV rotor machine object which is proxied by this 
     #         rotorsim.RotorMachine instance to a new state.

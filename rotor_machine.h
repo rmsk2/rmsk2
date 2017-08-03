@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,6 +264,10 @@ public:
     /*! \brief Returns the rotor_keyboard in use in this rotor_machine.
      */        
     boost::shared_ptr<rotor_keyboard> get_keyboard() { return keyboard; }
+
+    /*! \brief Switches the keyboard and printing device to letters mode.
+     */            
+    virtual void go_to_letter_state();
 
     /*! \brief Restores the state of this rotor_machine from the KeyFile object referenced in the ini_file parameter.
      *         

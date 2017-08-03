@@ -123,6 +123,43 @@ class ArmyEncoder(TransportEncoder):
         full_plain = full_plain.replace('x', 'x ')
         return full_plain        
 
+
+## \brief This class implements a transport encoder that makes use of the features of the Typex that allow it to 
+#         process quite a few special characters.
+#
+class TypexEncoder(TransportEncoder):
+    ## \brief Constructor
+    #
+    def __init__(self):
+        self._letter_alpha = "abcdefghijklmnopqrstu<w y>"
+        self._figure_alpha = "-'vz3%x£8*().,9014/57<2 6>"
+    
+    ## \brief This method transform a plaintext into an encoded form before that encoded form ist encrypted.
+    #
+    #  \param [plaintext] A string. Contains the plaintext to transform
+    #
+    #  \returns A string. The encoded plaintext
+    #
+    def transform_plaintext_enc(self, plaintext):
+        plaintext = ''.join(list(filter(lambda x: x not in '<>', plaintext.lower())))
+        plaintext = plaintext.replace('ä', 'ae')
+        plaintext = plaintext.replace('ö', 'oe')
+        plaintext = plaintext.replace('ü', 'ue')                        
+        plaintext = plaintext.replace('ß', 'ss')
+        plaintext = ''.join(list(filter(lambda x: (x in self._letter_alpha) or (x in self._figure_alpha), plaintext)))
+        
+        result = ''
+        
+        for i in plaintext:
+            if i in self._letter_alpha:
+                result += i
+            
+            if (i != ' ') and (i in self._figure_alpha):
+                result += '>' + i + '<'
+        
+        return result
+        
+
 # ----------------------------------------------------------------------------------------------------
 
 
@@ -493,7 +530,9 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
                 
         machine.set_rotor_positions(self.grundstellung)
         result['rand_indicator'] = indicator_candidate
+        machine.go_to_letter_state()
         result[MESSAGE_KEY] = machine.encrypt(self._transformer(result['rand_indicator']))
+        machine.go_to_letter_state()
         
         return result    
 
@@ -512,8 +551,10 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         machine.set_rotor_positions(self.grundstellung)
         rand_indicator = self._transformer(result['rand_indicator'])
         
-        if self._verifier(rand_indicator):        
+        if self._verifier(rand_indicator):    
+            machine.go_to_letter_state()    
             result[MESSAGE_KEY] = machine.encrypt(rand_indicator)
+            machine.go_to_letter_state()
         else:
             raise EnigmaException('Indicator invalid')
         
@@ -1033,6 +1074,7 @@ class MessageProcedure:
             num_parts += 1
         
         raw_text = raw_plaintext
+        self._machine.go_to_letter_state()        
         
         # Encrypt the individual parts
         for i in range(num_parts):
@@ -1127,7 +1169,9 @@ class MessageProcedure:
         
         # Input text is now parsed into a sequence of dictionaries with the keys 'body' and 'header'
         # each of which represents a message part.
-
+        
+        self._machine.go_to_letter_state()
+        
         # Process individual parts
         for i in parts:
             result += self.decrypt_part(i) # decrypt           
@@ -1151,6 +1195,96 @@ class MessageProcedure:
         self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
 
         return self._machine.decrypt(ciphertext) # decrypt
+
+
+class TypexIndicatorTransformer:
+    def __init__(self):
+        self._letter_alpha = "abcdefghijklmnopqrstu<w y>"
+        self._figure_alpha = "-'vz3%x£8*().,9014/57<2 6>"
+        self._inverse_letter = {}
+        
+        for i in range(len(self._letter_alpha)):
+            self._inverse_letter[self._letter_alpha[i]] = i
+    
+    def transform(self, indicator_candidate):
+        result = ''
+        candidate = (lambda x: x.replace('x', ' ').replace('z', '>').replace('v', '<'))(indicator_candidate)
+        current_alpha = self._letter_alpha
+        
+        for i in candidate:
+            if i == '>':
+                current_alpha = self._figure_alpha
+            
+            if i == '<':
+                current_alpha = self._letter_alpha
+            
+            result += current_alpha[self._inverse_letter[i]]
+        
+        return result
+
+
+class MessageProcedureFactory:
+    def __init__(self, machine, rand_gen, server):
+        ## \brief Holds the rotor machine object which is to be used.
+        self._machine = machine
+        ## \brief Holds the rotor random object which is to be used.
+        self._rand_gen = rand_gen
+        ## \brief Holds the tlv server object which is to be used.
+        self._server = server        
+
+    def _get_incomplete_enigma(self):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result.formatter = EnigmaFormatter()
+        result.formatter.limits = (5, 10)
+        result.msg_size = 245
+        result.encoder = ArmyEncoder()
+        
+        return result
+    
+    def get_post1940_enigma(self, kenngruppen):    
+        result = self._get_incomplete_enigma()
+        result.indicator_proc = Post1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen)
+        
+        return result
+
+    def get_pre1940_enigma(self, kenngruppen):    
+        result = self._get_incomplete_enigma()
+        result.indicator_proc = Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen)
+        
+        return result
+
+    def get_generic_machine(self, system_indicator, grundstellung, indicator_group_size):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result.indicator_proc = GrundstellungIndicatorProc(self._server, self._rand_gen, indicator_group_size)
+        result.indicator_proc.grundstellung = grundstellung
+        result.formatter = GenericFormatter(1, indicator_group_size, result.indicator_proc.key_words)
+        result.formatter.system_indicator = system_indicator
+        result.formatter.limits = (5, 10)
+        result.msg_size = 500
+        result.encoder = ArmyEncoder()
+        
+        return result
+        
+    def get_generic_enigma(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 3)
+        result.msg_size = 250
+        
+        return result        
+
+    def get_generic_m4(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 4)
+        result.msg_size = 250
+        result.formatter.limits = (4, 10)
+        
+        return result
+
+    def get_generic_typex(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 5)
+        typex_trans = TypexIndicatorTransformer()
+        result.indicator_proc.transformer = typex_trans.transform
+        result.encoder = TypexEncoder()
+        
+        return result
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -1209,20 +1343,12 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         text = ''
         out_text = ''
         do_encrypt = args['doencrypt']
+        factory = MessageProcedureFactory(self.machine, self.random, self.server)
+        #generator = factory.get_post1940_enigma
+        generator = factory.get_generic_typex
+
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
-        enigma_proc = MessageProcedure(self.machine, self.random, self.server)
-        #enigma_proc.indicator_proc = GrundstellungIndicatorProc(self.server, self.random, 3)
-        enigma_proc.indicator_proc = Post1940EnigmaIndicatorProc(self.server, self.random, [])
-        #enigma_proc.indicator_proc = Pre1940EnigmaIndicatorProc(self.server, self.random, [])
-        #enigma_proc.indicator_proc.grundstellung = 'fgh'
-
-        enigma_proc.formatter = EnigmaFormatter()
-        #enigma_proc.formatter = GenericFormatter(1, 3, enigma_proc.indicator_proc.key_words)
-        enigma_proc.formatter.limits = (5, 10)
-        #enigma_proc.formatter.system_indicator = '48135'
-        enigma_proc.msg_size = 245
-        enigma_proc.encoder = ArmyEncoder()
         
         # Load input text
         with open(args['in_file'], 'r') as f_in:
@@ -1234,10 +1360,13 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             if len(kenngruppen) == 0:
                 raise EnigmaException('No usable Kenngruppen specified!')
             
-            enigma_proc.indicator_proc.set_kenngruppen(kenngruppen)
+            #enigma_proc = generator(kenngruppen)
+            enigma_proc = generator('446TR', 'ekute')
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
+            #enigma_proc = generator([])
+            enigma_proc = generator('446TR', 'ekute')
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data

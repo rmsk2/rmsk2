@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -337,6 +337,12 @@ void rotor_machine::set_keyboard(boost::shared_ptr<rotor_keyboard> new_keyboard)
 {
     keyboard = new_keyboard;
     keyboard->set_machine(this);
+}
+
+void rotor_machine::go_to_letter_state()
+{
+    printer->set_state(FUNC_LETTER_SHIFT);
+    keyboard->set_state(FUNC_LETTER_SHIFT);
 }
 
 vector<string> rotor_machine::get_randomizer_params()
