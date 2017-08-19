@@ -29,6 +29,7 @@ import pyrmsk2.rotorrandom as rotorrandom
 import datetime
 import argparse
 import re
+import functools
 
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
@@ -420,6 +421,15 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         
         return result
 
+
+## \brief This class is a simple struct that is to be returned by any message key tester.
+#
+class MsgKeyTestResult:
+    def __init__(self, verified, transformed):
+        self.verified = verified
+        self.transformed = transformed
+
+
 ## \brief This class implements an indicator system that uses a fixed rotor alignment (the Grundstellung) to derive.
 #         the message key from a randomly selected indicator. In principle instances of this class can be used with any
 #         rotor machine. It creates only one indicator group the size of which has to be equal to the number of
@@ -444,6 +454,8 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         self._verifier = (lambda x: len(x) == self._indicator_size)
         ## \brief Transforms an indicator candidate if that is necessary.
         self._transformer = lambda x: x
+        ## \brief Tests and if necessary transforms the generated message key
+        self._msg_key_tester = lambda x: MsgKeyTestResult(True, x)
 
     ## \brief This property returns the key words that can be used by an object with the same interface as Formatter.
     #
@@ -471,7 +483,8 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     def grundstellung(self, new_grundstellung):
         self._grundstellung = new_grundstellung
         
-    ## \brief This property returns the verifier that is used to check message key candidates.
+    ## \brief This property returns the verifier that is used to check message key candidates before encrypting them
+    #         using the grundstellung.
     #
     #  \returns A callable object that takes a string and returns a bool. It is used to verify a message key candidate.
     #
@@ -488,7 +501,26 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     @verifier.setter
     def verifier(self, new_verifier):
         self._verifier = new_verifier        
+    
+    ## \brief This property returns the message key tester that is used to check message key candidates after encrypting them using
+    #         the grundstellung.
+    #
+    #  \returns A callable object that takes a string and returns a MsgKeyTestResult object.
+    #
+    @property
+    def msg_key_tester(self):
+        return self._msg_key_tester
 
+    ## \brief This property setter allows to change the message key tester.
+    #
+    #  \param [new_msg_key_tester] A callable object that takes a string and returns a MsgKeyTestResult object.
+    #
+    #  \returns Nothing
+    #
+    @msg_key_tester.setter
+    def msg_key_tester(self, new_msg_key_tester):
+        self._msg_key_tester = new_msg_key_tester        
+    
     ## \brief This property returns the transformer that can be used to transform message key candidates.
     #
     #  \returns A callable object that takes a string and returns a string.
@@ -526,13 +558,20 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         
         while not indicator_found:
             indicator_candidate = self._rand_gen.get_rand_string(self._indicator_size)
-            indicator_found = self._verifier(self._transformer(indicator_candidate))
+            candidate_found = self._verifier(self._transformer(indicator_candidate))
+            
+            if candidate_found:
+                machine.set_rotor_positions(self.grundstellung)
+                result['rand_indicator'] = indicator_candidate
+                machine.go_to_letter_state()
+                msg_key_candidate = machine.encrypt(self._transformer(result['rand_indicator']))
+                machine.go_to_letter_state()
                 
-        machine.set_rotor_positions(self.grundstellung)
-        result['rand_indicator'] = indicator_candidate
-        machine.go_to_letter_state()
-        result[MESSAGE_KEY] = machine.encrypt(self._transformer(result['rand_indicator']))
-        machine.go_to_letter_state()
+                test_res = self._msg_key_tester(msg_key_candidate)                
+                indicator_found = test_res.verified
+                
+                if indicator_found:
+                    result[MESSAGE_KEY] = test_res.transformed
         
         return result    
 
@@ -553,8 +592,14 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         
         if self._verifier(rand_indicator):    
             machine.go_to_letter_state()    
-            result[MESSAGE_KEY] = machine.encrypt(rand_indicator)
-            machine.go_to_letter_state()
+            msg_key_candidate = machine.encrypt(rand_indicator)
+            machine.go_to_letter_state()            
+            test_res = self._msg_key_tester(msg_key_candidate)
+            
+            if test_res.verified:
+                result[MESSAGE_KEY] = test_res.transformed
+            else:
+                raise EnigmaException('Indicator invalid')            
         else:
             raise EnigmaException('Indicator invalid')
         
@@ -1223,6 +1268,41 @@ class TypexIndicatorTransformer:
         return result
 
 
+class SG39IndicatorHelper:
+    def __init__(self):
+        pass
+    
+    def verify(self, indicator_candidate):
+        return self.test(indicator_candidate).verified
+
+    def transform(self, indicator_candidate):
+        return self.test(indicator_candidate).transformed
+            
+    def test(self, indicator_candidate):
+        result = MsgKeyTestResult(False, indicator_candidate[:4])
+        wheel_sizes = ['y', 'w', 'u']        
+        values_found = []
+                       
+        wheel_part = indicator_candidate[4:]
+        read_pos = 0
+        
+        for i in wheel_sizes:
+            current_value_found = False
+
+            while (not current_value_found) and (read_pos < 6):               
+                if wheel_part[read_pos] <= i:
+                    current_value_found = True
+                    result.transformed += wheel_part[read_pos]
+                
+                read_pos += 1
+
+            values_found.append(current_value_found)                
+        
+        result.verified = functools.reduce(lambda x,y: x and y, values_found)        
+        
+        return result
+
+
 class MessageProcedureFactory:
     def __init__(self, machine, rand_gen, server):
         ## \brief Holds the rotor machine object which is to be used.
@@ -1278,11 +1358,31 @@ class MessageProcedureFactory:
         
         return result
 
+    def get_generic_4wheel_engima(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 4)
+        result.msg_size = 250
+        
+        return result
+
+    def get_generic_nema(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 10)
+        result.msg_size = 350
+        result.formatter.limits = (5, 10)
+        
+        return result
+
     def get_generic_typex(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 5)
         typex_trans = TypexIndicatorTransformer()
         result.indicator_proc.transformer = typex_trans.transform
         result.encoder = TypexEncoder()
+        
+        return result
+
+    def get_generic_sg39(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 10)
+        sg39_ind_helper = SG39IndicatorHelper()
+        result.indicator_proc.msg_key_tester = sg39_ind_helper.test
         
         return result
 
@@ -1345,7 +1445,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         do_encrypt = args['doencrypt']
         factory = MessageProcedureFactory(self.machine, self.random, self.server)
         #generator = factory.get_post1940_enigma
-        generator = factory.get_generic_typex
+        generator = factory.get_generic_4wheel_engima
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -1361,12 +1461,12 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 raise EnigmaException('No usable Kenngruppen specified!')
             
             #enigma_proc = generator(kenngruppen)
-            enigma_proc = generator('446TR', 'ekute')
+            enigma_proc = generator('446TR', 'ekut')
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
             #enigma_proc = generator([])
-            enigma_proc = generator('446TR', 'ekute')
+            enigma_proc = generator('446TR', 'ekut')
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data
