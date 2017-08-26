@@ -181,7 +181,8 @@ struct randomize_help {
 /*! \brief A class that implements a simulator for the Schlüsselgerät 39.
  *
  *  Information about the SG39 can be found in this document (Link goes to NSA. Use at your own risk): 
- *  https://www.nsa.gov/about/_files/cryptologic_heritage/publications/wwii/german_cipher.pdf .
+ *  https://www.nsa.gov/about/_files/cryptologic_heritage/publications/wwii/german_cipher.pdf and this
+ *  https://drive.google.com/open?id=0B_oIJbGCCNYeUExkTnlyVGdOVTg
  */
 class schluesselgeraet39 : public rotor_machine {
 public:

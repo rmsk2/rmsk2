@@ -74,19 +74,23 @@ map<unsigned int, unsigned int> sg39_rotor_factory::id_mapping = { {WALZE_I, SG3
  */
 rotor_set& sg39_rotor_factory::get_rotor_set()
 {
+    vector<unsigned int> sg39_ring_data(26, 0);    
+    
+    sg39_ring_data[0] = 1;
+    
     if (sg39_set.get_num_rotors() == 0)
     {        
         // Normal rotors
-        sg39_set.add_rotor(SG39_ROTOR_0, rmsk::std_alpha()->to_vector(string("iymhkeqgbdtuosajvzlwrfpcxn")));
-        sg39_set.add_rotor(SG39_ROTOR_1, rmsk::std_alpha()->to_vector(string("nxlpymdvrzieohsafjqctkbguw")));
-        sg39_set.add_rotor(SG39_ROTOR_2, rmsk::std_alpha()->to_vector(string("xomuvpktbyswalfhjndercizgq")));
-        sg39_set.add_rotor(SG39_ROTOR_3, rmsk::std_alpha()->to_vector(string("ptrbhkwyqaeozumflgxvdijcns")));
-        sg39_set.add_rotor(SG39_ROTOR_4, rmsk::std_alpha()->to_vector(string("kuzxvrmqycghftbwanldpoeisj")));
-        sg39_set.add_rotor(SG39_ROTOR_5, rmsk::std_alpha()->to_vector(string("fslczopdmqeruhxkywiagntbjv")));
-        sg39_set.add_rotor(SG39_ROTOR_6, rmsk::std_alpha()->to_vector(string("nljapsiukmogfvetzwxchqydbr")));
-        sg39_set.add_rotor(SG39_ROTOR_7, rmsk::std_alpha()->to_vector(string("wklogxuzrheqbvcmfdjaynpist")));
-        sg39_set.add_rotor(SG39_ROTOR_8, rmsk::std_alpha()->to_vector(string("jeoimprbavxqcsgnkywldtzuhf")));
-        sg39_set.add_rotor(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")));
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_0, rmsk::std_alpha()->to_vector(string("iymhkeqgbdtuosajvzlwrfpcxn")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_1, rmsk::std_alpha()->to_vector(string("nxlpymdvrzieohsafjqctkbguw")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_2, rmsk::std_alpha()->to_vector(string("xomuvpktbyswalfhjndercizgq")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_3, rmsk::std_alpha()->to_vector(string("ptrbhkwyqaeozumflgxvdijcns")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_4, rmsk::std_alpha()->to_vector(string("kuzxvrmqycghftbwanldpoeisj")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_5, rmsk::std_alpha()->to_vector(string("fslczopdmqeruhxkywiagntbjv")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_6, rmsk::std_alpha()->to_vector(string("nljapsiukmogfvetzwxchqydbr")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_7, rmsk::std_alpha()->to_vector(string("wklogxuzrheqbvcmfdjaynpist")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_8, rmsk::std_alpha()->to_vector(string("jeoimprbavxqcsgnkywldtzuhf")), sg39_ring_data);
+        sg39_set.add_rotor_and_ring(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")), sg39_ring_data);
         
         // Reflector
         sg39_set.add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));                     
@@ -378,12 +382,10 @@ bool schluesselgeraet39::randomize(string& param)
     unsigned int key_gen_selector;
     map<string, unsigned int> rand_parm_map;
     
-    rand_parm_map["one"] = 1;
-    rand_parm_map["two"] = 0;    
-    rand_parm_map["three"] = 2;
-    rand_parm_map["enigma7"] = 3;
-    rand_parm_map["enigma5"] = 4;
-    rand_parm_map["enigma9"] = 5;
+    rand_parm_map["five"] = 0;
+    rand_parm_map["seven"] = 1;
+    rand_parm_map["nine"] = 2;
+    rand_parm_map["rotorthree"] = 3;
     rand_parm_map["enigmam4"] = 6;    
     
     try
@@ -412,65 +414,49 @@ bool schluesselgeraet39::randomize(string& param)
             // Determine stepping motion
             switch(key_gen_selector)
             {
-                case 0: /* cycle length: 14196 = 21*26*26 */       
+                case 0:
                 {
-                    // wheel 2 -> rotor 2 always moves
-                    pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
-                    
-                    // wheel 1 -> rotor 1
-                    randomize_help wheel_1_rand(&pins_wheel_1, 21);
-                    fill_wheel_spec(wheel_1_rand, 5);
-                    
-                    // rotor 2 -> rotor 3                
-                    randomize_help rotor_2_rand(&pins_rotor_2, 26);
-                    fill_wheel_spec(rotor_2_rand, 7);                
-                }
-                break;                
-                case 1: /* cycle length: 7436 = 11*26*26. Why not 25*26*26??? */
-                {
-                    // wheel 1 -> rotor 1 always moves
-                    pins_wheel_1 = "abcdefghijklmnopqrstu";            
-                    
-                    // wheel 3 -> rotor 3
-                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                    fill_wheel_spec(wheel_3_rand, 9);
-
-                    // rotor 1 -> rotor 2
-                    randomize_help rotor_1_rand(&pins_rotor_1, 26);
-                    fill_wheel_spec(rotor_1_rand, 7);
-                }
-                break;                
-                case 3: /* cycle length: 12844 = 19*26*26 */
-                case 4: /* cycle length: 14196 = 21*26*26 */
-                case 5: /* cycle length: 11492 = 17*26*26 */       
-                {
-                    map<unsigned int, unsigned int> num_notch_map;
-                    num_notch_map[3] = 7; num_notch_map[4] = 5; num_notch_map[5] = 9;
-                    // wheel 1 -> rotor 1 always moves            
                     pins_wheel_1 = "abcdefghijklmnopqrstu";               
 
-                    // rotor 1 -> rotor 2
-                    randomize_help rotor_1_rand(&pins_rotor_1, 26);
-                    fill_wheel_spec(rotor_1_rand, num_notch_map[key_gen_selector]);
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 5);                                        
 
-                    // rotor 2 -> rotor 2 and rotor 3
-                    randomize_help rotor_2_rand(&pins_rotor_2, 26);
-                    fill_wheel_spec(rotor_2_rand, num_notch_map[key_gen_selector]);
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 5);                                                            
+                }
+                break;                
+                case 1:
+                {
+                    pins_wheel_1 = "abcdefghijklmnopqrstu";               
+
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 7);                                        
+
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 7);                                                            
                 }
                 break;
-                default: /* cycle length: 15548 = 23*26*26 */
+                case 3:
                 {
-                    // wheel 3 -> rotor 3 always moves
                     pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
-                    
-                    // wheel 2 -> rotor 2
-                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                    fill_wheel_spec(wheel_2_rand, 3);                
 
-                    // rotor 3 -> rotor 1
-                    randomize_help rotor_3_rand(&pins_rotor_3, 26);
-                    fill_wheel_spec(rotor_3_rand, 5);
-                    
+                    randomize_help wheel_1_rand(&pins_wheel_1, 21);
+                    fill_wheel_spec(wheel_1_rand, 9);                                        
+
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 7);                                                            
+                }
+                break;
+                default:
+                {
+                    pins_wheel_1 = "abcdefghijklmnopqrstu";               
+
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 9);                                        
+
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 9);                                        
+
                 }
                 break;
             }
@@ -483,9 +469,6 @@ bool schluesselgeraet39::randomize(string& param)
             machine_conf[KW_SG39_PINS_WHEEL_1] = pins_wheel_1;
             machine_conf[KW_SG39_PINS_WHEEL_2] = pins_wheel_2;            
             machine_conf[KW_SG39_PINS_WHEEL_3] = pins_wheel_3;
-            machine_conf[KW_SG39_PINS_ROTOR_1] = pins_rotor_1;
-            machine_conf[KW_SG39_PINS_ROTOR_2] = pins_rotor_2;
-            machine_conf[KW_SG39_PINS_ROTOR_3] = pins_rotor_3;
 
             c->configure_machine(machine_conf, this);    
             
@@ -658,12 +641,10 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
 
 #endif
     
-    randomizer_params.push_back(randomizer_descriptor("one", "Rotor one always moves"));
-    randomizer_params.push_back(randomizer_descriptor("two", "Rotor two always moves"));
-    randomizer_params.push_back(randomizer_descriptor("three", "Rotor three always moves"));
-    randomizer_params.push_back(randomizer_descriptor("enigma7", "Enigma stepping with 7 notches"));
-    randomizer_params.push_back(randomizer_descriptor("enigma5", "Enigma stepping with 5 notches"));
-    randomizer_params.push_back(randomizer_descriptor("enigma9", "Enigma stepping with 9 notches")); 
+    randomizer_params.push_back(randomizer_descriptor("five", "Five pins on wheels"));
+    randomizer_params.push_back(randomizer_descriptor("seven", "Seven pins on wheels"));
+    randomizer_params.push_back(randomizer_descriptor("nine", "Nine pins on wheels"));       
+    randomizer_params.push_back(randomizer_descriptor("rotorthree", "Rotor three is always moving"));            
     randomizer_params.push_back(randomizer_descriptor("enigmam4", "M4 Enigma compatible"));        
     
     unvisualized_rotor_names.insert(UKW_SG39);               

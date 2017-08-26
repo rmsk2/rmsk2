@@ -1460,12 +1460,10 @@ class RenderController:
             keysheet.subsheet = 'Stifte'
             
             # Set up column mapping for Stifte subsheet
-            keysheet.column_mapping = {'Walze Eins':Column(10, 'pinsrotor1'), 'Walze Zwei':Column(10, 'pinsrotor2'),\
-                                       'Walze Drei':Column(10, 'pinsrotor3'), 'Rad Eins':Column(21, 'pinswheel1'),\
-                                       'Rad Zwei':Column(23, 'pinswheel2'),'Rad Drei':Column(25, 'pinswheel3')}
+            keysheet.column_mapping = {'Rad Eins':Column(21, 'pinswheel1'), 'Rad Zwei':Column(23, 'pinswheel2'),'Rad Drei':Column(25, 'pinswheel3')}
             
             # Columns to include in Stifte subsheet
-            keysheet.columns = ['Walze Eins', 'Walze Zwei', 'Walze Drei', 'Rad Eins', 'Rad Zwei', 'Rad Drei']
+            keysheet.columns = ['Rad Eins', 'Rad Zwei', 'Rad Drei']
             
             for i in keysheet.columns:
                 keysheet.column_mapping[i].uppercase = False

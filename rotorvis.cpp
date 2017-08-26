@@ -634,12 +634,9 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
             machine_conf[KW_SG39_RING_POS] = "aaaa";            
             machine_conf[KW_SG39_ENTRY_PLUGS] = "ldtrmihoncpwjkbyevsaxgfzuq";
             machine_conf[KW_SG39_REFLECTOR_PLUGS] = "awbicvdketfmgnhzjulopqrysx";
-            machine_conf[KW_SG39_PINS_WHEEL_1] = "";
+            machine_conf[KW_SG39_PINS_WHEEL_1] = "cgkos";
             machine_conf[KW_SG39_PINS_WHEEL_2] = "abcdefghijklmnopqrstuvw";            
-            machine_conf[KW_SG39_PINS_WHEEL_3] = "cfilorux";  
-            machine_conf[KW_SG39_PINS_ROTOR_1] = "";
-            machine_conf[KW_SG39_PINS_ROTOR_2] = "";            
-            machine_conf[KW_SG39_PINS_ROTOR_3] = "aeimquy";                        
+            machine_conf[KW_SG39_PINS_WHEEL_3] = "cfiloru";  
             
             result = c->make_machine(machine_conf);
             

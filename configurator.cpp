@@ -716,9 +716,9 @@ void sg39_configurator::get_keywords(vector<key_word_info>& infos)
     * Each of these configuration elements has to contain at most 26 characters which can be from the range a-z.
     * Each letter corresponds to a set pin on the position specified by the letter.   
     */
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_1, KEY_STRING, "SG39 Pins rotor 1"));     
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_2, KEY_STRING, "SG39 Pins rotor 2"));         
-    infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_3, KEY_STRING, "SG39 Pins rotor 3"));         
+    //infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_1, KEY_STRING, "SG39 Pins rotor 1"));     
+    //infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_2, KEY_STRING, "SG39 Pins rotor 2"));         
+    //infos.push_back(key_word_info(KW_SG39_PINS_ROTOR_3, KEY_STRING, "SG39 Pins rotor 3"));         
 }
 
 /*!  Caveat: This method assumes that the unsigned int constants SG39_ROTOR_0, ..., SG39_ROTOR_9 from the file sg39.h
@@ -767,15 +767,7 @@ void sg39_configurator::get_config(map<string, string>& config_data, rotor_machi
     stepper->get_wheel_data(ROTOR_2, help_vec);
     config_data[KW_SG39_PINS_WHEEL_2] = bool_to_string(help_vec);    
     stepper->get_wheel_data(ROTOR_3, help_vec);
-    config_data[KW_SG39_PINS_WHEEL_3] = bool_to_string(help_vec);    
-
-    // Retrieve current pin settings of rotors
-    stepper->get_descriptor(ROTOR_1).ring->get_ring_data(help_vec);
-    config_data[KW_SG39_PINS_ROTOR_1] = bool_to_string(help_vec);  
-    stepper->get_descriptor(ROTOR_2).ring->get_ring_data(help_vec);
-    config_data[KW_SG39_PINS_ROTOR_2] = bool_to_string(help_vec);  
-    stepper->get_descriptor(ROTOR_3).ring->get_ring_data(help_vec); 
-    config_data[KW_SG39_PINS_ROTOR_3] = bool_to_string(help_vec);         
+    config_data[KW_SG39_PINS_WHEEL_3] = bool_to_string(help_vec);
 }
 
 /*! Caveat: This method assumes that the unsigned int constants SG39_ROTOR_0, ..., SG39_ROTOR_9 from the file sg39.h
@@ -808,9 +800,6 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
         test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_1], 'a', 'u', 21);
         test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_2], 'a', 'w', 23);
         test_result &= check_pin_spec(config_data[KW_SG39_PINS_WHEEL_3], 'a', 'y', 25);
-        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_1], 'a', 'z', 26);
-        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_2], 'a', 'z', 26);
-        test_result &= check_pin_spec(config_data[KW_SG39_PINS_ROTOR_3], 'a', 'z', 26);                
             
         if (!test_result)
         {
@@ -824,14 +813,6 @@ unsigned int sg39_configurator::parse_config(map<string, string>& config_data)
         string_to_bool(wheel_2_pins, config_data[KW_SG39_PINS_WHEEL_2]);
         wheel_3_pins = zero_25;
         string_to_bool(wheel_3_pins, config_data[KW_SG39_PINS_WHEEL_3]);
-        
-        rotor_1_pins = zero_26;
-        string_to_bool(rotor_1_pins, config_data[KW_SG39_PINS_ROTOR_1]);
-        rotor_2_pins = zero_26;
-        string_to_bool(rotor_2_pins, config_data[KW_SG39_PINS_ROTOR_2]);
-        rotor_3_pins = zero_26;
-        string_to_bool(rotor_3_pins, config_data[KW_SG39_PINS_ROTOR_3]);        
-
 
         // Verifiy that rotor setting is syntactically correct          
         if (!check_rotor_spec(config_data[KW_SG39_ROTORS], '0', '9', 4))
@@ -919,12 +900,7 @@ unsigned int sg39_configurator::configure_machine(map<string, string>& config_da
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[1], ROTOR_2);            
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[2], ROTOR_3);                        
             machine->prepare_rotor(rotor_set_name.c_str(), rotors[3], ROTOR_4);                          
-            
-            // Set pin data on rotors
-            stepper->get_descriptor(ROTOR_3).ring->set_ring_data(rotor_3_pins);
-            stepper->get_descriptor(ROTOR_1).ring->set_ring_data(rotor_1_pins);
-            stepper->get_descriptor(ROTOR_2).ring->set_ring_data(rotor_2_pins);
-            
+                        
             // Set pin data on wheels
             stepper->set_wheel_data(ROTOR_1, wheel_1_pins);
             stepper->set_wheel_data(ROTOR_2, wheel_2_pins);

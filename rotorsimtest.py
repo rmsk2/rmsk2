@@ -475,7 +475,7 @@ class SG39Test(EnigmaFuncTest):
         sg39_state = self._state_proc.make_state('SG39', sg39_config.config, sg39_config.rotor_pos)                
         self._proc.set_state(sg39_state)
         
-        decryption_result = self._proc.decrypt('obkjdynovmmlwecxvyqstbepogmdskbengespfrpkrjkfivhgugknhclgzlgdqjrkwwvoprwszturkjfioyfbudxsytietcyppnyocoufqxvgozqpskhkmprdzyzcjgcszepfuppqmcitghyvpoo')
+        decryption_result = self._proc.decrypt('obkdldrmiqlwiyggqohqlwchogmdskbeiqwrsrhensjkfuegeshbdnjhhkwixefpnmlvophbttzlfvtllmhgdsbrisfeetckcttjqbhzurxowizvtpdtuyqyfdkqjeryoopvqpijowmbvkizjipo')
         self.append_note("Decryption result: " + decryption_result)
         result = (decryption_result.lower() == 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
         
@@ -770,7 +770,7 @@ class RandParmTest(simpletest.SimpleTest):
                     machine.set_state(machine_state)
                     
                     randomizer_params = machine.get_randomizer_params()
-                    this_result = (randomizer_params == ['one', 'two', 'three', 'enigma7', 'enigma5', 'enigma9', 'enigmam4'])
+                    this_result = (randomizer_params == ['five', 'seven', 'nine', 'rotorthree', 'enigmam4'])
                     result = result and this_result
                     if not this_result:
                         self.append_note("Incorrect list of randomizer parameters returned for SG39: {}".format(str(randomizer_params)))

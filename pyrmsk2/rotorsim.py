@@ -283,12 +283,9 @@ class SG39State:
         config['rings'] = 'aaaa'
         config['reflector'] = 'awbicvdketfmgnhzjulopqrysx'
         config['plugs'] = 'ldtrmihoncpwjkbyevsaxgfzuq'
-        config['pinswheel1'] = ''
+        config['pinswheel1'] = 'cgkos'
         config['pinswheel2'] = 'abcdefghijklmnopqrstuvw'
-        config['pinswheel3'] = 'cfilorux'
-        config['pinsrotor1'] = ''
-        config['pinsrotor2'] = ''        
-        config['pinsrotor3'] = 'aeimquy'                
+        config['pinswheel3'] = 'cfiloru'
         
         return StateSpec('frqdaph', config, 'SG39')        
 
