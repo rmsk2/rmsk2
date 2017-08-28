@@ -182,7 +182,8 @@ struct randomize_help {
  *
  *  Information about the SG39 can be found in this document (Link goes to NSA. Use at your own risk): 
  *  https://www.nsa.gov/about/_files/cryptologic_heritage/publications/wwii/german_cipher.pdf and this
- *  https://drive.google.com/open?id=0B_oIJbGCCNYeUExkTnlyVGdOVTg
+ *  TICOM I-137 https://drive.google.com/open?id=0B_oIJbGCCNYeUExkTnlyVGdOVTg or 
+ *  http://chris-intel-corner.blogspot.de/2017/08/missing-page-from-ticom-i-137.html
  */
 class schluesselgeraet39 : public rotor_machine {
 public:

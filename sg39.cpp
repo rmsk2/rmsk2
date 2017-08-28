@@ -382,10 +382,10 @@ bool schluesselgeraet39::randomize(string& param)
     unsigned int key_gen_selector;
     map<string, unsigned int> rand_parm_map;
     
-    rand_parm_map["five"] = 0;
-    rand_parm_map["seven"] = 1;
-    rand_parm_map["nine"] = 2;
-    rand_parm_map["rotorthree"] = 3;
+    rand_parm_map["one"] = 0;
+    rand_parm_map["two"] = 1;
+    rand_parm_map["three"] = 2;
+    rand_parm_map["special"] = 3;
     rand_parm_map["enigmam4"] = 6;    
     
     try
@@ -414,7 +414,18 @@ bool schluesselgeraet39::randomize(string& param)
             // Determine stepping motion
             switch(key_gen_selector)
             {
-                case 0:
+                case 0: /* one */
+                {
+                    pins_wheel_1 = "abcdefghijklmnopqrstu";               
+
+                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
+                    fill_wheel_spec(wheel_2_rand, 3);                                        
+
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 7);                                                            
+                }
+                break;                
+                case 1: /* two */
                 {
                     pins_wheel_1 = "abcdefghijklmnopqrstu";               
 
@@ -422,37 +433,26 @@ bool schluesselgeraet39::randomize(string& param)
                     fill_wheel_spec(wheel_2_rand, 5);                                        
 
                     randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                    fill_wheel_spec(wheel_3_rand, 5);                                                            
+                    fill_wheel_spec(wheel_3_rand, 7);                                                            
                 }
-                break;                
-                case 1:
+                break;
+                case 3: /* special */
+                {
+                    pins_wheel_2 = "abcdefghijklmnopqrstuvw";               
+
+                    randomize_help wheel_1_rand(&pins_wheel_1, 21);
+                    fill_wheel_spec(wheel_1_rand, 5);                                        
+
+                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
+                    fill_wheel_spec(wheel_3_rand, 9);                                                            
+                }
+                break;
+                default: /* three */
                 {
                     pins_wheel_1 = "abcdefghijklmnopqrstu";               
 
                     randomize_help wheel_2_rand(&pins_wheel_2, 23);
                     fill_wheel_spec(wheel_2_rand, 7);                                        
-
-                    randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                    fill_wheel_spec(wheel_3_rand, 7);                                                            
-                }
-                break;
-                case 3:
-                {
-                    pins_wheel_3 = "abcdefghijklmnopqrstuvwxy";               
-
-                    randomize_help wheel_1_rand(&pins_wheel_1, 21);
-                    fill_wheel_spec(wheel_1_rand, 9);                                        
-
-                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                    fill_wheel_spec(wheel_2_rand, 7);                                                            
-                }
-                break;
-                default:
-                {
-                    pins_wheel_1 = "abcdefghijklmnopqrstu";               
-
-                    randomize_help wheel_2_rand(&pins_wheel_2, 23);
-                    fill_wheel_spec(wheel_2_rand, 9);                                        
 
                     randomize_help wheel_3_rand(&pins_wheel_3, 25);
                     fill_wheel_spec(wheel_3_rand, 9);                                        
@@ -641,10 +641,10 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
 
 #endif
     
-    randomizer_params.push_back(randomizer_descriptor("five", "Five pins on wheels"));
-    randomizer_params.push_back(randomizer_descriptor("seven", "Seven pins on wheels"));
-    randomizer_params.push_back(randomizer_descriptor("nine", "Nine pins on wheels"));       
-    randomizer_params.push_back(randomizer_descriptor("rotorthree", "Rotor three is always moving"));            
+    randomizer_params.push_back(randomizer_descriptor("one", "Type one stepping"));
+    randomizer_params.push_back(randomizer_descriptor("two", "Type two stepping"));
+    randomizer_params.push_back(randomizer_descriptor("three", "Type three stepping"));       
+    randomizer_params.push_back(randomizer_descriptor("special", "Special stepping"));            
     randomizer_params.push_back(randomizer_descriptor("enigmam4", "M4 Enigma compatible"));        
     
     unvisualized_rotor_names.insert(UKW_SG39);               
