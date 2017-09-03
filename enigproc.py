@@ -38,6 +38,9 @@ ENIGMA_HEADER_EXP = '^[0-9]{4} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{3})
 MESSAGE_KEY = 'message_key'
 HEADER_GRP_1 = 'start_pos'
 HEADER_GRP_2 = 'encrypted_message_key'
+INTERNAL_INDICATOR = 'internal_indicator'
+
+NO_SHIFT_CHAR = ''
 
 ## \brief This class is used to signal exceptions to calling code.
 #
@@ -124,16 +127,64 @@ class ArmyEncoder(TransportEncoder):
         full_plain = full_plain.replace('x', 'x ')
         return full_plain        
 
-
-## \brief This class implements a transport encoder that makes use of the features of the Typex that allow it to 
-#         process quite a few special characters.
+## \brief This class implements the transport encoder used by the german army during WWII for use with the Engima.
 #
-class TypexEncoder(TransportEncoder):
+class SIGABAEncoder(TransportEncoder):
     ## \brief Constructor
     #
     def __init__(self):
-        self._letter_alpha = "abcdefghijklmnopqrstu<w y>"
-        self._figure_alpha = "-'vz3%x£8*().,9014/57<2 6>"
+        super().__init__()
+        self._allowed_plain_chars = 'abcdefghijklmnopqrstuvwxy '
+        
+    ## \brief This method filters out characters which are not allowed as input and transforms the plaintext according to
+    #         the rules set out in the message procedure.
+    #
+    #  \param [full_plain] A string. Input text for an encryption as specified by the caller.
+    #
+    #  \returns A string. It contains the filtered and transformed plaintext.
+    #                
+    def transform_plaintext_enc(self, full_plain):
+        full_plain = full_plain.lower()
+        full_plain = full_plain.replace('.', 'x')
+        full_plain = full_plain.replace(',', 'x')
+        full_plain = full_plain.replace('z', 'x')
+        full_plain = full_plain.replace('?', ' ques')
+        return ''.join(list(filter(lambda x: x in self._allowed_plain_chars, full_plain)))
+
+    ## \brief This method transforms the raw plaintext coming out of the machine according to
+    #         the rules set out in the message procedure back into a more human readable form. In a way this
+    #         is the inverse of transform_plaintext_enc().
+    #
+    #  \param [full_plain] A string. Input text as created by the cipher machine.
+    #
+    #  \returns A string. It contains transformed plaintext.
+    #                    
+    def transform_plaintext_dec(self, full_plain):
+        full_plain = full_plain.lower()
+        full_plain = full_plain.replace(' ques', '?')
+        return full_plain        
+
+
+
+class ShiftingEncoder(TransportEncoder):
+    ## \brief Constructor
+    #
+    def __init__(self, letter_alpha, figure_alpha):
+        self._letter_alpha = letter_alpha
+        self._figure_alpha = figure_alpha
+    
+    def transform_shifted_characters(self, plaintext):
+        result = ''
+
+        for i in plaintext:
+            if i in self._letter_alpha:
+                result += i
+            else:            
+                if (i != ' ') and (i in self._figure_alpha):
+                    result += '>' + i + '<'
+        
+        return result
+                
     
     ## \brief This method transform a plaintext into an encoded form before that encoded form ist encrypted.
     #
@@ -149,17 +200,40 @@ class TypexEncoder(TransportEncoder):
         plaintext = plaintext.replace('ß', 'ss')
         plaintext = ''.join(list(filter(lambda x: (x in self._letter_alpha) or (x in self._figure_alpha), plaintext)))
         
-        result = ''
-        
-        for i in plaintext:
-            if i in self._letter_alpha:
-                result += i
-            
-            if (i != ' ') and (i in self._figure_alpha):
-                result += '>' + i + '<'
-        
+        result = self.transform_shifted_characters(plaintext)
+                
         return result
+
+class KL7Encoder(ShiftingEncoder):
+    ## \brief Constructor
+    #
+    def __init__(self):
+        super().__init__("abcdefghi>klmnopqrstuvwxy ", "abcd3fgh8>klmn9014s57<2x6 ")
+
+    def transform_plaintext_enc(self, plaintext):
+        plaintext = ''.join(list(filter(lambda x: x not in '<>', plaintext.lower())))
+        plaintext = plaintext.replace('ä', 'ae')
+        plaintext = plaintext.replace('ö', 'oe')
+        plaintext = plaintext.replace('ü', 'ue')                        
+        plaintext = plaintext.replace('ß', 'ss')
+        plaintext = plaintext.replace('j', 'i')
+        plaintext = plaintext.replace('z', 'x')        
+        plaintext = ''.join(list(filter(lambda x: (x in self._letter_alpha) or (x in self._figure_alpha), plaintext)))
         
+        result = self.transform_shifted_characters(plaintext)
+                
+        return result
+
+
+## \brief This class implements a transport encoder that makes use of the features of the Typex that allow it to 
+#         process quite a few special characters.
+#
+class TypexEncoder(ShiftingEncoder):
+    ## \brief Constructor
+    #
+    def __init__(self):
+        super().__init__("abcdefghijklmnopqrstu<w y>", "-'vz3%x£8*().,9014/57<2 6>")
+            
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -211,7 +285,7 @@ class IndicatorProcessor:
     #           part.
     #    
     def derive_message_key(self, machine, already_parsed_indicators):
-        result = parsed_indicators
+        result = already_parsed_indicators
         result[MESSAGE_KEY] = ''
         
         return result
@@ -441,8 +515,9 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [indicator size] An integer. It has to specify the number of characters in an indicator group.
+    #  \param [step_before_proc] A boolean. If True the machine is stepped once before doing any encryptions. Needed for KL7.
     #
-    def __init__(self,  server, rand_gen, indicator_size):
+    def __init__(self,  server, rand_gen, indicator_size, step_before_proc = False):
         super().__init__(server, rand_gen)
         ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
         self._grundstellung = ''
@@ -456,6 +531,8 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         self._transformer = lambda x: x
         ## \brief Tests and if necessary transforms the generated message key
         self._msg_key_tester = lambda x: MsgKeyTestResult(True, x)
+        ## \brief Step underlying machine before encryptions
+        self._step_before_proc = step_before_proc
 
     ## \brief This property returns the key words that can be used by an object with the same interface as Formatter.
     #
@@ -564,6 +641,10 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
                 machine.set_rotor_positions(self.grundstellung)
                 result['rand_indicator'] = indicator_candidate
                 machine.go_to_letter_state()
+                
+                if self._step_before_proc:
+                    machine.step()
+                
                 msg_key_candidate = machine.encrypt(self._transformer(result['rand_indicator']))
                 machine.go_to_letter_state()
                 
@@ -591,7 +672,11 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         rand_indicator = self._transformer(result['rand_indicator'])
         
         if self._verifier(rand_indicator):    
-            machine.go_to_letter_state()    
+            machine.go_to_letter_state()
+            
+            if self._step_before_proc:
+                machine.step()            
+                
             msg_key_candidate = machine.encrypt(rand_indicator)
             machine.go_to_letter_state()            
             test_res = self._msg_key_tester(msg_key_candidate)
@@ -605,6 +690,88 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         
         return result
 
+
+class SIGABABasicIndicatorProcessor(IndicatorProcessor):
+    def __init__(self, server, rand_gen):
+        super().__init__(server, rand_gen)
+        ## \brief Specifies the key word that can be used by a formatter to create or parse the header lines.
+        self._key_words = [INTERNAL_INDICATOR]
+        self._indicator_size = 5
+        
+    ## \brief This property returns the key words that can be used by an object with the same interface as Formatter.
+    #
+    #  \returns A sequence of strings.
+    #    
+    @property
+    def key_words(self):
+        return self._key_words
+
+    def _get_parsed_rotor_pos(self, machine):
+        positions = machine.get_rotor_positions()
+        return (positions[:5], positions[5:10], positions[10:])
+
+    def _set_parsed_rotor_pos(self, machine, pos):
+        positions = machine.set_rotor_positions(pos[0] + pos[1] + pos[2])
+
+
+    ## \brief Children have to oeverride this method. It is intended to create the indicator groups necessary
+    #         to create a full message part during encryption.
+    #
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
+    #         is called.
+    #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
+    #         operation.
+    #
+    #  \returns A dictionary that maps strings to strings. It has to contain a key 'message_key' that specifies the
+    #           starting positions of the machines rotors at the beginning of the encryption of the body of this message
+    #           part.
+    #
+    def create_indicators(self, machine, this_part, num_parts):
+        result = {MESSAGE_KEY:''}
+        internal_indicator_found = False
+        
+        while not internal_indicator_found:
+            candidate = self._rand_gen.get_rand_string(self._indicator_size)
+            internal_indicator_found = ('o' not in candidate) and ('z' not in candidate)
+        
+        result[INTERNAL_INDICATOR] = candidate                
+        result[MESSAGE_KEY] = self._setup_stepping(candidate, machine)
+        
+        return result
+        
+    def _setup_stepping(self, internal_indicator, machine):
+        index_pos, stepping_pos, cipher_pos = self._get_parsed_rotor_pos(machine)
+        self._set_parsed_rotor_pos(machine, (index_pos, 'ooooo', 'ooooo'))
+        
+        for i in range(5):
+            index_pos, stepping_pos, cipher_pos = self._get_parsed_rotor_pos(machine)
+            wheel_is_setup = stepping_pos[i] == internal_indicator[i]
+
+            while not wheel_is_setup:
+                machine.sigaba_setup(i + 1)
+                index_pos, stepping_pos, cipher_pos = self._get_parsed_rotor_pos(machine)
+                wheel_is_setup = stepping_pos[i] == internal_indicator[i]        
+        
+        return machine.get_rotor_positions()              
+            
+    ## \brief Children have to oeverride this method. It is intended to recreate the message key from the indicator groups
+    #         as parsed from the ciphertext of a message part during decryption.
+    #
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
+    #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption.
+    #
+    #  \returns A dictionary that maps strings to strings. It has to contain a key 'message_key' that specifies the
+    #           starting positions of the machines rotors at the beginning of the decryption of the body of this message
+    #           part.
+    #    
+    def derive_message_key(self, machine, already_parsed_indicators):
+        result = already_parsed_indicators
+        result[MESSAGE_KEY] = self._setup_stepping(result[INTERNAL_INDICATOR], machine)               
+        
+        return result
+        
 
 # ----------------------------------------------------------------------------------------------------        
 
@@ -1011,7 +1178,7 @@ class MessageProcedure:
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
     #    
-    def __init__(self, machine, rand_gen, server):
+    def __init__(self, machine, rand_gen, server, step_before_proc = False):
         ## \brief Maximum number of plaintext characters in a message part.
         self._max_msg_size = 245
         ## \brief An object with the same interface as TransportEncoder.
@@ -1025,7 +1192,9 @@ class MessageProcedure:
         ## \brief Holds the rotor random object which is to be used.
         self._rand_gen = rand_gen
         ## \brief Holds the tlv server object which is to be used.
-        self._server = server        
+        self._server = server
+        ## \brief If True then the underlying machine is stepped once before an en- or decryption
+        self._step_before_proc = step_before_proc
 
     ## \brief This property returns the maximum number of plaintext characters allowed in a message part.
     #
@@ -1143,6 +1312,10 @@ class MessageProcedure:
         # Encrypt message
         indicator_inputs = self.indicator_proc.create_indicators(self._machine, this_part, num_parts)
         self._machine.set_rotor_positions(indicator_inputs[MESSAGE_KEY])
+        
+        if self._step_before_proc:
+            self._machine.step()
+        
         part_ciphertext = self._machine.encrypt(part_plain_text)
         
         body = self.formatter.format_body(part_ciphertext, indicator_inputs)
@@ -1239,33 +1412,66 @@ class MessageProcedure:
         indicators = self.indicator_proc.derive_message_key(self._machine, indicators) # Derive message key from indicators   
         self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
 
+        if self._step_before_proc:
+            self._machine.step()
+
         return self._machine.decrypt(ciphertext) # decrypt
 
 
-class TypexIndicatorTransformer:
-    def __init__(self):
-        self._letter_alpha = "abcdefghijklmnopqrstu<w y>"
-        self._figure_alpha = "-'vz3%x£8*().,9014/57<2 6>"
-        self._inverse_letter = {}
+class ShiftedIndicatorTransformer:
+    def __init__(self, letter_alpha, figure_alpha, space_char, shift_char, unshift_char, shift_figure_char, unshift_figure_char):
+        self._letter_alpha = letter_alpha
+        self._figure_alpha = figure_alpha
+        self._space_char = space_char
+        self._shift_char = shift_char
+        self._unshift_char = unshift_char
+        self._shift_figure_char = shift_figure_char
+        self._unshift_figure_char = unshift_figure_char        
+        self._inverse_std = {}
         
-        for i in range(len(self._letter_alpha)):
-            self._inverse_letter[self._letter_alpha[i]] = i
-    
+        count = 0
+        for i in 'abcdefghijklmnopqrstuvwxyz':
+            self._inverse_std[i] = count
+            count += 1   
+            
     def transform(self, indicator_candidate):
         result = ''
-        candidate = (lambda x: x.replace('x', ' ').replace('z', '>').replace('v', '<'))(indicator_candidate)
         current_alpha = self._letter_alpha
         
-        for i in candidate:
-            if i == '>':
-                current_alpha = self._figure_alpha
-            
-            if i == '<':
-                current_alpha = self._letter_alpha
-            
-            result += current_alpha[self._inverse_letter[i]]
+        for i in indicator_candidate:
+            if i == self._space_char:
+                result += ' '
+            else:
+                if current_alpha == self._letter_alpha:            
+                    if i == self._shift_char:
+                        current_alpha = self._figure_alpha
+                        result += '>'
+                    elif i == self._unshift_char:
+                        current_alpha = self._letter_alpha
+                        result += '<'
+                    else:
+                        result += current_alpha[self._inverse_std[i]]
+                else:            
+                    if i == self._shift_figure_char:
+                        current_alpha = self._figure_alpha
+                        result += '>'
+                    elif i == self._unshift_figure_char:
+                        current_alpha = self._letter_alpha
+                        result += '<'
+                    else:
+                        result += current_alpha[self._inverse_std[i]]
         
         return result
+
+
+class TypexIndicatorTransformer(ShiftedIndicatorTransformer):
+    def __init__(self):
+        super().__init__("abcdefghijklmnopqrstu<w y>", "-'vz3%x£8*().,9014/57<2 6>", 'x', 'z', 'v', 'z', 'v')
+
+
+class KL7IndicatorTransformer(ShiftedIndicatorTransformer):
+    def __init__(self):
+        super().__init__("abcdefghi>klmnopqrstuvwxy ", "abcd3fgh8>klmn9014s57<2x6 ", 'z', 'j', NO_SHIFT_CHAR, 'j', 'v')
 
 
 class SG39IndicatorHelper:
@@ -1333,9 +1539,9 @@ class MessageProcedureFactory:
         
         return result
 
-    def get_generic_machine(self, system_indicator, grundstellung, indicator_group_size):
+    def get_generic_machine(self, system_indicator, grundstellung, indicator_group_size, step_before_use = False):
         result = MessageProcedure(self._machine, self._rand_gen, self._server)
-        result.indicator_proc = GrundstellungIndicatorProc(self._server, self._rand_gen, indicator_group_size)
+        result.indicator_proc = GrundstellungIndicatorProc(self._server, self._rand_gen, indicator_group_size, step_before_use)
         result.indicator_proc.grundstellung = grundstellung
         result.formatter = GenericFormatter(1, indicator_group_size, result.indicator_proc.key_words)
         result.formatter.system_indicator = system_indicator
@@ -1381,11 +1587,33 @@ class MessageProcedureFactory:
 
     def get_generic_sg39(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 10)
+        result.msg_size = 250
         sg39_ind_helper = SG39IndicatorHelper()
         result.indicator_proc.msg_key_tester = sg39_ind_helper.test
         
         return result
 
+    def get_generic_kl7(self, system_indicator, grundstellung):
+        result = self.get_generic_machine(system_indicator, grundstellung, 7, True)
+        result.msg_size = 500
+        result.formatter.limits = (5, 10)
+        kl7_trans = KL7IndicatorTransformer()
+        result.indicator_proc.transformer = kl7_trans.transform
+        
+        result.encoder = KL7Encoder()
+        
+        return result
+    
+    def get_sigaba_basic(self, system_indicator):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result.indicator_proc = SIGABABasicIndicatorProcessor(self._server, self._rand_gen)
+        result.formatter = GenericFormatter(1, 5, result.indicator_proc.key_words)
+        result.formatter.system_indicator = system_indicator
+        result.formatter.limits = (5, 10)
+        result.msg_size = 1750
+        result.encoder = SIGABAEncoder()
+        
+        return result    
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -1445,7 +1673,11 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         do_encrypt = args['doencrypt']
         factory = MessageProcedureFactory(self.machine, self.random, self.server)
         #generator = factory.get_post1940_enigma
-        generator = factory.get_generic_4wheel_engima
+        #generator = factory.get_generic_4wheel_engima
+        #generator = factory.get_generic_sg39
+        #generator = factory.get_generic_kl7
+        #generator = factory.get_generic_typex
+        generator = factory.get_sigaba_basic
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -1461,12 +1693,12 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 raise EnigmaException('No usable Kenngruppen specified!')
             
             #enigma_proc = generator(kenngruppen)
-            enigma_proc = generator('446TR', 'ekut')
+            enigma_proc = generator('446TR')
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
             #enigma_proc = generator([])
-            enigma_proc = generator('446TR', 'ekut')
+            enigma_proc = generator('446TR')
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data

@@ -31,7 +31,7 @@
 /*! \brief This constant specifies the maximum number of tries before randomization of a machine
  *         is considered to have failed.
  */
-const unsigned int MAX_RAND_TRIES = 10;
+const unsigned int MAX_RAND_TRIES = 20;
 
 #ifdef SG39_ASYMMETRIC
 
@@ -394,7 +394,7 @@ bool schluesselgeraet39::randomize(string& param)
         permutation reflector_perm = permutation::get_random_permutation(rand, 26);          
         permutation rotor_pin_perm = permutation::get_random_permutation(rand, 26);
         permutation rotor_selection_perm = permutation::get_random_permutation(rand, 10);
-        permutation stepping_selection_perm = permutation::get_random_permutation(rand, 3);        
+        permutation stepping_selection_perm = permutation::get_random_permutation(rand, 4);        
 
         // Determine rotor sequence
         for(unsigned int count = 0; count < 4; count++)
@@ -444,7 +444,7 @@ bool schluesselgeraet39::randomize(string& param)
                     fill_wheel_spec(wheel_1_rand, 5);                                        
 
                     randomize_help wheel_3_rand(&pins_wheel_3, 25);
-                    fill_wheel_spec(wheel_3_rand, 9);                                                            
+                    fill_wheel_spec(wheel_3_rand, 11);                                                            
                 }
                 break;
                 default: /* three */
