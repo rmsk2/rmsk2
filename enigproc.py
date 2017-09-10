@@ -34,11 +34,13 @@ import functools
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
 # 1534 = 15tle = 15tl = 167 = RJF GNZ =
-ENIGMA_HEADER_EXP = '^[0-9]{4} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{3}) ([A-Z]{3}) =$'
+ENIGMA_HEADER_EXP = '^[0-9]{{4}} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{{{0}}}) ([A-Z]{{{0}}}) =$'
 MESSAGE_KEY = 'message_key'
 HEADER_GRP_1 = 'start_pos'
 HEADER_GRP_2 = 'encrypted_message_key'
 INTERNAL_INDICATOR = 'internal_indicator'
+EXTERNAL_INDICATOR = 'external_indicator'
+MESSAGE_LENGTH = 'message_length'
 
 NO_SHIFT_CHAR = ''
 
@@ -310,14 +312,15 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
     #
-    def __init__(self,  server, rand_gen, kenngruppen):
+    def __init__(self,  server, rand_gen, kenngruppen, num_rotors):
         super().__init__(server, rand_gen)
         ## \brief Holds the kenngruppen to use.
         self._kenngruppen = kenngruppen
         ## \brief Holds a random permutation of 0 ... len(self._kenngruppen).        
         self._group_shuffle = []
         ## \brief Points to the current read position in self._group_shuffle.
-        self._shuffle_pos = 0        
+        self._shuffle_pos = 0
+        self._num_rotors = num_rotors        
 
     ## \brief This method changes the kenngruppen that are in used in this object.
     #
@@ -368,8 +371,8 @@ class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
     #
-    def __init__(self,  server, rand_gen, kenngruppen):
-        super().__init__(server, rand_gen, kenngruppen)
+    def __init__(self,  server, rand_gen, kenngruppen, num_rotors = 3):
+        super().__init__(server, rand_gen, kenngruppen, num_rotors)
 
     ## \brief This method creates the indicator groups for the implemented post 1940 messaging procedure.
     #
@@ -388,8 +391,8 @@ class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     def create_indicators(self, machine, this_part, num_parts):
         result = {}
         
-        result[MESSAGE_KEY] = self._rand_gen.get_rand_string(3)
-        result[HEADER_GRP_1] = self._rand_gen.get_rand_string(3)
+        result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)
+        result[HEADER_GRP_1] = self._rand_gen.get_rand_string(self._num_rotors)
         machine.set_rotor_positions(result[HEADER_GRP_1])
         result[HEADER_GRP_2] = machine.encrypt(result[MESSAGE_KEY])
         result['kenngruppe'] = self._rand_gen.get_rand_string(2) + self._get_next_kenngruppe()
@@ -426,10 +429,10 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
     #
-    def __init__(self,  server, rand_gen, kenngruppen):
-        super().__init__(server, rand_gen, kenngruppen)
+    def __init__(self,  server, rand_gen, kenngruppen, num_rotors = 3):
+        super().__init__(server, rand_gen, kenngruppen, num_rotors)
         ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
-        self._grundstellung = 'rti'
+        self._grundstellung = self._rand_gen.get_rand_string(self._num_rotors)
     
     ## \brief This property returns the grundstellung.
     #
@@ -466,7 +469,7 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     def create_indicators(self, machine, this_part, num_parts):
         result = {}
         
-        result[MESSAGE_KEY] = self._rand_gen.get_rand_string(3)
+        result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)
         machine.set_rotor_positions(self.grundstellung)
         result[HEADER_GRP_1] = machine.encrypt(result[MESSAGE_KEY])
         result[HEADER_GRP_2] = machine.encrypt(result[MESSAGE_KEY])
@@ -691,7 +694,7 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         return result
 
 
-class SIGABABasicIndicatorProcessor(IndicatorProcessor):
+class SIGABAIndicatorProcessorBase(IndicatorProcessor):
     def __init__(self, server, rand_gen):
         super().__init__(server, rand_gen)
         ## \brief Specifies the key word that can be used by a formatter to create or parse the header lines.
@@ -712,8 +715,75 @@ class SIGABABasicIndicatorProcessor(IndicatorProcessor):
 
     def _set_parsed_rotor_pos(self, machine, pos):
         positions = machine.set_rotor_positions(pos[0] + pos[1] + pos[2])
+        
+    def _make_indicator(self):
+        result = ''
+        internal_indicator_found = False
+        
+        while not internal_indicator_found:
+            result = self._rand_gen.get_rand_string(self._indicator_size)
+            internal_indicator_found = ('o' not in result) and ('z' not in result)
+        
+        return result    
+
+class SIGABAGrundstellungIndicatorProcessor(SIGABAIndicatorProcessorBase):
+    def __init__(self, server, rand_gen):
+        super().__init__(server, rand_gen)
+        ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
+        self._grundstellung = ''
+        
+    ## \brief This property returns the grundstellung.
+    #
+    #  \returns A string. The grundstellung
+    #
+    @property
+    def grundstellung(self):
+        return self._grundstellung
+
+    ## \brief This property setter allows to change the grundstellung.
+    #
+    #  \param [new_grundsellung] A string. The new grundstellung.
+    #
+    #  \returns Nothing
+    #
+    @grundstellung.setter
+    def grundstellung(self, new_grundstellung):
+        self._grundstellung = new_grundstellung        
+
+    def create_indicators(self, machine, this_part, num_parts):
+        result = {MESSAGE_KEY:''}
+        
+        message_wheel_pos = self._make_indicator()
+        index_pos, stepping_pos, cipher_pos = self._get_parsed_rotor_pos(machine)
+        self._set_parsed_rotor_pos(machine, (index_pos, self._grundstellung, self._grundstellung))
+        result[INTERNAL_INDICATOR] = machine.encrypt(message_wheel_pos)
+        
+        result[MESSAGE_KEY] = index_pos + message_wheel_pos + message_wheel_pos
+        
+        return result
+
+    def derive_message_key(self, machine, already_parsed_indicators):
+        result = already_parsed_indicators
+        
+        index_pos, stepping_pos, cipher_pos = self._get_parsed_rotor_pos(machine)
+        self._set_parsed_rotor_pos(machine, (index_pos, self._grundstellung, self._grundstellung))
+        decrypted_indicator = machine.decrypt(result[INTERNAL_INDICATOR])
+        
+        allowed_chars = set('abcdefghijklmnpqrstuvwxy')
+        decrypted_indicator_set = set(decrypted_indicator)
+        
+        if len(allowed_chars.intersection(decrypted_indicator_set)) != len(decrypted_indicator_set):
+            raise EnigmaException('Indicator invalid')
+        else:                                               
+            result[MESSAGE_KEY] = index_pos + decrypted_indicator + decrypted_indicator             
+        
+        return result
 
 
+class SIGABABasicIndicatorProcessor(SIGABAIndicatorProcessorBase):
+    def __init__(self, server, rand_gen):
+        super().__init__(server, rand_gen)
+    
     ## \brief Children have to oeverride this method. It is intended to create the indicator groups necessary
     #         to create a full message part during encryption.
     #
@@ -729,14 +799,9 @@ class SIGABABasicIndicatorProcessor(IndicatorProcessor):
     #
     def create_indicators(self, machine, this_part, num_parts):
         result = {MESSAGE_KEY:''}
-        internal_indicator_found = False
         
-        while not internal_indicator_found:
-            candidate = self._rand_gen.get_rand_string(self._indicator_size)
-            internal_indicator_found = ('o' not in candidate) and ('z' not in candidate)
-        
-        result[INTERNAL_INDICATOR] = candidate                
-        result[MESSAGE_KEY] = self._setup_stepping(candidate, machine)
+        result[INTERNAL_INDICATOR] = self._make_indicator()
+        result[MESSAGE_KEY] = self._setup_stepping(result[INTERNAL_INDICATOR], machine)
         
         return result
         
@@ -768,7 +833,11 @@ class SIGABABasicIndicatorProcessor(IndicatorProcessor):
     #    
     def derive_message_key(self, machine, already_parsed_indicators):
         result = already_parsed_indicators
-        result[MESSAGE_KEY] = self._setup_stepping(result[INTERNAL_INDICATOR], machine)               
+        
+        if ('o' in result[INTERNAL_INDICATOR]) or ('z' in result[INTERNAL_INDICATOR]):
+            raise EnigmaException('Indicator invalid')
+        else:        
+            result[MESSAGE_KEY] = self._setup_stepping(result[INTERNAL_INDICATOR], machine)               
         
         return result
         
@@ -980,7 +1049,7 @@ class GenericFormatter(Formatter):
 
     ## \brief This method creates a header for a rotor machine message.
     #
-    #  \param [formatted_body] A string specifying the already formatted ciphertext body of a message part.
+    #  \param [formatted_body] A BodyStruct object specifying the already formatted ciphertext body of a message part.
     #  \param [indicators] A dictionary that maps strings to strings. It has to contain at least the indicator groups 
     #         referenced by self._key_words.
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
@@ -1049,8 +1118,10 @@ class GenericFormatter(Formatter):
 class EnigmaFormatter(Formatter):
     ## \brief Constructor.
     #
-    def __init__(self):
+    def __init__(self, header_group_size = 3):
         super().__init__()
+        self._header_group_size = header_group_size
+        self._header_exp = ENIGMA_HEADER_EXP.format(self._header_group_size)
 
     ## \brief This method formats the body of an Enigma message.
     #
@@ -1094,7 +1165,7 @@ class EnigmaFormatter(Formatter):
 
     ## \brief This method creates a header for an Enigma based message.
     #
-    #  \param [formatted_body] A string specifying the already formatted ciphertext body of a message part.
+    #  \param [formatted_body] A BodyStruct object specifying the already formatted ciphertext body of a message part.
     #  \param [indicators] A dictionary that maps strings to strings. It has to contain at least the indicator groups 
     #         referenced by the keys HEADER_GRP_1 and HEADER_GRP_2.
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
@@ -1131,7 +1202,7 @@ class EnigmaFormatter(Formatter):
     #                    
     def parse_ciphertext_header(self, indicators, header):
         result = indicators
-        header_exp = re.compile(ENIGMA_HEADER_EXP)
+        header_exp = re.compile(self._header_exp)
         
         match = header_exp.search(header)
         if match != None:
@@ -1139,6 +1210,134 @@ class EnigmaFormatter(Formatter):
             result[HEADER_GRP_2] = match.group(3).lower()
         else:        
             raise EnigmaException('Header has wrong format')
+            
+        return result
+
+
+class SIGABAFormatter(Formatter):
+    ## \brief Constructor.
+    #
+    def __init__(self):
+        super().__init__()
+        self._external_indicator = 'AAAAA'
+
+    ## \brief This property returns the external indicator which identifies the key or crpyto net to which the message belongs.
+    #
+    #  \returns A string.
+    #
+    @property
+    def external_indicator(self):
+        return self._external_indicator
+
+    ## \brief This property setter allows to change the external indicator.
+    #
+    #  \param [new_external_indicator] A string. The new external indicator to use.
+    #
+    #  \returns Nothing
+    #        
+    @external_indicator.setter
+    def external_indicator(self, new_external_indicator):
+        self._external_indicator = new_external_indicator        
+
+    ## \brief This method formats the body of an SIGABA message.
+    #
+    #  \param [ciphertext] A string specifying the unformatted ciphertext.
+    #  \param [indicators] A dictionary that maps strings to strings. It has to contain the indicator groups generated
+    #         for this message part. In particular there has to be a key INTERNAL_INDICATOR which is used to derive the
+    #         message key.
+    #
+    #  \returns A BodyStruct object.
+    #
+    def format_body(self, ciphertext, indicators):
+        result = BodyStruct()        
+        
+        result.num_chars = len(ciphertext)
+        
+        if (len(ciphertext) % self._group_size) != 0:
+            ciphertext = ciphertext + ('x' * self._group_size)[:self._group_size - (len(ciphertext) % self._group_size)]
+        
+        ciphertext = self.external_indicator + indicators[INTERNAL_INDICATOR] + ciphertext + indicators[INTERNAL_INDICATOR] + self.external_indicator                
+        result.num_groups = len(ciphertext) // self._group_size
+                
+        result.text = rotorsim.RotorMachine.group_text(ciphertext, True, self._group_size, self._groups_per_line)        
+        
+        return result
+
+    ## \brief This method parses the body of a SIGABA message. I.e. it retrieves the internal and external indicator from
+    #         the ciphertext.
+    #
+    #  \param [body] A string specifying the formatted the ciphertext body of a message part.
+    #
+    #  \returns A ParsedBodyStruct object.
+    #
+    def parse_ciphertext_body(self, body):
+        result = ParsedBodyStruct()
+        
+        body = body.replace(' ', '')
+        body = body.replace('\n', '')
+        
+        if len(body) < 20:
+            raise EnigmaException('Ciphertext has to contain at least four groups')
+        
+        ext_front = body[:5].lower()
+        int_front = body[5:10].lower()  
+        
+        ext_back = body[-5:].lower()
+        int_back = body[-10:-5].lower()        
+        
+        if (ext_front != ext_back) or (int_front != int_back):
+            raise EnigmaException('Indicator groups inconsistent')
+        
+        result.indicators[INTERNAL_INDICATOR] = int_front
+        result.indicators[EXTERNAL_INDICATOR] = ext_front        
+        
+        result.text = body[10:-10].lower()
+        
+        return result
+
+    ## \brief This method creates a header for an Enigma based message.
+    #
+    #  \param [formatted_body] A BodyStruct object specifying the already formatted ciphertext body of a message part.
+    #  \param [indicators] A dictionary that maps strings to strings. It has to contain at least the indicator group 
+    #         referenced by the key INTERNAL_INDICATOR.
+    #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
+    #         is called.
+    #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
+    #         operation.
+    #
+    #  \returns A string containing the created header.
+    #    
+    def format_header(self, formatted_body, indicators, this_part, num_parts):
+        result = ''
+        now = datetime.datetime.now()
+
+        # Generated header: 2118 0910 - 2 OF 5 - 280        
+                
+        header = now.strftime('%H%M') + ' ' + now.strftime('%m%d') + ' - ' + str(this_part) + ' OF ' + str(num_parts) + ' - '
+        header = header + str(formatted_body.num_chars) 
+        result = header.upper()
+        
+        return result
+
+    ## \brief This method parses the message header
+    #
+    #  \param [indicators] A dictionary that maps strings to strings. It has to contain the indicator groups that have
+    #         already been retreived from the message body.
+    #  \param [header] A string. It has to contain the header of the current message part.
+    #
+    #  \returns A dictionary that maps strings to strings. The returned dictionary is the dictionary given in parameter
+    #           indicators to which the key MESSAGE_LENGTH has been added.
+    #                    
+    def parse_ciphertext_header(self, indicators, header):
+        result = indicators
+        exp = '^[0-9]{2}[0-9]{2} [0-9]{2}[0-9]{2} - [0-9]+ OF [0-9]+ - ([0-9]+)'
+        header_exp = re.compile(exp)
+        
+        match = header_exp.search(header)
+        if match == None:
+            raise EnigmaException('Header has wrong format')
+        else:
+            result[MESSAGE_LENGTH] = int(match.group(1))
             
         return result
     
@@ -1413,7 +1612,10 @@ class MessageProcedure:
         self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
 
         if self._step_before_proc:
-            self._machine.step()
+            self._machine.step()       
+        
+        if MESSAGE_LENGTH in indicators.keys():
+            ciphertext = help.text[:indicators[MESSAGE_LENGTH]]
 
         return self._machine.decrypt(ciphertext) # decrypt
 
@@ -1518,26 +1720,31 @@ class MessageProcedureFactory:
         ## \brief Holds the tlv server object which is to be used.
         self._server = server        
 
-    def _get_incomplete_enigma(self):
-        result = MessageProcedure(self._machine, self._rand_gen, self._server)
-        result.formatter = EnigmaFormatter()
+    def _get_incomplete_enigma(self, num_rotors = 3):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server, num_rotors)
+        result.formatter = EnigmaFormatter(num_rotors)
         result.formatter.limits = (5, 10)
         result.msg_size = 245
         result.encoder = ArmyEncoder()
         
         return result
     
-    def get_post1940_enigma(self, kenngruppen):    
-        result = self._get_incomplete_enigma()
-        result.indicator_proc = Post1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen)
+    def get_post1940_enigma(self, kenngruppen, num_rotors = 3):    
+        result = self._get_incomplete_enigma(num_rotors)
+        result.indicator_proc = Post1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen, num_rotors)
         
         return result
 
-    def get_pre1940_enigma(self, kenngruppen):    
-        result = self._get_incomplete_enigma()
-        result.indicator_proc = Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen)
+    def get_pre1940_enigma(self, kenngruppen, num_rotors = 3):    
+        result = self._get_incomplete_enigma(num_rotors)
+        result.indicator_proc = Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen, num_rotors)
         
         return result
+
+    def get_tirpitz_post1940(self, kenngruppen):
+        result = self.get_post1940_enigma(kenngruppen, 4)
+        
+        return result           
 
     def get_generic_machine(self, system_indicator, grundstellung, indicator_group_size, step_before_use = False):
         result = MessageProcedure(self._machine, self._rand_gen, self._server)
@@ -1607,13 +1814,20 @@ class MessageProcedureFactory:
     def get_sigaba_basic(self, system_indicator):
         result = MessageProcedure(self._machine, self._rand_gen, self._server)
         result.indicator_proc = SIGABABasicIndicatorProcessor(self._server, self._rand_gen)
-        result.formatter = GenericFormatter(1, 5, result.indicator_proc.key_words)
-        result.formatter.system_indicator = system_indicator
+        result.formatter = SIGABAFormatter()
+        result.formatter.external_indicator = system_indicator
         result.formatter.limits = (5, 10)
-        result.msg_size = 1750
+        result.msg_size = 1730
         result.encoder = SIGABAEncoder()
         
         return result    
+
+    def get_sigaba_grundstellung(self, system_indicator, grundstellung):
+        result = self.get_sigaba_basic(system_indicator)
+        result.indicator_proc = SIGABAGrundstellungIndicatorProcessor(self._server, self._rand_gen)
+        result.indicator_proc.grundstellung = grundstellung
+        
+        return result
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -1673,11 +1887,13 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         do_encrypt = args['doencrypt']
         factory = MessageProcedureFactory(self.machine, self.random, self.server)
         #generator = factory.get_post1940_enigma
+        #generator = factory.get_tirpitz_post1940
         #generator = factory.get_generic_4wheel_engima
         #generator = factory.get_generic_sg39
         #generator = factory.get_generic_kl7
         #generator = factory.get_generic_typex
         generator = factory.get_sigaba_basic
+        #generator = factory.get_sigaba_grundstellung
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -1693,12 +1909,12 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 raise EnigmaException('No usable Kenngruppen specified!')
             
             #enigma_proc = generator(kenngruppen)
-            enigma_proc = generator('446TR')
+            enigma_proc = generator('abcde')
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
             #enigma_proc = generator([])
-            enigma_proc = generator('446TR')
+            enigma_proc = generator('abcde')
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data
