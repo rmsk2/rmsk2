@@ -129,6 +129,7 @@ class ArmyEncoder(TransportEncoder):
         full_plain = full_plain.replace('x', 'x ')
         return full_plain        
 
+
 ## \brief This class implements the transport encoder used by the german army during WWII for use with the Engima.
 #
 class SIGABAEncoder(TransportEncoder):
@@ -165,7 +166,6 @@ class SIGABAEncoder(TransportEncoder):
         full_plain = full_plain.lower()
         full_plain = full_plain.replace(' ques', '?')
         return full_plain        
-
 
 
 class ShiftingEncoder(TransportEncoder):
@@ -1220,6 +1220,7 @@ class SIGABAFormatter(Formatter):
     def __init__(self):
         super().__init__()
         self._external_indicator = 'AAAAA'
+        self._months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     ## \brief This property returns the external indicator which identifies the key or crpyto net to which the message belongs.
     #
@@ -1309,11 +1310,11 @@ class SIGABAFormatter(Formatter):
     #    
     def format_header(self, formatted_body, indicators, this_part, num_parts):
         result = ''
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
-        # Generated header: 2118 0910 - 2 OF 5 - 280        
+        # Generated header: 211809Z MAY 2017 - 2 OF 5 - 280        
                 
-        header = now.strftime('%H%M') + ' ' + now.strftime('%m%d') + ' - ' + str(this_part) + ' OF ' + str(num_parts) + ' - '
+        header = now.strftime('%d%H%M') + 'Z ' + self._months[now.month - 1] + now.strftime(' %Y') + ' - ' + str(this_part) + ' OF ' + str(num_parts) + ' - '
         header = header + str(formatted_body.num_chars) 
         result = header.upper()
         
@@ -1330,7 +1331,7 @@ class SIGABAFormatter(Formatter):
     #                    
     def parse_ciphertext_header(self, indicators, header):
         result = indicators
-        exp = '^[0-9]{2}[0-9]{2} [0-9]{2}[0-9]{2} - [0-9]+ OF [0-9]+ - ([0-9]+)'
+        exp = '^[0-9]{6}Z [A-Z]{3} [0-9]{4} - [0-9]+ OF [0-9]+ - ([0-9]+)'
         header_exp = re.compile(exp)
         
         match = header_exp.search(header)
@@ -1894,6 +1895,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         #generator = factory.get_generic_typex
         generator = factory.get_sigaba_basic
         #generator = factory.get_sigaba_grundstellung
+        #generator = factory.get_generic_nema
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -1909,12 +1911,12 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 raise EnigmaException('No usable Kenngruppen specified!')
             
             #enigma_proc = generator(kenngruppen)
-            enigma_proc = generator('abcde')
+            enigma_proc = generator('ABCDE')
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
             #enigma_proc = generator([])
-            enigma_proc = generator('abcde')
+            enigma_proc = generator('ABCDE')
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data
