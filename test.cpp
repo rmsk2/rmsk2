@@ -85,6 +85,10 @@ protected:
     /*! \brief Demonstration that SG39 can be operated in such a way that it is compatible with an M4
      */        
     bool sg39_as_m4_test();
+
+    /*! \brief Randomizes the default enigma rotor set and saves it.
+     */        
+    bool rand_rotor_set_test();
 };
 
 void alles_andere::append_config_notes(map<string, string> config_data)
@@ -182,6 +186,47 @@ bool alles_andere::enigma_configurator_test()
     }
                      
     append_note("Enigma configurator make_machine test end"); 
+    
+    return result;
+}
+
+bool alles_andere::rand_rotor_set_test()
+{
+    bool result = true;
+
+    append_note("Enigma rotor set randomization test start");  
+    
+    vector<pair<char, char> > cabling;
+    
+    cabling.push_back(pair<char, char>('a', 'd'));
+    cabling.push_back(pair<char, char>('c', 'n'));    
+    cabling.push_back(pair<char, char>('e', 't')); 
+    cabling.push_back(pair<char, char>('f', 'l'));       
+    cabling.push_back(pair<char, char>('g', 'i'));    
+    cabling.push_back(pair<char, char>('j', 'v'));  
+    cabling.push_back(pair<char, char>('k', 'z')); 
+    cabling.push_back(pair<char, char>('p', 'u'));  
+    cabling.push_back(pair<char, char>('q', 'y'));           
+    cabling.push_back(pair<char, char>('w', 'x'));                   
+    
+    enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
+    string default_set_name = machine.get_default_set_name();
+    machine.get_rotor_set(default_set_name)->replace_permutations();
+    machine.get_rotor_set(default_set_name)->save("randomized_enigma_set.ini");
+
+    map<string, string> kw;    
+    string enigma_model = "Services";
+    boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
+    kw[KW_ENIG_ROTOR_SELECTION] = "1153";
+    kw[KW_ENIG_RINGSTELLUNG] = "abc";
+    kw[KW_ENIG_STECKERBRETT] = "17:adcnetflgijvkzpuqywx";
+    kw[KW_USES_UHR] = CONF_TRUE;
+    kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+    boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
+    
+    //test_machine->get_rotor_set(default_set_name).save("randomized_enigma_set.ini");
+    
+    append_note("Enigma rotor set randomization test end");  
     
     return result;
 }
@@ -341,6 +386,7 @@ bool alles_andere::test()
     result = result && kl7_verification_test();
     result = result && enigma_configurator_test();
     result = result && sg39_as_m4_test();
+    result = result && rand_rotor_set_test();
     
     append_note("UKW D notation test start");
     

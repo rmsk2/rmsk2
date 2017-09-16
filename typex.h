@@ -39,7 +39,7 @@ public:
     /*! \brief This method allows to retrieve a Typex rotor set by name. The name is specified as a zero terminated
      *         C-string through the parameter set_name.
      */
-    static rotor_set& get_rotor_set(const char* set_name);
+    static rotor_set *get_rotor_set(const char* set_name);
 
 protected:
     /*! \brief Holds the known Typex rotor sets */

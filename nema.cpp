@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ alphabet<char> nema_alpha(PERM_ID, 26);
 
 /*! \brief Holds the rotor_set used by nema_rotor_factory.
  */
-rotor_set nema_rotor_factory::nema_set(nema_alpha.get_size());
+rotor_set nema_rotor_factory::nema_set_data(nema_alpha.get_size());
+
+rotor_set *nema_rotor_factory::nema_set = &nema_rotor_factory::nema_set_data;
 
 /*! \brief Offset from position 0, where the notches of the drive wheels and the left side of the
  *         red wheel are sensed.
@@ -86,35 +88,35 @@ alphabet<char> *nema_rotor_factory::get_nema_alpha()
     return &nema_alpha;
 }
 
-rotor_set& nema_rotor_factory::get_rotor_set()
+rotor_set *nema_rotor_factory::get_rotor_set()
 {    
-    if (nema_set.get_num_rotors() == 0)
+    if (nema_set->get_num_rotors() == 0)
     {
         // rotors a.k.a. contact wheels        
-        nema_set.add_rotor(NEMA_ROTOR_A, nema_alpha.to_vector(string("mvwaujdrlzxhfqegpbnskitcoy")));
-        nema_set.add_rotor(NEMA_ROTOR_B, nema_alpha.to_vector(string("lozqbwpsxirfagudvckjyntmeh")));
-        nema_set.add_rotor(NEMA_ROTOR_C, nema_alpha.to_vector(string("zyahvrwojsgbqmkcxlpnfutedi")));
-        nema_set.add_rotor(NEMA_ROTOR_D, nema_alpha.to_vector(string("mdtazkxpiqhsvlgonrwjbeyfuc")));
-        nema_set.add_rotor(NEMA_ROTOR_E, nema_alpha.to_vector(string("nacfujeswlzigdpokbhrqtyvxm")));
-        nema_set.add_rotor(NEMA_ROTOR_F, nema_alpha.to_vector(string("wlnshpoafyixkbdrjczvgeqmut")));
-        nema_set.add_rotor(NEMA_UKW,     nema_alpha.to_vector(string("vtazudycxsrjmibqolkwpnghef")));
-        nema_set.add_rotor(NEMA_ETW,     nema_alpha.to_vector(string("qmnbvcxylkjhgfdsapoiuztrew")));
+        nema_set->add_rotor(NEMA_ROTOR_A, nema_alpha.to_vector(string("mvwaujdrlzxhfqegpbnskitcoy")));
+        nema_set->add_rotor(NEMA_ROTOR_B, nema_alpha.to_vector(string("lozqbwpsxirfagudvckjyntmeh")));
+        nema_set->add_rotor(NEMA_ROTOR_C, nema_alpha.to_vector(string("zyahvrwojsgbqmkcxlpnfutedi")));
+        nema_set->add_rotor(NEMA_ROTOR_D, nema_alpha.to_vector(string("mdtazkxpiqhsvlgonrwjbeyfuc")));
+        nema_set->add_rotor(NEMA_ROTOR_E, nema_alpha.to_vector(string("nacfujeswlzigdpokbhrqtyvxm")));
+        nema_set->add_rotor(NEMA_ROTOR_F, nema_alpha.to_vector(string("wlnshpoafyixkbdrjczvgeqmut")));
+        nema_set->add_rotor(NEMA_UKW,     nema_alpha.to_vector(string("vtazudycxsrjmibqolkwpnghef")));
+        nema_set->add_rotor(NEMA_ETW,     nema_alpha.to_vector(string("qmnbvcxylkjhgfdsapoiuztrew")));
 
         // drive wheels
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_1, create_ring_data("bjsyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_2, create_ring_data("bdehq"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_12, create_ring_data("bcdefghijklpqrsuvwxyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_13, create_ring_data("abdefgjkmnpqrtuvwxy"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_14, create_ring_data("cefghjklmnopqsvxz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_15, create_ring_data("adegmopqrstvxyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_16, create_ring_data("abcdefhijklmnoqrstuvwxy"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_17, create_ring_data("bhijkqsuvxy"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_18, create_ring_data("abcdefghijklmoqrstuvwyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_19, create_ring_data("abcefghlmnopqrstuvxyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_20, create_ring_data("abcdefhijlnprtuwxyz"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_21, create_ring_data("acdeghijlmnoqrsux"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_22, create_ring_data("abeghkmnpqrsvwx"));
-        nema_set.add_ring(NEMA_DRIVE_WHEEL_23, create_ring_data("acdefghijklnopqrstuvwxy"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_1, create_ring_data("bjsyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_2, create_ring_data("bdehq"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_12, create_ring_data("bcdefghijklpqrsuvwxyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_13, create_ring_data("abdefgjkmnpqrtuvwxy"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_14, create_ring_data("cefghjklmnopqsvxz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_15, create_ring_data("adegmopqrstvxyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_16, create_ring_data("abcdefhijklmnoqrstuvwxy"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_17, create_ring_data("bhijkqsuvxy"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_18, create_ring_data("abcdefghijklmoqrstuvwyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_19, create_ring_data("abcefghlmnopqrstuvxyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_20, create_ring_data("abcdefhijlnprtuwxyz"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_21, create_ring_data("acdeghijlmnoqrsux"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_22, create_ring_data("abeghkmnpqrsvwx"));
+        nema_set->add_ring(NEMA_DRIVE_WHEEL_23, create_ring_data("acdefghijklnopqrstuvwxy"));
     }
     
     return nema_set;

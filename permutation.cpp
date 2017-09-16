@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ permutation& permutation::operator=(const permutation& p)
     return *this;
 }
 
-permutation::permutation(vector<unsigned int>& vec)
+permutation::permutation(const vector<unsigned int>& vec)
 {
     perm = NULL;
     inv_perm = NULL;
@@ -103,7 +103,7 @@ void permutation::to_vec(vector<unsigned int>& v)
     }
 }
 
-void permutation::set_permutation(vector<unsigned int>& vec)
+void permutation::set_permutation(const vector<unsigned int>& vec)
 {   
     if (perm != NULL)
     {

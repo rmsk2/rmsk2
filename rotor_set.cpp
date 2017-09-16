@@ -271,6 +271,70 @@ void rotor_set::randomize(unsigned int num_rotors, rotor_ring_random_source *ran
     randomize(desired_ids, rand_source);
 }
 
+void rotor_set::replace_permutations(random_generator *rand_gen)
+{
+    vector<unsigned int> temp;
+    urandom_generator urand_gen;
+    map<unsigned int, vector<unsigned int> > new_perms;
+    bool perm_found = false;
+    permutation new_perm;
+    set<pair<unsigned int, unsigned int> > test_cycles;
+    
+    if (rand_gen == NULL)
+    {
+        rand_gen = &urand_gen;
+    }
+
+    for (const auto& iter : perms)
+    {        
+        do
+        {
+            if (iter.first == UKWD_ID)
+            {
+                perm_found = true;
+                // Dont's change UKW D permutation
+                new_perm = permutation(iter.second);
+            }
+            else
+            {
+                new_perm = permutation::get_random_permutation(*rand_gen, get_rotor_size());            
+                
+                permutation test_perm(iter.second);
+                test_perm.test_for_involution(test_cycles);
+                
+                if (test_cycles.size() != 0)
+                {
+                    // The original permutaton is in fact an involution. Replace it by another involution.
+                    perm_found = true;
+                    
+                    // Transform permutation into involution
+                    new_perm.to_vec(temp);
+                    vector<unsigned int> inv_temp(get_rotor_size(), 0);
+                    
+                    for (unsigned int count = 0; count < (get_rotor_size() / 2); count++)
+                    {
+                        inv_temp[temp[2 * count]] = temp[(2 * count) + 1];
+                        inv_temp[temp[(2 * count) + 1]] = temp[2 * count];
+                    }
+                    
+                    new_perm = permutation(inv_temp);
+                }
+                else
+                {                        
+                    // Normal permutation. Replace it by a (more or less) random permutation.
+                    perm_found = rand_perm_helper::is_fix_point_free(new_perm) && (rand_perm_helper::num_of_single_shifts(new_perm) == 0);
+                }
+            }
+                        
+        } while (!perm_found);
+        
+        new_perm.to_vec(temp);
+        new_perms[iter.first] = temp;        
+    }
+    
+    perms = new_perms;
+}
+
 void rotor_set::randomize(vector<unsigned int> desired_rotor_ids, rotor_ring_random_source *rand_source)
 {
     perms.clear();

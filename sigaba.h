@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,33 +75,41 @@ class sigaba_rotor_factory {
 public:
     /*! \brief Returns a rotor_set object which is currently in use as the default rotor set for the index machine.
      */
-    static rotor_set& get_index_rotor_set();
+    static rotor_set *get_index_rotor_set();
 
     /*! \brief Sets the rotor_set object referenced in parameter r_set as the current default rotor set for the 
      *         index machine.
      */
-    static void set_index_rotor_set(rotor_set& r_set) { index_set = r_set; }
+    static void set_index_rotor_set(rotor_set *r_set) { index_set = r_set; }
 
     /*! \brief Returns a rotor_set object which is currently in use as the default rotor set for the driver machine
      *         and the cipher rotors.
      */
-    static rotor_set& get_cipher_rotor_set();
+    static rotor_set *get_cipher_rotor_set();
 
     /*! \brief Sets the rotor_set object referenced in parameter r_set as the current default rotor set for the 
      *         driver machine and the cipher rotors.
      */
-    static void set_cipher_rotor_set(rotor_set& r_set) { normal_set = r_set; }
+    static void set_cipher_rotor_set(rotor_set *r_set) { normal_set = r_set; }
 
 protected:
 
     /*! \brief Holds the rotor_set object which stores the normal rotors that are used in the driver machine
      *         and as cipher rotors.
      */
-    static rotor_set normal_set;
+    static rotor_set normal_set_data;
 
     /*! \brief Holds the rotor_set object which stores the index rotors that are used in the index machine.
      */
-    static rotor_set index_set;
+    static rotor_set index_set_data;
+    
+    /*! \brief Holds a pointer ot the mormal rotor set.
+     */
+    static rotor_set *normal_set;
+
+    /*! \brief Holds a pointer ot the index rotor set.
+     */    
+    static rotor_set *index_set;    
 };
 
 /*! \brief A class that serves as the base class for all three rotor machines that make up a SIGABA.

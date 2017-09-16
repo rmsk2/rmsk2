@@ -59,18 +59,18 @@ public:
      *  If this method is called the first time it checks whether sg39_set contains any data.
      *  If not it constructs a corresponding object.
      */  
-    static rotor_set& get_rotor_set();
+    static rotor_set *get_rotor_set();
 
     /*! \brief Returns the rotor_set which is used by a standard M4 Engigma.
      *
      *  If this method is called the first time it checks whether m4_set contains any data.
      *  If not it constructs a corresponding object.
      */      
-    static rotor_set& get_m4_rotor_set();
+    static rotor_set *get_m4_rotor_set();
     
     /*! \brief Allows to set the default rotor_set object.
      */       
-    static void set_rotor_set(rotor_set& r_set) { sg39_set = r_set; }
+    static void set_rotor_set(rotor_set *r_set) { sg39_set = r_set; }
     
     /*! \brief Maps the ids of the M4 rotors to the ids in use on an SG39
      */    
@@ -79,11 +79,20 @@ public:
 protected:
     /*! \brief The actual rotor_set object to be used.
      */
-    static rotor_set sg39_set;
+    static rotor_set sg39_set_data;
 
     /*! \brief The actual M4 rotor_set object to be used.
      */
-    static rotor_set m4_set;
+    static rotor_set m4_set_data;
+
+    /*! \brief Pointer to the actual rotor_set object to be used.
+     */
+    static rotor_set *sg39_set;
+
+    /*! \brief Pointer to the actual M4 rotor_set object to be used.
+     */
+    static rotor_set *m4_set;
+
 };
 
 /*! \brief A class that implements the stepping_gear used by the Schluesselgeraet 39.

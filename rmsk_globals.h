@@ -78,6 +78,9 @@ const unsigned int UKWD_FIXED_CONTACT_Y = 1;
 /*! \brief Holds the contact number of the lower fixed contact in a UKW D plugable reflector. */      
 const unsigned int UKWD_FIXED_CONTACT_J = 14;
 
+/*! \brief Holds the rotor id of the UKW D in the enigma rotor set. This ID has to be unique over all rotors sets as UKW D is treated differently by some methods. */      
+const unsigned int UKWD_ID = 0xF00F;
+
 /*! \brief Constant which specifies that a printing_device or rotor_keyboard is in FIGURE state.  
  */
 const unsigned int FUNC_FIGURE_SHIFT = 0xFFFFFFFF;
@@ -244,6 +247,38 @@ protected:
     static bool less_than(const pair<char, char>& l, const pair<char, char>& r);
 };
 
+
+/*! \brief A class containing static helper methods for implementing the rand_perm program.
+ */
+class rand_perm_helper {
+public:
+    /*! \brief Prints the permutations given in the STL vector perms to stdout.
+     */
+    static void pretty_print(vector<permutation>& perms);
+
+    /*! \brief Prints the permutations given in the STL vector perms to stdout in a format that can be pasted
+     *         in the C++ file implementing the SG39.
+     */    
+    static void pretty_print_sg39(vector<permutation>& perms);
+
+    /*! \brief Checks whether the permutation referenced through perm has a "fix point", i.e. it checks     
+     *         whether the specified permutation maps at leat one input to itself. Returns false if at least
+     *         one input value is found that is mapped to itself.
+     */
+    static bool is_fix_point_free(permutation& perm);
+
+    /*! \brief Counts how often the permutation referenced through perm shifts a character only one position ahead.
+     *
+     *   Example of shifting a character one position ahead would be perm.ecnrypt(4) = 5. 
+     */
+    static unsigned short num_of_single_shifts(permutation& perm);
+
+    /*! \brief Returns true if there is no position in which at least two of the permutations in parameter perms return
+     *         the same value.
+     */
+    static bool check_different_results(vector<permutation>& perms);
+
+};
 
 /*! \brief A class which provides several static utility functions. 
  */

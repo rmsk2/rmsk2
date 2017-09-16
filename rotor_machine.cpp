@@ -252,7 +252,7 @@ void rotor_machine::prepare_rotor(rotor_set& r_set, rotor_id r_id, string& rotor
 
 vector<string> rotor_machine::get_rotor_set_names()
 {
-    map<string, rotor_set>::iterator iter;
+    map<string, rotor_set *>::iterator iter;
     vector<string> result;
     
     for (iter = rotor_sets.begin(); iter != rotor_sets.end(); ++iter)
@@ -263,12 +263,12 @@ vector<string> rotor_machine::get_rotor_set_names()
     return result;
 }
 
-void rotor_machine::add_rotor_set(string& name, rotor_set& set)
+void rotor_machine::add_rotor_set(string& name, rotor_set *set)
 {
     rotor_sets[name] = set;
 }
 
-rotor_set& rotor_machine::get_rotor_set(string& name)
+rotor_set *rotor_machine::get_rotor_set(string& name)
 {
     rmsk::simple_assert(rotor_sets.count(name) == 0, "programmer error: rotor set name unknown");
     
@@ -284,9 +284,9 @@ void rotor_machine::delete_rotor_set(string& name)
 
 void rotor_machine::prepare_rotor(string& rotor_set_name, rotor_id r_id, string& rotor_name, bool reverse)
 {
-    rotor_set& r_set = get_rotor_set(rotor_set_name);
+    rotor_set *r_set = get_rotor_set(rotor_set_name);
     
-    prepare_rotor(r_set, r_id, rotor_name, reverse);
+    prepare_rotor(*r_set, r_id, rotor_name, reverse);
 }
 
 void rotor_machine::save_ini(Glib::KeyFile& ini_file)
@@ -299,32 +299,32 @@ void rotor_machine::save_ini(Glib::KeyFile& ini_file)
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor(const unsigned int id, bool insert_inverse)
 {
-    return get_rotor_set(default_rotor_set_name).make_rotor(rotor_id(id, insert_inverse));
+    return get_rotor_set(default_rotor_set_name)->make_rotor(rotor_id(id, insert_inverse));
 }
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor_rid(rotor_id r_id)
 {
-    return get_rotor_set(default_rotor_set_name).make_rotor(r_id);
+    return get_rotor_set(default_rotor_set_name)->make_rotor(r_id);
 }
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor(const char *rotor_set_name, const unsigned int id, bool insert_inverse)
 {
-    return get_rotor_set(rotor_set_name).make_rotor(rotor_id(id, insert_inverse));
+    return get_rotor_set(rotor_set_name)->make_rotor(rotor_id(id, insert_inverse));
 }
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor(string& rotor_set_name, const unsigned int id, bool insert_inverse)
 {
-    return get_rotor_set(rotor_set_name).make_rotor(rotor_id(id, insert_inverse));
+    return get_rotor_set(rotor_set_name)->make_rotor(rotor_id(id, insert_inverse));
 }
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor_rid(string& rotor_set_name, rotor_id r_id)
 {
-    return get_rotor_set(rotor_set_name).make_rotor(r_id);
+    return get_rotor_set(rotor_set_name)->make_rotor(r_id);
 }
 
 pair<boost::shared_ptr<rotor>, boost::shared_ptr<rotor_ring> > rotor_machine::make_rotor_rid(const char *rotor_set_name, rotor_id r_id)
 {
-    return get_rotor_set(rotor_set_name).make_rotor(r_id);
+    return get_rotor_set(rotor_set_name)->make_rotor(r_id);
 }
 
 void rotor_machine::set_printer(boost::shared_ptr<printing_device> new_printer) 

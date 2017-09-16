@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,13 +76,13 @@ const unsigned int NEMA_DRIVE_WHEEL_23 = 113;
  */
 class nema_rotor_factory {
 public:
-    /*! \brief Returns a reference to the default rotor_set that is currently in use.
+    /*! \brief Returns a pointer to the default rotor_set that is currently in use.
      */
-    static rotor_set& get_rotor_set();
+    static rotor_set *get_rotor_set();
 
     /*! \brief Allows to set the default rotor_set that is in use.
      */
-    static void set_rotor_set(rotor_set& r_set) { nema_set = r_set; }
+    static void set_rotor_set(rotor_set *r_set) { nema_set = r_set; }
 
     /*! \brief Returns the standard alphabet that is used by the Nema.
      *
@@ -109,7 +109,12 @@ public:
 protected:
     /*! \brief Holds the default rotor_set.
      */
-    static rotor_set nema_set;
+    static rotor_set nema_set_data;
+
+    /*! \brief Holds a pointer to the rotor set.
+     */
+    static rotor_set *nema_set;
+
 };
 
 /*! \brief A class that provides a stepping_gear object that implements the stepping algorithm of the Nema.

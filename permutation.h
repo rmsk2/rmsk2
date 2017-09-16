@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public:
     
     /*! \brief Constructs a permutation from a vector of unsigned integers. 
      */
-    permutation(vector<unsigned int>& vec);
+    permutation(const vector<unsigned int>& vec);
     
     /*! \brief Constructs a permutation from a C-style array of length size given in the parameter vec.  
      */
@@ -123,7 +123,7 @@ protected:
     
     /*! \brief Helper method that fills perm and inv_perm and set perm_size. 
      */
-    virtual void set_permutation(vector<unsigned int>& vec);
+    virtual void set_permutation(const vector<unsigned int>& vec);
     
     /*! \brief Uses the data members of the permutation given in parameter p to set the members of this permutation. 
      */

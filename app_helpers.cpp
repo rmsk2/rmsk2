@@ -123,14 +123,14 @@ void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machi
         chosen_file_name = temp_file_name;
         
         // Save default rotor set used in the_machine
-        save_failed = the_machine->get_rotor_set(default_set_name).save(chosen_file_name);
+        save_failed = the_machine->get_rotor_set(default_set_name)->save(chosen_file_name);
         
         // Save index rotor set if index_machine is not NULL
         if ((!save_failed) and (index_machine != NULL))
         {
             default_set_name = index_machine->get_default_set_name();
             chosen_file_name = chosen_file_name.substr(0, chosen_file_name.length() - 4) + "_index.ini";
-            save_failed = index_machine->get_rotor_set(default_set_name).save(chosen_file_name);
+            save_failed = index_machine->get_rotor_set(default_set_name)->save(chosen_file_name);
         }
 
         if (save_failed)

@@ -28,18 +28,20 @@
 
 #define ETW "eintrittswalze"
 
-rotor_set enigma_rotor_factory::enigma_set(rmsk::std_alpha()->get_size());
+rotor_set enigma_rotor_factory::enigma_set_data(rmsk::std_alpha()->get_size());
 
-rotor_set& enigma_rotor_factory::get_rotor_set()
+rotor_set *enigma_rotor_factory::enigma_set = &enigma_rotor_factory::enigma_set_data;
+
+rotor_set *enigma_rotor_factory::get_rotor_set()
 {
-    if (enigma_set.get_num_rotors() == 0)
+    if (enigma_set->get_num_rotors() == 0)
     {
         // Use rotor set data included from enigma_rotor_set.cpp created by enigrotorset.py
         Glib::ustring data(enigma_rotor_set);
         Glib::KeyFile ini;
         
         (void)ini.load_from_data(data);
-        (void)enigma_set.load_ini(ini);
+        (void)enigma_set->load_ini(ini);
     }
     
     return enigma_set;

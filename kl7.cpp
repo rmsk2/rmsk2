@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,11 +92,13 @@ static ustring kl7_str_output_chars =  "abcdefghijklmnopqrstuvwxyz";
 
 /*! \brief Holds the default rotor_set object.
  */
-rotor_set kl7_rotor_factory::kl7_set(KL7_ROTOR_SIZE);
+rotor_set kl7_rotor_factory::kl7_set_data(KL7_ROTOR_SIZE);
 
-rotor_set& kl7_rotor_factory::get_rotor_set()
+rotor_set *kl7_rotor_factory::kl7_set = &kl7_rotor_factory::kl7_set_data;
+
+rotor_set *kl7_rotor_factory::get_rotor_set()
 {    
-    if (kl7_set.get_num_rotors() == 0)
+    if (kl7_set->get_num_rotors() == 0)
     {
         vector<unsigned int> ring_1, ring_2, ring_3, ring_4, ring_5, ring_6, ring_7, ring_8, ring_9, ring_10, ring_11, ring_wide;
         
@@ -115,33 +117,33 @@ rotor_set& kl7_rotor_factory::get_rotor_set()
         rmsk::str_to_bool_vec((const char *)KL7RING_WIDE, KL7_ROTOR_SIZE, ring_wide);
 
         // add rings
-        kl7_set.add_ring(KL7_RING_1, ring_1);
-        kl7_set.add_ring(KL7_RING_2, ring_2);        
-        kl7_set.add_ring(KL7_RING_3, ring_3);
-        kl7_set.add_ring(KL7_RING_4, ring_4);        
-        kl7_set.add_ring(KL7_RING_5, ring_5);
-        kl7_set.add_ring(KL7_RING_6, ring_6);        
-        kl7_set.add_ring(KL7_RING_7, ring_7);
-        kl7_set.add_ring(KL7_RING_8, ring_8);        
-        kl7_set.add_ring(KL7_RING_9, ring_9);
-        kl7_set.add_ring(KL7_RING_10, ring_10);        
-        kl7_set.add_ring(KL7_RING_11, ring_11);                
-        kl7_set.add_ring(KL7_RING_WIDE, ring_wide);                        
+        kl7_set->add_ring(KL7_RING_1, ring_1);
+        kl7_set->add_ring(KL7_RING_2, ring_2);        
+        kl7_set->add_ring(KL7_RING_3, ring_3);
+        kl7_set->add_ring(KL7_RING_4, ring_4);        
+        kl7_set->add_ring(KL7_RING_5, ring_5);
+        kl7_set->add_ring(KL7_RING_6, ring_6);        
+        kl7_set->add_ring(KL7_RING_7, ring_7);
+        kl7_set->add_ring(KL7_RING_8, ring_8);        
+        kl7_set->add_ring(KL7_RING_9, ring_9);
+        kl7_set->add_ring(KL7_RING_10, ring_10);        
+        kl7_set->add_ring(KL7_RING_11, ring_11);                
+        kl7_set->add_ring(KL7_RING_WIDE, ring_wide);                        
         
         // add rotors
-        kl7_set.add_rotor(KL7_ROTOR_A, rmsk::uint_arr_to_vec(kl7_rotor_A, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_B, rmsk::uint_arr_to_vec(kl7_rotor_B, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_C, rmsk::uint_arr_to_vec(kl7_rotor_C, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_D, rmsk::uint_arr_to_vec(kl7_rotor_D, KL7_ROTOR_SIZE));                        
-        kl7_set.add_rotor(KL7_ROTOR_E, rmsk::uint_arr_to_vec(kl7_rotor_E, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_F, rmsk::uint_arr_to_vec(kl7_rotor_F, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_G, rmsk::uint_arr_to_vec(kl7_rotor_G, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_H, rmsk::uint_arr_to_vec(kl7_rotor_H, KL7_ROTOR_SIZE));                        
-        kl7_set.add_rotor(KL7_ROTOR_I, rmsk::uint_arr_to_vec(kl7_rotor_I, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_J, rmsk::uint_arr_to_vec(kl7_rotor_J, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_K, rmsk::uint_arr_to_vec(kl7_rotor_K, KL7_ROTOR_SIZE));
-        kl7_set.add_rotor(KL7_ROTOR_L, rmsk::uint_arr_to_vec(kl7_rotor_L, KL7_ROTOR_SIZE));                        
-        kl7_set.add_rotor(KL7_ROTOR_M, rmsk::uint_arr_to_vec(kl7_rotor_M, KL7_ROTOR_SIZE));                                
+        kl7_set->add_rotor(KL7_ROTOR_A, rmsk::uint_arr_to_vec(kl7_rotor_A, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_B, rmsk::uint_arr_to_vec(kl7_rotor_B, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_C, rmsk::uint_arr_to_vec(kl7_rotor_C, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_D, rmsk::uint_arr_to_vec(kl7_rotor_D, KL7_ROTOR_SIZE));                        
+        kl7_set->add_rotor(KL7_ROTOR_E, rmsk::uint_arr_to_vec(kl7_rotor_E, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_F, rmsk::uint_arr_to_vec(kl7_rotor_F, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_G, rmsk::uint_arr_to_vec(kl7_rotor_G, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_H, rmsk::uint_arr_to_vec(kl7_rotor_H, KL7_ROTOR_SIZE));                        
+        kl7_set->add_rotor(KL7_ROTOR_I, rmsk::uint_arr_to_vec(kl7_rotor_I, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_J, rmsk::uint_arr_to_vec(kl7_rotor_J, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_K, rmsk::uint_arr_to_vec(kl7_rotor_K, KL7_ROTOR_SIZE));
+        kl7_set->add_rotor(KL7_ROTOR_L, rmsk::uint_arr_to_vec(kl7_rotor_L, KL7_ROTOR_SIZE));                        
+        kl7_set->add_rotor(KL7_ROTOR_M, rmsk::uint_arr_to_vec(kl7_rotor_M, KL7_ROTOR_SIZE));                                
     }
     
     return kl7_set;

@@ -57,10 +57,14 @@ public:
 };
 
 /*! \brief Definition of sg39_set */
-rotor_set sg39_rotor_factory::sg39_set(rmsk::std_alpha()->get_size());
+rotor_set sg39_rotor_factory::sg39_set_data(rmsk::std_alpha()->get_size());
 
 /*! \brief Definition of m4_set */
-rotor_set sg39_rotor_factory::m4_set(rmsk::std_alpha()->get_size());
+rotor_set sg39_rotor_factory::m4_set_data(rmsk::std_alpha()->get_size());
+
+rotor_set *sg39_rotor_factory::sg39_set = &sg39_rotor_factory::sg39_set_data;
+
+rotor_set *sg39_rotor_factory::m4_set = &sg39_rotor_factory::m4_set_data;
 
 /*! \brief Definition of rotor id mapping */
 map<unsigned int, unsigned int> sg39_rotor_factory::id_mapping = { {WALZE_I, SG39_ROTOR_1}, {WALZE_II, SG39_ROTOR_2}, {WALZE_III, SG39_ROTOR_3}, {WALZE_IV, SG39_ROTOR_4},
@@ -72,44 +76,44 @@ map<unsigned int, unsigned int> sg39_rotor_factory::id_mapping = { {WALZE_I, SG3
 /*! The document describing the Schlüsselgerät 39 contained no info about the wiring of the rotors or
  *  how many rotors were provided. Below you find 10 random fix point free permutations.
  */
-rotor_set& sg39_rotor_factory::get_rotor_set()
+rotor_set *sg39_rotor_factory::get_rotor_set()
 {
     vector<unsigned int> sg39_ring_data(26, 0);    
     
     sg39_ring_data[0] = 1;
     
-    if (sg39_set.get_num_rotors() == 0)
+    if (sg39_set->get_num_rotors() == 0)
     {        
         // Normal rotors
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_0, rmsk::std_alpha()->to_vector(string("iymhkeqgbdtuosajvzlwrfpcxn")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_1, rmsk::std_alpha()->to_vector(string("nxlpymdvrzieohsafjqctkbguw")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_2, rmsk::std_alpha()->to_vector(string("xomuvpktbyswalfhjndercizgq")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_3, rmsk::std_alpha()->to_vector(string("ptrbhkwyqaeozumflgxvdijcns")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_4, rmsk::std_alpha()->to_vector(string("kuzxvrmqycghftbwanldpoeisj")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_5, rmsk::std_alpha()->to_vector(string("fslczopdmqeruhxkywiagntbjv")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_6, rmsk::std_alpha()->to_vector(string("nljapsiukmogfvetzwxchqydbr")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_7, rmsk::std_alpha()->to_vector(string("wklogxuzrheqbvcmfdjaynpist")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_8, rmsk::std_alpha()->to_vector(string("jeoimprbavxqcsgnkywldtzuhf")), sg39_ring_data);
-        sg39_set.add_rotor_and_ring(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_0, rmsk::std_alpha()->to_vector(string("iymhkeqgbdtuosajvzlwrfpcxn")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_1, rmsk::std_alpha()->to_vector(string("nxlpymdvrzieohsafjqctkbguw")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_2, rmsk::std_alpha()->to_vector(string("xomuvpktbyswalfhjndercizgq")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_3, rmsk::std_alpha()->to_vector(string("ptrbhkwyqaeozumflgxvdijcns")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_4, rmsk::std_alpha()->to_vector(string("kuzxvrmqycghftbwanldpoeisj")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_5, rmsk::std_alpha()->to_vector(string("fslczopdmqeruhxkywiagntbjv")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_6, rmsk::std_alpha()->to_vector(string("nljapsiukmogfvetzwxchqydbr")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_7, rmsk::std_alpha()->to_vector(string("wklogxuzrheqbvcmfdjaynpist")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_8, rmsk::std_alpha()->to_vector(string("jeoimprbavxqcsgnkywldtzuhf")), sg39_ring_data);
+        sg39_set->add_rotor_and_ring(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")), sg39_ring_data);
         
         // Reflector
-        sg39_set.add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));                     
+        sg39_set->add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));                     
     }
     
     return sg39_set;
 }
 
-rotor_set& sg39_rotor_factory::get_m4_rotor_set()
+rotor_set *sg39_rotor_factory::get_m4_rotor_set()
 {
     vector<unsigned int> m4_ids = {WALZE_I, WALZE_II, WALZE_III, WALZE_IV, WALZE_V, WALZE_VI, WALZE_VII, WALZE_VIII, UKW_B_DN, UKW_C_DN, WALZE_BETA, WALZE_GAMMA};
 
-    if (m4_set.get_num_rotors() == 0)
+    if (m4_set->get_num_rotors() == 0)
     {        
-        rotor_set& enigma_set = enigma_rotor_factory::get_rotor_set();
+        rotor_set *enigma_set = enigma_rotor_factory::get_rotor_set();
         
-        enigma_set.slice_rotor_set(m4_set, m4_ids, m4_ids);
-        m4_set.change_ids(id_mapping, id_mapping);
-        m4_set.add_rotor(ID_SG39_UKW, rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt"))); 
+        enigma_set->slice_rotor_set(*m4_set, m4_ids, m4_ids);
+        m4_set->change_ids(id_mapping, id_mapping);
+        m4_set->add_rotor(ID_SG39_UKW, rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt"))); 
     }
     
     return m4_set;

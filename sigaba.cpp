@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,11 +45,15 @@ alphabet<char> index_alphabet("0123456789", 10);
 
 /*! \brief Holds the default rotor_set for driver and cipher rotors.
  */
-rotor_set sigaba_rotor_factory::normal_set(rmsk::std_alpha()->get_size());
+rotor_set sigaba_rotor_factory::normal_set_data(rmsk::std_alpha()->get_size());
 
 /*! \brief Holds the default rotor_set for index rotors.
  */
-rotor_set sigaba_rotor_factory::index_set(10);
+rotor_set sigaba_rotor_factory::index_set_data(10);
+
+rotor_set *sigaba_rotor_factory::normal_set = &sigaba_rotor_factory::normal_set_data;
+
+rotor_set *sigaba_rotor_factory::index_set = &sigaba_rotor_factory::index_set_data;
 
 /*! \brief Specifies how the 26 output contacts of the CSP 889 driver rotors are wired to the 10 input contacts 
  *         of the index machine.
@@ -72,38 +76,38 @@ ustring str_cipher_chars = "abcdefghijklmnopqrstuvwxyz";
 
 /* ----------------------------------------------------------- */
 
-rotor_set& sigaba_rotor_factory::get_cipher_rotor_set()
+rotor_set *sigaba_rotor_factory::get_cipher_rotor_set()
 {    
-    if (normal_set.get_num_rotors() == 0)
+    if (normal_set->get_num_rotors() == 0)
     {
         vector<unsigned int> ring_data(rmsk::std_alpha()->get_size(), 0);
         
         // Permutations for cipher and driver rotors
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_0, rmsk::std_alpha()->to_vector(string("ychlqsugbdixnzkerpvjtawfom")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_1, rmsk::std_alpha()->to_vector(string("inpxbwetguysaochvldmqkzjfr")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_2, rmsk::std_alpha()->to_vector(string("wndriozptaxhfjyqbmsvekucgl")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_3, rmsk::std_alpha()->to_vector(string("tzghobkrvuxlqdmpnfwcjyeias")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_4, rmsk::std_alpha()->to_vector(string("ywtahrqjvlcexungbipzmsdfok")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_5, rmsk::std_alpha()->to_vector(string("qslrbtekogaicfwyvmhjnxzudp")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_6, rmsk::std_alpha()->to_vector(string("chjdqignbsakvtuoxfwleprmzy")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_7, rmsk::std_alpha()->to_vector(string("cdfajxtimnbeqhsugrylwzkvpo")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_8, rmsk::std_alpha()->to_vector(string("xhfeszdnrbcgkqijltvmuoyapw")), ring_data);
-        normal_set.add_rotor_and_ring(SIGABA_ROTOR_9, rmsk::std_alpha()->to_vector(string("ezjqxmogytcsfriupvnadlhwbk")), ring_data);        
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_0, rmsk::std_alpha()->to_vector(string("ychlqsugbdixnzkerpvjtawfom")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_1, rmsk::std_alpha()->to_vector(string("inpxbwetguysaochvldmqkzjfr")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_2, rmsk::std_alpha()->to_vector(string("wndriozptaxhfjyqbmsvekucgl")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_3, rmsk::std_alpha()->to_vector(string("tzghobkrvuxlqdmpnfwcjyeias")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_4, rmsk::std_alpha()->to_vector(string("ywtahrqjvlcexungbipzmsdfok")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_5, rmsk::std_alpha()->to_vector(string("qslrbtekogaicfwyvmhjnxzudp")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_6, rmsk::std_alpha()->to_vector(string("chjdqignbsakvtuoxfwleprmzy")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_7, rmsk::std_alpha()->to_vector(string("cdfajxtimnbeqhsugrylwzkvpo")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_8, rmsk::std_alpha()->to_vector(string("xhfeszdnrbcgkqijltvmuoyapw")), ring_data);
+        normal_set->add_rotor_and_ring(SIGABA_ROTOR_9, rmsk::std_alpha()->to_vector(string("ezjqxmogytcsfriupvnadlhwbk")), ring_data);        
     }
 
     return normal_set;
 }
 
-rotor_set& sigaba_rotor_factory::get_index_rotor_set()
+rotor_set *sigaba_rotor_factory::get_index_rotor_set()
 {    
-    if (index_set.get_num_rotors() == 0)
+    if (index_set->get_num_rotors() == 0)
     {
         // Permutations for index rotors
-        index_set.add_rotor(SIGABA_INDEX_0, index_alphabet.to_vector(string("7591482630")));
-        index_set.add_rotor(SIGABA_INDEX_1, index_alphabet.to_vector(string("3810592764")));
-        index_set.add_rotor(SIGABA_INDEX_2, index_alphabet.to_vector(string("4086153297")));
-        index_set.add_rotor(SIGABA_INDEX_3, index_alphabet.to_vector(string("3980526174")));
-        index_set.add_rotor(SIGABA_INDEX_4, index_alphabet.to_vector(string("6497135280")));        
+        index_set->add_rotor(SIGABA_INDEX_0, index_alphabet.to_vector(string("7591482630")));
+        index_set->add_rotor(SIGABA_INDEX_1, index_alphabet.to_vector(string("3810592764")));
+        index_set->add_rotor(SIGABA_INDEX_2, index_alphabet.to_vector(string("4086153297")));
+        index_set->add_rotor(SIGABA_INDEX_3, index_alphabet.to_vector(string("3980526174")));
+        index_set->add_rotor(SIGABA_INDEX_4, index_alphabet.to_vector(string("6497135280")));        
     }
 
     return index_set;

@@ -112,12 +112,12 @@ public:
     /*! \brief Adds the given rotor_set to this rotor_machine. The rotor_set can subsequently be referred to by the name given in the
      *         parameter name.
      */              
-    void add_rotor_set(string& name, rotor_set& set);
+    void add_rotor_set(string& name, rotor_set *set);
 
     /*! \brief The same as add_rotor_set(string&, rotor_set&) but the name of the rotor_set is contained in a C-style zero terminated
      *         string.
      */
-    void add_rotor_set(const char *name, rotor_set& set) { string temp(name); add_rotor_set(temp, set); }
+    void add_rotor_set(const char *name, rotor_set *set) { string temp(name); add_rotor_set(temp, set); }
 
     /*! \brief Returns the names of all rotor_sets known to this rotor_machine.
      */      
@@ -134,12 +134,12 @@ public:
     /*! \brief Returns a reference to the rotor_set identified by the parameter name. If a rotor_set of that name can not be found
      *         in this rotor_machine an exception of type runtime_exception is thrown.
      */          
-    virtual rotor_set& get_rotor_set(string& name);
+    virtual rotor_set *get_rotor_set(string& name);
 
     /*! \brief The same as get_rotor_set(string&) but the name of the rotor_set is contained in a C-style zero terminated
      *         string.
      */
-    virtual rotor_set& get_rotor_set(const char *name) { string temp(name); return get_rotor_set(temp); }    
+    virtual rotor_set *get_rotor_set(const char *name) { string temp(name); return get_rotor_set(temp); }    
     
     /*! \brief Deletes the rotor_set identified by the parameter name from this rotor_machine.
      *         string.  If a rotor_set of that name can not be found
@@ -419,7 +419,7 @@ protected:
 
     /*! \brief Holds the rotor_sets known to this machine.
      */                            
-    map<string, rotor_set> rotor_sets;
+    map<string, rotor_set *> rotor_sets;
     
     /*! \brief Holds the machine's name.
      */                            

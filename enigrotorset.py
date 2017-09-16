@@ -104,7 +104,7 @@ TYPEX_Y_269_N = 53
 UKW_A = 100
 UKW_B = 101
 UKW_C = 102
-UKW_D = 111
+UKW_D = 0xF00F
 
 # M4 rotor ids for M4 reflectors and greek wheels
 UKW_B_DN = 103

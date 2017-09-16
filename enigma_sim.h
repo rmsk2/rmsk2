@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,17 +51,22 @@ public:
      *  If this method is called the first time it checks whether enigma_set contains any data.
      *  If not it constructs an object that contains the data contained in enigma_rotor_set.cpp.
      */  
-    static rotor_set& get_rotor_set();
+    static rotor_set *get_rotor_set();
     
     /*! \brief Allows to set the default rotor_set object.
      */      
-    static void set_rotor_set(rotor_set& r_set) { enigma_set = r_set; }
+    static void set_rotor_set(rotor_set *r_set) { enigma_set = r_set; }
 
 protected:
 
     /*! \brief The actual rotor_set object to be used.
      */      
-    static rotor_set enigma_set;
+    static rotor_set enigma_set_data;
+
+    /*! \brief Points to the actual rotor_set object to be used.
+     */      
+    static rotor_set *enigma_set;
+
 };
 
 /*! \brief A class intended as the base class for the stepping_gear objects used by the simulated Enigma variants.

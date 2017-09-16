@@ -320,6 +320,79 @@ vector<pair<char, char> > ukw_d_wiring_helper::string_to_plugs(string& perm_spec
     return result;
 }
 
+void rand_perm_helper::pretty_print(vector<permutation>& perms)
+{
+    vector<permutation>::iterator iter;
+    
+    cout << "abcdefghijklmnopqrstuvwxyz" << endl;
+    cout << "--------------------------" << endl;
+    
+    for (iter = perms.begin(); iter != perms.end(); ++iter)
+    {
+        rmsk::std_alpha()->print_perm(*iter);
+    }    
+}
+
+void rand_perm_helper::pretty_print_sg39(vector<permutation>& perms)
+{
+    vector<permutation>::iterator iter;
+    unsigned int  count = 0;
+    
+    for (iter = perms.begin(); iter != perms.end(); ++iter)
+    {
+        cout << "sg39_set.add_rotor(SG39_ROTOR_" << count << ", rmsk::std_alpha()->to_vector(string(\"";
+        cout << rmsk::std_alpha()->perm_as_string(*iter) << "\")));" << endl;
+        count++;
+    }    
+}
+
+bool rand_perm_helper::is_fix_point_free(permutation& perm)
+{
+    bool result = true;
+    
+    for (unsigned int count = 0; (count < perm.get_size()) && result; count++)
+    {
+        result = result && (perm.encrypt(count) != count);
+    }
+    
+    return result;
+}
+
+unsigned short rand_perm_helper::num_of_single_shifts(permutation& perm)
+{
+    unsigned short result = 0;
+    unsigned int perm_size = perm.get_size();
+    
+    for (unsigned int count = 0; count < perm_size; count++)
+    {
+        result += (perm.encrypt(count) == ((count + 1) % perm_size) ? 1 : 0);
+    }
+    
+    return result;
+}
+
+bool rand_perm_helper::check_different_results(vector<permutation>& perms)
+{
+    bool result = true;
+    set<unsigned int> test_set;
+    
+    if (perms.size() != 0)
+    {
+        for (unsigned int count = 0; (count < perms[0].get_size()) and result; count++)            
+        {
+            test_set.clear();
+            
+            for (unsigned int i = 0; (i < perms.size()) and result; i++)
+            {
+                test_set.insert(perms[i].encrypt(count));
+            }
+            
+            result = (test_set.size() == perms.size());
+        }
+    }
+    
+    return result;
+}
 
 /*! \brief Holds singelton object returned by std_alpha().
  */ 

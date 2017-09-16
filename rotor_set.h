@@ -117,6 +117,11 @@ public:
      */                    
     virtual void randomize(vector<unsigned int> desired_rotor_ids, rotor_ring_random_source *rand_source);
 
+    /*! \brief This method replaces all permutations in this rotor set by random ones. The parameter rand_gen points to the random
+     *         generator object used for generating the new permutations. If rand_gen is NULL, then a urandom_generator object is utilized.
+     */                        
+    virtual void replace_permutations(random_generator *rand_gen = NULL);    
+
     /*! \brief Copies part of this rotor set into the rotor_set specified by parameter new_set. The parameters rotor_ids_to_copy and
      *         ring_ids_to_copy specify the rotors and rings to copy into the new set.
      */                        
