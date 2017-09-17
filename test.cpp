@@ -193,6 +193,7 @@ bool alles_andere::enigma_configurator_test()
 bool alles_andere::rand_rotor_set_test()
 {
     bool result = true;
+    Glib::KeyFile ini1, ini2, ini3;
 
     append_note("Enigma rotor set randomization test start");  
     
@@ -211,8 +212,9 @@ bool alles_andere::rand_rotor_set_test()
     
     enigma_I machine(UKW_B, WALZE_II, WALZE_III, WALZE_V);
     string default_set_name = machine.get_default_set_name();
+    machine.get_rotor_set(default_set_name)->save_ini(ini1);
     machine.get_rotor_set(default_set_name)->replace_permutations();
-    machine.get_rotor_set(default_set_name)->save("randomized_enigma_set.ini");
+    machine.get_rotor_set(default_set_name)->save_ini(ini2);
 
     map<string, string> kw;    
     string enigma_model = "Services";
@@ -224,7 +226,9 @@ bool alles_andere::rand_rotor_set_test()
     kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
     boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
     
-    //test_machine->get_rotor_set(default_set_name).save("randomized_enigma_set.ini");
+    test_machine->get_rotor_set(default_set_name)->save_ini(ini3);
+    
+    result = (ini1.to_data() != ini2.to_data()) && (ini2.to_data() == ini3.to_data());
     
     append_note("Enigma rotor set randomization test end");  
     
