@@ -36,6 +36,7 @@ const unsigned int ERR_OBJECT_CREATE = 104;
 const unsigned int ERR_SEMANTICS_INPUT = 105;
 const unsigned int ERR_RANDOMIZATION_FAILED = 106;
 const unsigned int ERR_CALL_FAILED = 107;
+const unsigned int ERR_ROTOR_SET_UNKNOWN = 108;
 
 using namespace std;
 

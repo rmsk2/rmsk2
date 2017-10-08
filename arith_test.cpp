@@ -353,6 +353,151 @@ unsigned int rotor_machine_proxy::get_config_processor(tlv_entry& params, tlv_st
     return result;
 }
 
+unsigned int rotor_machine_proxy::get_rotor_set_names_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK, err_temp;
+    vector<string> all_names = machine->get_rotor_set_names();
+    
+    for (const string& iter: all_names)
+    {
+        tlv_entry tlv_set_name;
+        
+        tlv_set_name.to_string(iter);
+        result = out_stream->write_tlv(tlv_set_name);
+        
+        // Exit loop in case of error
+        if (result != ERR_OK)
+        {
+            break;
+        }        
+    }    
+    
+    err_temp = out_stream->write_error_tlv(result);
+    
+    // A previously generated error takes precedence. Set result to value of last write_error_tlv() call
+    // only if all previous calls were successfull. 
+    if (result == ERR_OK)
+    {
+        result = err_temp;
+    }
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::get_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    Glib::KeyFile ini_file;
+    Glib::ustring ini_data;
+    tlv_entry dumped_state;
+    string rotor_set_name;
+    
+    if (!params.tlv_convert(rotor_set_name))
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        vector<string> rotor_set_names = machine->get_rotor_set_names();
+        
+        if (std::count(rotor_set_names.begin(), rotor_set_names.end(), rotor_set_name) != 0)
+        {
+            machine->get_rotor_set(rotor_set_name)->save_ini(ini_file);
+            ini_data = ini_file.to_data();
+            dumped_state.tag = TAG_BYTE_ARRAY;
+            dumped_state.value = basic_string<unsigned char>((unsigned char *)ini_data.c_str(), ini_data.length());
+            
+            result = out_stream->write_success_tlv(dumped_state);
+        }
+        else
+        {
+            result = out_stream->write_error_tlv(ERR_ROTOR_SET_UNKNOWN);        
+        }
+    }    
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::randomize_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    string rotor_set_name;
+    
+    if (!params.tlv_convert(rotor_set_name))
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    else
+    {
+        vector<string> rotor_set_names = machine->get_rotor_set_names();
+        
+        if (std::count(rotor_set_names.begin(), rotor_set_names.end(), rotor_set_name) != 0)
+        {
+            machine->get_rotor_set(rotor_set_name)->replace_permutations();
+            result = out_stream->write_error_tlv(ERR_OK);
+        }
+        else
+        {
+            result = out_stream->write_error_tlv(ERR_ROTOR_SET_UNKNOWN);        
+        }
+    }    
+    
+    return result;
+}
+
+unsigned int rotor_machine_proxy::set_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream)
+{
+    unsigned int result = ERR_OK;
+    vector<tlv_entry> children;
+    string rotor_set_name;
+    basic_string<unsigned char> rotor_set_data;
+    
+    if (params.tlv_convert(children))
+    {
+        if ((children.size() == 2) && (children[0].tlv_convert(rotor_set_name)) && (children[1].tlv_convert(rotor_set_data)))
+        {
+            vector<string> rotor_set_names = machine->get_rotor_set_names();
+        
+            if (std::count(rotor_set_names.begin(), rotor_set_names.end(), rotor_set_name) != 0)
+            {
+                try
+                {
+                    string set_state((char *)rotor_set_data.c_str(), rotor_set_data.length());
+                    Glib::KeyFile ini_file;
+                    bool load_success = ini_file.load_from_data(set_state);
+                
+                    if (load_success && (!machine->get_rotor_set(rotor_set_name)->load_ini(ini_file)))
+                    {
+                        result = out_stream->write_error_tlv(ERR_OK);
+                    }
+                    else
+                    {
+                        result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                    }
+                }
+                catch(...)
+                {
+                    result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                }                
+            }
+            else
+            {
+                result = out_stream->write_error_tlv(ERR_ROTOR_SET_UNKNOWN);        
+            }            
+        }
+        else
+        {
+            result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+        }
+    }
+    else
+    {
+        result = out_stream->write_error_tlv(ERR_SYNTAX_INPUT);
+    }
+    
+    return result;
+}
+
 unsigned int rotor_machine_proxy::set_config_processor(tlv_entry& params, tlv_stream *out_stream)
 {
     unsigned int result = ERR_OK;
@@ -391,7 +536,6 @@ unsigned int rotor_machine_proxy::set_config_processor(tlv_entry& params, tlv_st
     
     return result;
 }
-
 
 unsigned int rotor_machine_proxy::get_description_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -432,7 +576,6 @@ unsigned int rotor_machine_proxy::go_to_letter_state_processor(tlv_entry& params
     
     return result;
 }
-
 
 unsigned int rotor_machine_proxy::set_positions_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -554,7 +697,6 @@ unsigned int rotor_machine_proxy::randomize_state_processor(tlv_entry& params, t
     
     return result;
 }
-
 
 unsigned int rotor_machine_proxy::set_state_processor(tlv_entry& params, tlv_stream *out_stream)
 {
@@ -730,6 +872,11 @@ rotor_machine_provider::rotor_machine_provider(object_registry *obj_registry)
     rotor_proxy_proc["setconfig"] = &rotor_machine_proxy::set_config_processor;
     rotor_proxy_proc["getrandparm"] = &rotor_machine_proxy::get_randparm_processor;    
     rotor_proxy_proc["gotoletterstate"] = &rotor_machine_proxy::go_to_letter_state_processor;
+    rotor_proxy_proc["getrotorsetnames"] = &rotor_machine_proxy::get_rotor_set_names_processor;
+    rotor_proxy_proc["getrotorsetstate"] = &rotor_machine_proxy::get_rotor_set_state_processor;
+    rotor_proxy_proc["randomizerotorsetstate"] = &rotor_machine_proxy::randomize_rotor_set_state_processor;
+    rotor_proxy_proc["setrotorsetstate"] = &rotor_machine_proxy::set_rotor_set_state_processor;    
+    
 }
 
 tlv_callback *rotor_machine_provider::make_new_handler()

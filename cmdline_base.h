@@ -29,7 +29,7 @@
 #include<boost/shared_ptr.hpp>
 #include<rotor_machine.h>
 
-#define ROTORPOS_DEFAULT "xnoposx"
+#define ROTORPOS_DEFAULT "xxnoposxx"
 
 namespace po = boost::program_options;
 using namespace std;

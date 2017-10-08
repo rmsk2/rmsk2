@@ -782,3 +782,53 @@ class RotorMachine(tlvobject.TlvProxy):
         
         return res
 
+    ## \brief Returns a list of all rotor set names supported by the underlying machine.
+    #
+    #  \returns A vector of strings containing the names of rotor sets known to the underlying machine.
+    #                    
+    def get_rotor_set_names(self):
+        param = tlvobject.TlvEntry().to_null()    
+        res = self.do_method_call(self._handle, 'getrotorsetnames', param)        
+        
+        return res
+
+    ## \brief Returns the state of the rotor set named by the parameter rotor_set_name as known to the underlying
+    #         rotor machine.
+    #
+    #  \param [rotor_set_name] A string. It has to specify the name of the rotor set which is to be serialized.
+    #    
+    #  \returns A byte array. It specifies the serialized rotor set state.
+    #    
+    def get_rotor_set_state(self, rotor_set_name):
+        param = tlvobject.TlvEntry().to_string(rotor_set_name)
+        res = self.do_method_call(self._handle, 'getrotorsetstate', param)
+        
+        return res[0]
+
+    ## \brief Randomizes the state of the rotor set named by the parameter rotor_set_name through the underlying rotor machine.
+    #
+    #  \param [rotor_set_name] A string. It has to specify the name of the rotor set which is to be randomized.
+    #     
+    #  \returns Nothing.
+    #        
+    def randomize_rotor_set_state(self, rotor_set_name):
+        param = tlvobject.TlvEntry().to_string(rotor_set_name)
+        res = self.do_method_call(self._handle, 'randomizerotorsetstate', param)
+        
+    ## \brief Changes the state of the rotor set named in parameter rotor_set_name to the state specified by
+    #         parameter rotor_set_data.
+    #
+    #  \param [rotor_set_name] A string. It has to specify the name of the rotor set which is to be changed.
+    #
+    #  \param [rotor_set_data] A byte array. Has to contain a previously serialized rotor state as returned by
+    #         get_rotor_set_state().
+    #    
+    #  \returns Nothing.
+    #     
+    def set_rotor_set_state(self, rotor_set_name, rotor_set_data):
+        param = tlvobject.TlvEntry().to_sequence([tlvobject.TlvEntry().to_string(rotor_set_name), tlvobject.TlvEntry().to_byte_array(rotor_set_data)])    
+        res = self.do_method_call(self._handle, 'setrotorsetstate', param)
+        
+        
+        
+        

@@ -196,6 +196,36 @@ public:
      */
     virtual unsigned int get_state_processor(tlv_entry& params, tlv_stream *out_stream);
 
+    /*! \brief This method returns a list of the names of the rotor sets known to the rotor_machine object proxied by this
+     *         rotor_machine_proxy instance. The parameter params is ignored. The parameter out_stream is used to talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.          
+     */
+    virtual unsigned int get_rotor_set_names_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method returns the serialized rotor set data of the set named by the parameter params to the client.
+     *         The parameter params has to be of type TAG_STRING and names the rotor set to serialize. The parameter out_stream is used to
+     *         talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.          
+     */
+    virtual unsigned int get_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method allows to set the state of a rotor set as currently known by the underlying rotor machine. The parameter
+     *          params has to contain a sequence of a string followed by a byte array. The string names the rotor set which is to
+     *          be modified. The byte array has to contain the previously serialized state of the roror set as returned by get_rotor_set_state(). 
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.          
+     */
+    virtual unsigned int set_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream);
+
+    /*! \brief This method randomizes the permutations of the rotor set named by the parameter params. The parameter params has to be
+     *         of type TAG_STRING and names the rotor set to randomize. The parameter out_stream is used to talk to the client.
+     *
+     *  Returns ERR_OK (i.e. 0) in case of success.          
+     */
+    virtual unsigned int randomize_rotor_set_state_processor(tlv_entry& params, tlv_stream *out_stream);
+
     /*! \brief This method calls rmsk::restore_from_data() for the TLV string contained in parameter params. The parameter
      *         out_stream is used to talk to the client.
      *

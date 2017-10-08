@@ -564,7 +564,99 @@ def tlv_context(inner_test):
         result = inner_test(machine, state_helper)        
     
     return result       
-    
+
+
+## \brief This class performs verification tests for the proper implementation of those features of the rotorsim.RotorMachine class
+#         that deal with management of rotor sets.
+#
+class RotorSetTests(simpletest.SimpleTest):
+    ## \brief Constructor. 
+    #
+    #  \param [name] Is a string. It specifies an explanatory text which serves as the name of the test which is to
+    #        be performed.      
+    #
+    def __init__(self, name):
+        super().__init__(name)
+
+    ## \brief Performs the test.
+    #
+    #  \returns A boolean. A return value of True means that the test was successfull.
+    #                    
+    def test(self):
+        result = super().test()
+        test_plain = 'testtesttesttesttesttesttest'
+        original_pos = 'gthuo'
+
+        with tlvobject.TlvServer() as server, RotorMachine.from_machine_name('Typex', server.address) as typex:
+            try:
+                # test get_rotor_set_names() method
+                known_rotor_sets = typex.get_rotor_set_names()
+                known_rotor_sets.sort()
+                last_result = (known_rotor_sets == ['Y269', 'defaultset'])
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Unexpected rotor set names returned: " + str(known_rotor_sets))
+                
+                # Generate reference state
+                original_set = typex.get_rotor_set_state(known_rotor_sets[0])
+                original_config = typex.get_config()
+                original_config['rotorset'] = 'Y269'
+                typex.set_config(original_config)
+                typex.set_rotor_positions(original_pos)
+                original_state = typex.get_state()
+                original_cipher = typex.encrypt(test_plain)
+                self.append_note("original cipher text: " + original_cipher)
+                
+                # Randomize state of rotor set known_rotor_set_names[0]
+                typex.randomize_rotor_set_state(known_rotor_sets[0])
+                modified_set = typex.get_rotor_set_state(known_rotor_sets[0])
+                
+                # Restore original configuration using randomized rotor set
+                typex.set_config(original_config)
+                typex.set_rotor_positions(original_pos)
+                random_dec = typex.decrypt(original_cipher)
+                self.append_note("decrypted ciphertext after set randomization: " + random_dec)
+                
+                # Results must differ as underlying rotor set was changed
+                last_result = (original_set != modified_set)
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Original and modified sets are the same. Randomization did not work!!")
+                
+                # Restore original state but keep randomized rotor set
+                typex.set_state(original_state)
+                decrypted_text = typex.decrypt(original_cipher)
+                self.append_note("Decrypted ciphertext after restoring full state: " + decrypted_text)   
+
+                # Decryption should now be possible again, even with changed rotor set
+                last_result = (decrypted_text == test_plain)
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Decryption after restoration of full state failed!!")
+
+                # Destroy state that decrypts reference ciphertext
+                typex.randomize_state()
+                
+                # Restore original set
+                typex.set_rotor_set_state(known_rotor_sets[0], original_set)
+                # Restore original configuration with respect to original rotor set
+                typex.set_config(original_config)
+                typex.set_rotor_positions(original_pos)
+                decrypted_text = typex.decrypt(original_cipher)
+                self.append_note("Decrypted ciphertext after restoring rotor set state: " + decrypted_text)   
+                
+                # Decryption has to be successfull again
+                last_result = (decrypted_text == test_plain)
+                result = result and last_result
+                if not last_result:
+                    self.append_note("Decryption after restoration of rotor set state failed!!")
+                
+                
+            except Exception as e:
+                self.append_note("EXCEPTION!!!! " + str(e))
+                result = False
+        
+        return result    
 
 ## \brief This class performs verification tests for the proper implementation of the rotorsim.RotorMachine class
 #         which uses the TLV backend to provide rotor machine functionality.
@@ -576,7 +668,7 @@ class RotorMachineFuncTests(simpletest.SimpleTest):
     #        be performed.      
     #
     def __init__(self, name):
-        super().__init__(name)
+        super().__init__(name)                
 
     ## \brief Performs the test.
     #
@@ -891,6 +983,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
     if not verification_only:
         performance_test = RotorMachinePerfTest("rotorsim performance test", test_data, num_iterations)
         functional_test = RotorMachineFuncTests("rotorsim functional test")
+        rotor_set_tests = RotorSetTests("rotorsim rotor set management test")
         test_states = []
         test_states.append(('M4', M4EnigmaState.get_default_config()))
         test_states.append(('Services', ServicesEnigmaState.get_default_config('Services')))        
@@ -906,6 +999,7 @@ def get_module_test(test_data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', num_ite
         rand_test = RandomizeTest('State randomization test', test_states)
         rand_parm_test = RandParmTest('Randomizer parameter test')    
         all_tests.add(functional_test)
+        all_tests.add(rotor_set_tests)
         all_tests.add(performance_test)
         all_tests.add(rand_test)
         all_tests.add(rand_parm_test)
