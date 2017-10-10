@@ -279,6 +279,10 @@ void rotor_set::replace_permutations(random_generator *rand_gen)
     bool perm_found = false;
     permutation new_perm;
     set<pair<unsigned int, unsigned int> > test_cycles;
+    permutation identity = permutation::get_identity(get_rotor_size());
+    vector<unsigned int> identity_data;
+    
+    identity.to_vec(identity_data);
     
     if (rand_gen == NULL)
     {
@@ -289,10 +293,10 @@ void rotor_set::replace_permutations(random_generator *rand_gen)
     {        
         do
         {
-            if (iter.first == UKWD_ID)
+            if (const_ids.count(iter.first) != 0)
             {
                 perm_found = true;
-                // Dont's change UKW D permutation
+                // Dont's change const id permutations
                 new_perm = permutation(iter.second);
             }
             else
@@ -320,7 +324,7 @@ void rotor_set::replace_permutations(random_generator *rand_gen)
                     new_perm = permutation(inv_temp);
                 }
                 else
-                {                        
+                {
                     // Normal permutation. Replace it by a (more or less) random permutation.
                     perm_found = rand_perm_helper::is_fix_point_free(new_perm) && (rand_perm_helper::num_of_single_shifts(new_perm) == 0);
                 }

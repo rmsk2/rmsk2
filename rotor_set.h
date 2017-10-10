@@ -136,6 +136,10 @@ public:
      */                        
     virtual void clear() { perms.clear(); ring_data_vals.clear(); }
 
+    /*! \brief Replaces the set of rotor ids that must not be changed by the replace_permutations() method.
+     */                            
+    virtual void set_const_ids(set<unsigned int>& new_const_ids) { const_ids = new_const_ids; }
+
     /*! \brief Restores a saved state contained in the given KeyFile object into this rotor_set object. This method returns true 
      *         if an error is encountered while restoring the state.
      */       
@@ -189,6 +193,10 @@ protected:
      *         permutations.
      */            
     map<unsigned int, vector<unsigned int> > perms;
+
+    /*! \brief Holds the ids of the rotors that must not be changed by the replace_permutations() method.
+     */                
+    set<unsigned int> const_ids;    
 
     /*! \brief Holds the known ring data vectors and ring ids as well as the mapping of ring id to
      *         ring data vector.

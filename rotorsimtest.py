@@ -600,7 +600,7 @@ class RotorSetTests(simpletest.SimpleTest):
                 # Generate reference state
                 original_set = typex.get_rotor_set_state(known_rotor_sets[0])
                 original_config = typex.get_config()
-                original_config['rotorset'] = 'Y269'
+                original_config['rotorset'] = known_rotor_sets[0]
                 typex.set_config(original_config)
                 typex.set_rotor_positions(original_pos)
                 original_state = typex.get_state()

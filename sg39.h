@@ -231,6 +231,11 @@ public:
      */
     virtual bool randomize(string& param);
     
+    /*! \brief This method maps the randomization parameter given in rand_parm to the name of the rotor set that will be used
+     *         if randomize() is called with rand_parm as its paramater.
+     */    
+    virtual string map_rand_parm_to_set_name(string& rand_param);    
+    
     /*! \brief The parameter new_positions has to contain 7 lowercase characters. The first four specify the rotor positions.
      *         The last three the wheel positions. The rotor positions have to be from the range a-z. The leftmost wheel position
      *         has to be from the range a-y, the middle wheel position from the range a-w and the rightmost wheel positions from

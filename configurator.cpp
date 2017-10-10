@@ -26,6 +26,7 @@
 #include<kl7.h>
 #include<nema.h>
 #include<boost/lexical_cast.hpp>
+#include<boost/scoped_ptr.hpp>
 #include<machine_config.h>
 
 
@@ -386,6 +387,24 @@ bool configurator::check_pin_spec(string& pin_spec, char start_char, char end_ch
     return result;
 }
 
+/* ----------------------------------------------------------- */
+
+bool multiset_configurator::determine_rotor_set_name(map<string, string>& config_data, string& determined_set_name)
+{
+    bool result = true;    
+    boost::scoped_ptr<rotor_machine> machine(rmsk::make_default_machine(machine_name));
+    vector<string> all_set_names = machine->get_rotor_set_names();
+    
+    if ((result = (config_data.count(config_key_name) != 0)))
+    {
+        if ((result = (count(all_set_names.begin(), all_set_names.end(), config_data[config_key_name]) != 0)))
+        {
+            determined_set_name = config_data[config_key_name];
+        }
+    }        
+    
+    return result;
+}
 
 /* ----------------------------------------------------------- */
 
@@ -954,6 +973,7 @@ rotor_machine *sg39_configurator::make_machine(map<string, string>& config_data)
 /* ----------------------------------------------------------- */
 
 typex_configurator::typex_configurator()
+    : multiset_configurator("Typex", KW_TYPEX_ROTOR_SET)
 {
     ;
 }

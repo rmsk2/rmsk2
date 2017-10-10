@@ -86,7 +86,11 @@ rotor_set *typex_rotor_sets::get_rotor_set(const char *set_name)
             vector<unsigned int> sp_02390_ids = {TYPEX_SP_02390_A, TYPEX_SP_02390_B, TYPEX_SP_02390_C, TYPEX_SP_02390_D, TYPEX_SP_02390_E, 
                                                  TYPEX_SP_02390_F, TYPEX_SP_02390_G, TYPEX_ETW, TYPEX_SP_02390_UKW};
             
-            enigma_rotor_factory::get_rotor_set()->slice_rotor_set(*typex_sets[real_set_name], sp_02390_ids, sp_02390_ids);                        
+            enigma_rotor_factory::get_rotor_set()->slice_rotor_set(*typex_sets[real_set_name], sp_02390_ids, sp_02390_ids);
+            
+            set<unsigned int> const_ids_sp02390 = {TYPEX_ETW, TYPEX_SP_02390_UKW};
+            typex_sets[real_set_name]->set_const_ids(const_ids_sp02390);
+                                    
         }
 
         if (real_set_name == Y269)
@@ -97,6 +101,8 @@ rotor_set *typex_rotor_sets::get_rotor_set(const char *set_name)
                                               TYPEX_Y_269_UKW};          
             
             enigma_rotor_factory::get_rotor_set()->slice_rotor_set(*typex_sets[real_set_name], y_269_ids, y_269_ids);  
+            set<unsigned int> const_ids_y269 = {TYPEX_ETW, TYPEX_Y_269_UKW};
+            typex_sets[real_set_name]->set_const_ids(const_ids_y269);
         }
 
     }
@@ -121,27 +127,35 @@ void typex::set_reflector(vector<pair<char, char> >& data)
     get_stepping_gear()->get_descriptor(UMKEHRWALZE).r->set_perm(new_reflector);
 }
 
+string typex::map_rand_parm_to_set_name(string& rand_param)
+{
+    string result = get_default_set_name();
+    
+    if ((rand_param == RAND_PARM_Y269) || (rand_param == RAND_PARM_PLUGS_Y269))
+    {
+        result = Y269;
+    }
+    
+    if ((rand_param == RAND_PARM_SP02390) || (rand_param == RAND_PARM_PLUGS_SP02390))
+    {
+        result = DEFAULT_SET;
+    }        
+    
+    return result;
+}
+
+
 bool typex::randomize(string& param)
 {
     bool result = false;
     random_bit_source reverse_rotors(5);
     urandom_generator rand;    
     string known_rotors("abcdefg");
-    string name_rotor_set = get_default_set_name();
+    string name_rotor_set = map_rand_parm_to_set_name(param);
     string ring_positions, rotor_positions, selected_rotors;
     string plugs = "";
     map<string, string> machine_conf;
-    
-    if ((param == RAND_PARM_Y269) || (param == RAND_PARM_PLUGS_Y269))
-    {
-        name_rotor_set = Y269;
-    }
-    
-    if ((param == RAND_PARM_SP02390) || (param == RAND_PARM_PLUGS_SP02390))
-    {
-        name_rotor_set = DEFAULT_SET;
-    }    
-    
+        
     if (name_rotor_set == DEFAULT_SET)
     {
         known_rotors = "abcdefg";

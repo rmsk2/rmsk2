@@ -117,6 +117,12 @@ rotor_set *nema_rotor_factory::get_rotor_set()
         nema_set->add_ring(NEMA_DRIVE_WHEEL_21, create_ring_data("acdeghijlmnoqrsux"));
         nema_set->add_ring(NEMA_DRIVE_WHEEL_22, create_ring_data("abeghkmnpqrsvwx"));
         nema_set->add_ring(NEMA_DRIVE_WHEEL_23, create_ring_data("acdefghijklnopqrstuvwxy"));
+        
+        set<unsigned int> nema_const = {NEMA_ETW, NEMA_DRIVE_WHEEL_1, NEMA_DRIVE_WHEEL_2, NEMA_DRIVE_WHEEL_12, NEMA_DRIVE_WHEEL_13, NEMA_DRIVE_WHEEL_14, NEMA_DRIVE_WHEEL_15,
+                                        NEMA_DRIVE_WHEEL_16, NEMA_DRIVE_WHEEL_17, NEMA_DRIVE_WHEEL_18, NEMA_DRIVE_WHEEL_19, NEMA_DRIVE_WHEEL_20, NEMA_DRIVE_WHEEL_21,
+                                        NEMA_DRIVE_WHEEL_22, NEMA_DRIVE_WHEEL_23};
+                                        
+        nema_set->set_const_ids(nema_const);
     }
     
     return nema_set;

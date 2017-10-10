@@ -133,6 +133,12 @@ public:
      */    
     virtual void set_rotor_set_name(string& new_value) { rotor_set_name = new_value; }
 
+    /*! \brief Allows to determine the rotor set name that is contained in the configuration given in the parameter config_data.
+     *         The rotor set name is returned to the caller through parameter determined_set_name. This method returns true
+     *         if a rotor set name could be determined and false otherwise.
+     */    
+    virtual bool determine_rotor_set_name(map<string, string>& config_data, string& determined_set_name) { determined_set_name = rotor_set_name; return true; }
+
     /*! \brief Default constructor.
      */        
     virtual ~configurator() { ; }
@@ -228,6 +234,33 @@ protected:
     virtual bool check_for_completeness(map<string, string>& config_data);
 
 
+};
+
+/*! \brief An abstract class that embodies the concept of a thing that knows how to create and configure
+ *         a rotor machine of a certain type where the rotor machine makes use of several rotor sets.
+ */
+class multiset_configurator : public configurator {
+public:
+    /*! \brief Constructor. The parameter name_machine has to contain the string which can be used as the machine_name parameter of
+     *         configurator_factory::get_configurator() to construct a configurator for the machine for which this mutiset_configurator is
+     *         intended. The parameter name_key has to specify the key in the configuration which holds the rotor set name.
+     */    
+    multiset_configurator(const char *name_machine, const char *name_key)  : configurator(), machine_name(name_machine), config_key_name(name_key) { ; }
+
+    /*! \brief Allows to determine the rotor set name that is contained in the configuration given in the parameter config_data.
+     *         The rotor set name is returned to the caller through parameter determined_set_name. This method returns true
+     *         if a rotor set name could be determined and false otherwise.
+     */    
+    virtual bool determine_rotor_set_name(map<string, string>& config_data, string& determined_set_name);
+    
+protected:
+    /*! \brief Holds the name of the machine this configurator is used for. Needed by determine_rotor_set() method.
+     */        
+    string machine_name;
+
+    /*! \brief Holds the name of the key in a configuration which can be used to determine the name of the rotor set to use.
+     */            
+    string config_key_name;
 };
 
 /*! \brief A class that knows how to create ::configurator objects for the machines simulated by rotorvis.
@@ -326,11 +359,11 @@ protected:
 
 /*! \brief A class that knows how to create and configure ::schluesselgeraet39 objects.
  */
-class sg39_configurator : public configurator {
+class sg39_configurator : public multiset_configurator {
 public:
     /*! \brief Default constructor.
      */    
-    sg39_configurator() { ; }
+    sg39_configurator() : multiset_configurator("SG39", KW_SG39_ROTOR_SET) { ; }
 
     /*! \brief Returns the key_word_info structures that pertain to the Schluesselgeraet 39 simulator.
      */     
@@ -411,7 +444,7 @@ protected:
 
 /*! \brief A class that knows how to create and configure ::typex objects.
  */
-class typex_configurator : public configurator {
+class typex_configurator : public multiset_configurator {
 public:
     /*! \brief Default constructor.
      */   

@@ -184,6 +184,11 @@ public:
      */
     virtual bool randomize(string& param) { return false; }
 
+    /*! \brief This method maps the randomization parameter given in rand_parm to the name of the rotor set that will be used
+     *         if randomize() is called with rand_parm as its paramater.
+     */    
+    virtual string map_rand_parm_to_set_name(string& rand_param);
+
     /*! \brief Returns a vector of strings that can be used as a parameter to the randomize() nethod.
      */                  
     virtual vector<string> get_randomizer_params();

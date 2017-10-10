@@ -28,6 +28,8 @@
 #include<sg39.h>
 #include<configurator.h>
 
+#define ENIGMA_M4_SET_NAME "enigmam4"
+
 /*! \brief This constant specifies the maximum number of tries before randomization of a machine
  *         is considered to have failed.
  */
@@ -97,7 +99,10 @@ rotor_set *sg39_rotor_factory::get_rotor_set()
         sg39_set->add_rotor_and_ring(SG39_ROTOR_9, rmsk::std_alpha()->to_vector(string("xaryumpscfijzwktdgvonqbelh")), sg39_ring_data);
         
         // Reflector
-        sg39_set->add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt")));                     
+        sg39_set->add_rotor(ID_SG39_UKW,  rmsk::std_alpha()->to_vector(string("ugvhpmbdolyjfqienwxzacrskt"))); 
+        
+        set<unsigned int> sg39_const_ids = {ID_SG39_UKW};
+        sg39_set->set_const_ids(sg39_const_ids);
     }
     
     return sg39_set;
@@ -370,6 +375,18 @@ bool schluesselgeraet39::set_test(string& wheel_spec1, string& wheel_spec2, unsi
     return result;
 }
 
+string schluesselgeraet39::map_rand_parm_to_set_name(string& rand_param)
+{
+    string result = get_default_set_name();
+    
+    if (rand_param != ENIGMA_M4_SET_NAME)
+    {
+        result = "M4Set";
+    }
+    
+    return result;
+}
+
 bool schluesselgeraet39::randomize(string& param)
 {
     bool result = false;
@@ -390,7 +407,7 @@ bool schluesselgeraet39::randomize(string& param)
     rand_parm_map["two"] = 1;
     rand_parm_map["three"] = 2;
     rand_parm_map["special"] = 3;
-    rand_parm_map["enigmam4"] = 6;    
+    rand_parm_map[ENIGMA_M4_SET_NAME] = 6;    
     
     try
     {
@@ -649,7 +666,7 @@ schluesselgeraet39::schluesselgeraet39(unsigned int rotor_1_id, unsigned int rot
     randomizer_params.push_back(randomizer_descriptor("two", "Type two stepping"));
     randomizer_params.push_back(randomizer_descriptor("three", "Type three stepping"));       
     randomizer_params.push_back(randomizer_descriptor("special", "Special stepping"));            
-    randomizer_params.push_back(randomizer_descriptor("enigmam4", "M4 Enigma compatible"));        
+    randomizer_params.push_back(randomizer_descriptor(ENIGMA_M4_SET_NAME, "M4 Enigma compatible"));        
     
     unvisualized_rotor_names.insert(UKW_SG39);               
 

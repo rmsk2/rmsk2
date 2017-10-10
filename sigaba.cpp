@@ -107,7 +107,10 @@ rotor_set *sigaba_rotor_factory::get_index_rotor_set()
         index_set->add_rotor(SIGABA_INDEX_1, index_alphabet.to_vector(string("3810592764")));
         index_set->add_rotor(SIGABA_INDEX_2, index_alphabet.to_vector(string("4086153297")));
         index_set->add_rotor(SIGABA_INDEX_3, index_alphabet.to_vector(string("3980526174")));
-        index_set->add_rotor(SIGABA_INDEX_4, index_alphabet.to_vector(string("6497135280")));        
+        index_set->add_rotor(SIGABA_INDEX_4, index_alphabet.to_vector(string("6497135280")));
+        
+        set<unsigned int> const_index_ids = {SIGABA_INDEX_0, SIGABA_INDEX_1, SIGABA_INDEX_2, SIGABA_INDEX_3, SIGABA_INDEX_4};
+        index_set->set_const_ids(const_index_ids);        
     }
 
     return index_set;

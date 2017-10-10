@@ -282,6 +282,11 @@ void rotor_machine::delete_rotor_set(string& name)
     rotor_sets.erase(name);
 }
 
+string rotor_machine::map_rand_parm_to_set_name(string& rand_param)
+{
+    return get_default_set_name();
+}
+
 void rotor_machine::prepare_rotor(string& rotor_set_name, rotor_id r_id, string& rotor_name, bool reverse)
 {
     rotor_set *r_set = get_rotor_set(rotor_set_name);
