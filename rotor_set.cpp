@@ -160,6 +160,8 @@ void rotor_set::save_ini(Glib::KeyFile& ini_file)
             
             ini_file.set_integer_list(section_name, "ringdata", data_temp);            
         }
+        
+        ini_file.set_boolean(section_name, "isconst", (const_ids.count(iter->first) != 0));
     }    
 }
 
@@ -170,7 +172,8 @@ bool rotor_set::load_ini(Glib::KeyFile& ini_file)
     vector<unsigned int> perm_data, ring_data;
     string section_name;
     map<unsigned int, vector<unsigned int> > perms_temp;
-    map<unsigned int, vector<unsigned int> > ring_data_vals_temp;  
+    map<unsigned int, vector<unsigned int> > ring_data_vals_temp;
+    set<unsigned int> const_ids_temp;   
     
     
     if (!(result = !ini_file.has_key(GENERAL, "ids")))
@@ -212,6 +215,21 @@ bool rotor_set::load_ini(Glib::KeyFile& ini_file)
                             ring_data_vals_temp[id_list[count]] = ring_data;                        
                         }                    
                     }
+                    
+                    if (!result)
+                    {
+                        // It is an error if the key "isconst" does not exist
+                        result = !ini_file.has_key(section_name, "isconst");
+                        
+                        // If not an error ....
+                        if (!result)
+                        {
+                            if (ini_file.get_boolean(section_name, "isconst"))
+                            {
+                                const_ids_temp.insert(id_list[count]);
+                            }
+                        }
+                    }
                 }                               
             }        
         }
@@ -221,6 +239,7 @@ bool rotor_set::load_ini(Glib::KeyFile& ini_file)
     {
         perms = perms_temp;
         ring_data_vals = ring_data_vals_temp;
+        const_ids = const_ids_temp;
     }
     
     return result;

@@ -399,6 +399,13 @@ def write_rotor_entry(rotor_id, fd):
         
     result += int_vector_to_string(ring_data)
     
+    result += '\\n\\\nisconst='
+    
+    if known_wheels[rotor_id][3]:
+        result += 'true'
+    else:
+        result += 'false'
+    
     result += '\\n\\\n'
     
     fd.write(bytes(result + "\\n\\\n", 'ascii'))
@@ -425,24 +432,7 @@ def write_rotor_set(out_file_name):
     for i in known_ids:
         write_rotor_entry(i, fd)
 
-    fd.write(bytes('";\n\n', 'ascii'))
-    
-    const_help = list(map(lambda x: x[1], known_wheels.items()))
-    const_wheels = list(filter(lambda x: x[3], const_help))
-    
-    if len(const_wheels) > 0:
-        first_entry = True
-        fd.write(bytes('set<unsigned int> engima_const_ids = {', 'ascii'))
-    
-        for i in const_wheels:
-            if first_entry:
-                first_entry = False
-                fd.write(bytes(i[2], 'ascii'))
-            else:
-                fd.write(bytes(', ' + i[2], 'ascii'))
-            
-        fd.write(bytes('};\n\n', 'ascii'))    
-    
+    fd.write(bytes('";\n\n', 'ascii'))    
     fd.close()
 
 ## \brief This function produces the symbolic constants that are uses to represent the rotor ids

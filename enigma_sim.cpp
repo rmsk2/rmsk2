@@ -42,7 +42,6 @@ rotor_set *enigma_rotor_factory::get_rotor_set()
         
         (void)ini.load_from_data(data);
         (void)enigma_set->load_ini(ini);
-        enigma_set->set_const_ids(engima_const_ids);
     }
     
     return enigma_set;
