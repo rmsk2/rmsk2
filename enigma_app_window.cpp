@@ -440,13 +440,16 @@ bool enigma_app_window::do_load(Glib::ustring& desired_file_name)
 {
     bool result = false;
     
+    // Reconstruct machine configuration from state file. Does not change the machine.
     result = conf.load_settings(desired_file_name);
     
     if (!result)
     {
         set_title(conf.get_machine_type() + "Enigma [" + desired_file_name + "]");
-        update_rotors();
-        update_stecker_brett();         
+        // Also load state file into machine
+        (void)enigma->load(desired_file_name.c_str()); 
+        // Update GUI among other things
+        simulator_gui->set_machine(enigma); 
     }
     
     return result;

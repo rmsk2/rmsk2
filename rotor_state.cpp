@@ -70,6 +70,10 @@ protected:
      *         through the parameter randomizer_help.
      */
     virtual void generate_randomizer_help(string& machine_name, string& randomizer_help);
+    
+    virtual int randomize_machine(rotor_machine *machine);
+    
+    virtual int configure_machine(rotor_machine *machine, configurator *conf);
 
     /*! \brief Holds the configuration information as specified on the command line. */
     map<string, string> config_map;
@@ -229,6 +233,115 @@ void rotor_state::generate_randomizer_help(string& machine_name, string& randomi
     }
 }
 
+int rotor_state::configure_machine(rotor_machine *machine, configurator *conf)
+{
+    int result = RETVAL_OK;
+    
+    do
+    {
+        // Use custom rotor set
+        if (((vm.count("rand-set") != 0) || (vm.count("load-set") != 0)))
+        {
+            string rotor_set_name;
+            bool rotor_set_known = conf->determine_rotor_set_name(config_map, rotor_set_name);
+            
+            if (!rotor_set_known)
+            {
+                result = ERR_ROTOR_MACHINE;
+                cout << "Unable to determine rotor set name to use" << endl;
+                break;
+            }
+            
+            // Randomize set
+            if (vm.count("rand-set") != 0)
+            {                
+                machine->get_rotor_set(rotor_set_name)->replace_permutations();
+
+                if (machine->get_rotor_set(rotor_set_name)->save(rand_set_name))
+                {
+                    result = ERR_ROTOR_MACHINE;
+                    cout << "Unable to save randomized rotor set data" << endl;
+                    break;
+                }
+            }
+            else // It is now guaranteed that vm.count("load-set") != 0. Load custom rotor set.
+            {
+                if (machine->get_rotor_set(rotor_set_name)->load(rand_set_name))
+                {
+                    result = ERR_ROTOR_MACHINE;
+                    cout << "Unable to load randomized rotor set data" << endl;
+                    break;
+                }
+            }
+        }
+                
+        // Change state according to command line parameters
+        if (conf->configure_machine(config_map, machine) != CONFIGURATOR_OK)
+        {
+            result = ERR_ROTOR_MACHINE;
+            cout << "Unable to configure machine with command line parameters. Most probably a syntax error!" << endl;
+            break;
+        }
+            
+    } while(0);
+    
+    return result;
+
+}
+
+int rotor_state::randomize_machine(rotor_machine *machine)
+{
+    int result = RETVAL_OK;
+    string randomize_parm = "dummy";
+    
+    do
+    {        
+        // If user supplied an argument for the random generator use it
+        if (vm.count("randparm") != 0)
+        {
+            randomize_parm = rand_parameter;
+        }                   
+                    
+        // Use custom rotor set
+        if ((vm.count("rand-set") != 0) || (vm.count("load-set") != 0))
+        {
+            string rotor_set_name = machine->map_rand_parm_to_set_name(randomize_parm);
+            
+            // randomize rotor set
+            if (vm.count("rand-set") != 0)
+            {
+                machine->get_rotor_set(rotor_set_name)->replace_permutations();
+                if (machine->get_rotor_set(rotor_set_name)->save(rand_set_name))
+                {
+                    result = ERR_ROTOR_MACHINE;
+                    cout << "Unable to save randomized rotor set data" << endl;
+                    break;
+                }
+            }
+            else // It is now guaranteed that vm.count("load-set") != 0. Load custom rotor set. 
+            {
+                if (machine->get_rotor_set(rotor_set_name)->load(rand_set_name))
+                {
+                    result = ERR_ROTOR_MACHINE;
+                    cout << "Unable to load randomized rotor set data" << endl;
+                    break;
+                }
+            }
+        }
+        
+        // Randomize state
+        if (machine->randomize(randomize_parm))
+        {
+            result = ERR_ROTOR_MACHINE;
+            cout << "Unable to randomize rotor machine" << endl;
+            break;
+        }
+        
+    } while(0);
+    
+    return result;
+}
+
 int rotor_state::parse(int argc, char **argv)
 {
     int return_code = RETVAL_OK;
@@ -318,7 +431,6 @@ int rotor_state::execute_command()
     string data_in;
     const int DONT_CARE = 0x4747;
     ustring new_positions = rotor_positions;
-    string randomize_parm = "dummy";
     
     do
     {        
@@ -347,91 +459,20 @@ int rotor_state::execute_command()
         
         // Configure state of machine
         if ((vm.count("random") != 0) || (vm.count("randparm") != 0))
-        {        
-            // If user supplied an argument for the random generator use it
-            if (vm.count("randparm") != 0)
-            {
-                randomize_parm = rand_parameter;
-            }                   
-                        
-            // Use custom rotor set
-            if ((vm.count("rand-set") != 0) || (vm.count("load-set") != 0))
-            {
-                string rotor_set_name = machine->map_rand_parm_to_set_name(randomize_parm);
-                
-                // randomize rotor set
-                if (vm.count("rand-set") != 0)
-                {
-                    machine->get_rotor_set(rotor_set_name)->replace_permutations();
-                    if (machine->get_rotor_set(rotor_set_name)->save(rand_set_name))
-                    {
-                        result = ERR_ROTOR_MACHINE;
-                        cout << "Unable to save randomized rotor set data" << endl;
-                        break;
-                    }
-                }
-                else // It is now guaranteed that vm.count("load-set") != 0. Load custom rotor set. 
-                {
-                    if (machine->get_rotor_set(rotor_set_name)->load(rand_set_name))
-                    {
-                        result = ERR_ROTOR_MACHINE;
-                        cout << "Unable to load randomized rotor set data" << endl;
-                        break;
-                    }
-                }
-            }
+        {
+            result = randomize_machine(machine.get());
             
-            // Randomize state
-            if (machine->randomize(randomize_parm))
+            if (result != RETVAL_OK)
             {
-                result = ERR_ROTOR_MACHINE;
-                cout << "Unable to randomize rotor machine" << endl;
                 break;
-            }
+            } 
         }
         else
         {
-            // Use custom rotor set
-            if (((vm.count("rand-set") != 0) || (vm.count("load-set") != 0)))
+            result = configure_machine(machine.get(), conf.get());
+            
+            if (result != RETVAL_OK)
             {
-                string rotor_set_name;
-                bool rotor_set_known = conf->determine_rotor_set_name(config_map, rotor_set_name);
-                
-                if (!rotor_set_known)
-                {
-                    result = ERR_ROTOR_MACHINE;
-                    cout << "Unable to determine rotor set name to use" << endl;
-                    break;
-                }
-                
-                // Randomize set
-                if (vm.count("rand-set") != 0)
-                {                
-                    machine->get_rotor_set(rotor_set_name)->replace_permutations();
-
-                    if (machine->get_rotor_set(rotor_set_name)->save(rand_set_name))
-                    {
-                        result = ERR_ROTOR_MACHINE;
-                        cout << "Unable to save randomized rotor set data" << endl;
-                        break;
-                    }
-                }
-                else // It is now guaranteed that vm.count("load-set") != 0. Load custom rotor set.
-                {
-                    if (machine->get_rotor_set(rotor_set_name)->load(rand_set_name))
-                    {
-                        result = ERR_ROTOR_MACHINE;
-                        cout << "Unable to load randomized rotor set data" << endl;
-                        break;
-                    }
-                }
-            }
-                    
-            // Change state according to command line parameters
-            if (conf->configure_machine(config_map, machine.get()) != CONFIGURATOR_OK)
-            {
-                result = ERR_ROTOR_MACHINE;
-                cout << "Unable to configure machine with command line parameters. Most probably a syntax error!" << endl;
                 break;
             }
         }
