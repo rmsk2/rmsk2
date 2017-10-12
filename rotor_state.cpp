@@ -70,9 +70,16 @@ protected:
      *         through the parameter randomizer_help.
      */
     virtual void generate_randomizer_help(string& machine_name, string& randomizer_help);
-    
+
+    /*! \brief This method randomizes the machine to which the parameter machine points. If requested on the
+     *         command line the rotor set is also randomized and saved. Returns RETVAL_OK in case of success.
+     */    
     virtual int randomize_machine(rotor_machine *machine);
-    
+
+    /*! \brief This method configures the machine to which the parameter machine points using the configurator specified
+     *         by parameter conf. If requested on the command line the rotor set is also randomized and saved. Returns RETVAL_OK
+     *         in case of success.
+     */        
     virtual int configure_machine(rotor_machine *machine, configurator *conf);
 
     /*! \brief Holds the configuration information as specified on the command line. */
