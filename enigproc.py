@@ -41,6 +41,7 @@ HEADER_GRP_2 = 'encrypted_message_key'
 INTERNAL_INDICATOR = 'internal_indicator'
 EXTERNAL_INDICATOR = 'external_indicator'
 MESSAGE_LENGTH = 'message_length'
+PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']
 
 NO_SHIFT_CHAR = ''
 
@@ -429,10 +430,10 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
     #
-    def __init__(self,  server, rand_gen, kenngruppen, num_rotors = 3):
+    def __init__(self,  server, rand_gen, kenngruppen, grundstellung, num_rotors = 3):
         super().__init__(server, rand_gen, kenngruppen, num_rotors)
         ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
-        self._grundstellung = self._rand_gen.get_rand_string(self._num_rotors)
+        self._grundstellung = grundstellung
     
     ## \brief This property returns the grundstellung.
     #
@@ -1611,9 +1612,13 @@ class MessageProcedure:
         indicators = self.formatter.parse_ciphertext_header(indicators, cipher_text_part.header) # Determine rest of indicators from header           
         indicators = self.indicator_proc.derive_message_key(self._machine, indicators) # Derive message key from indicators   
         self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
-
+        
+        #print(self._machine.get_rotor_positions())
+        
         if self._step_before_proc:
-            self._machine.step()       
+            self._machine.step()
+            
+        #print(self._machine.get_rotor_positions())            
         
         if MESSAGE_LENGTH in indicators.keys():
             ciphertext = help.text[:indicators[MESSAGE_LENGTH]]
@@ -1722,7 +1727,7 @@ class MessageProcedureFactory:
         self._server = server        
 
     def _get_incomplete_enigma(self, num_rotors = 3):
-        result = MessageProcedure(self._machine, self._rand_gen, self._server, num_rotors)
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
         result.formatter = EnigmaFormatter(num_rotors)
         result.formatter.limits = (5, 10)
         result.msg_size = 245
@@ -1730,25 +1735,40 @@ class MessageProcedureFactory:
         
         return result
     
-    def get_post1940_enigma(self, kenngruppen, num_rotors = 3):    
+    @staticmethod
+    def get_and_test_kenngruppen(system_indicator):
+        kenngruppen_raw = system_indicator.split()
+        kenngruppen = list(filter(lambda x: len(x) == 3, kenngruppen_raw))
+
+        if len(kenngruppen) == 0:
+            raise EnigmaException('No usable Kenngruppen specified!')
+        
+        return kenngruppen                        
+    
+    def get_post1940_enigma(self, system_indicator, grundstellung, num_rotors = 3):    
         result = self._get_incomplete_enigma(num_rotors)
-        result.indicator_proc = Post1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen, num_rotors)
+        result.indicator_proc = Post1940EnigmaIndicatorProc(self._server, self._rand_gen, self.get_and_test_kenngruppen(system_indicator), num_rotors)
         
         return result
 
-    def get_pre1940_enigma(self, kenngruppen, num_rotors = 3):    
+    def get_pre1940_enigma(self, system_indicator, grundstellung, num_rotors = 3):    
         result = self._get_incomplete_enigma(num_rotors)
-        result.indicator_proc = Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, kenngruppen, num_rotors)
+        result.indicator_proc = Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, self.get_and_test_kenngruppen(system_indicator), grundstellung, num_rotors)
         
         return result
 
-    def get_tirpitz_post1940(self, kenngruppen):
-        result = self.get_post1940_enigma(kenngruppen, 4)
+    def get_post1940_4wheel_enigma(self, system_indicator, grundstellung):
+        result = self.get_post1940_enigma(system_indicator, grundstellung, 4)
+        
+        return result           
+
+    def get_pre1940_4wheel_enigma(self, system_indicator, grundstellung):
+        result = self.get_pre1940_enigma(system_indicator, grundstellung, 4)
         
         return result           
 
     def get_generic_machine(self, system_indicator, grundstellung, indicator_group_size, step_before_use = False):
-        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result = MessageProcedure(self._machine, self._rand_gen, self._server, step_before_use)
         result.indicator_proc = GrundstellungIndicatorProc(self._server, self._rand_gen, indicator_group_size, step_before_use)
         result.indicator_proc.grundstellung = grundstellung
         result.formatter = GenericFormatter(1, indicator_group_size, result.indicator_proc.key_words)
@@ -1812,7 +1832,7 @@ class MessageProcedureFactory:
         
         return result
     
-    def get_sigaba_basic(self, system_indicator):
+    def get_sigaba_basic(self, system_indicator, grundstellung):
         result = MessageProcedure(self._machine, self._rand_gen, self._server)
         result.indicator_proc = SIGABABasicIndicatorProcessor(self._server, self._rand_gen)
         result.formatter = SIGABAFormatter()
@@ -1824,7 +1844,7 @@ class MessageProcedureFactory:
         return result    
 
     def get_sigaba_grundstellung(self, system_indicator, grundstellung):
-        result = self.get_sigaba_basic(system_indicator)
+        result = self.get_sigaba_basic(system_indicator, grundstellung)
         result.indicator_proc = SIGABAGrundstellungIndicatorProcessor(self._server, self._rand_gen)
         result.indicator_proc.grundstellung = grundstellung
         
@@ -1846,22 +1866,28 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
     #
     #  \param [argv] A vector of strings representing the command line parameters, i.e. sys.argv.
     #
-    #  \returns A dictionary containing the keys 'in_file', 'out_file', 'config_file', 'kenngruppen' and 'doencrypt'.
+    #  \returns A dictionary containing the keys 'in_file', 'out_file', 'config_file', 'sys-indicator' and 'doencrypt'.
     #        
     def parse_args(self, argv):
         # Set up command line parser        
+        indicator_help = "System indicator to use. In case the system indicator is a Kenngruppe it has to contain several (four) three letter strings seperated by blanks."        
         parser = argparse.ArgumentParser(description='A program that allows to en- and decrypt messages according to the WWII Enigma message procedure.',
-                                         epilog='Example: enigproc.py encrypt -f state.ini -i input.txt -k "dff gtr lki vfd"')
+                                         epilog='Example: enigproc.py encrypt -f state.ini -i input.txt -s "dff gtr lki vfd"')
         parser.add_argument("command", choices=COMMANDS, help="Action to take. Encrypt or decrypt.")
         parser.add_argument("-i", "--in-file", required=True, help="Input file containing plaintext.")
         parser.add_argument("-o", "--out-file", default='-', help="Store output in file named by this parameter. Print to stdout if not specified.")
         parser.add_argument("-f", "--config-file", required=True, help="Machine state (as created for instance by rotorstate) to use.")
-        parser.add_argument("-k", "--kenngruppen", default='', help="Kenngruppen to use. Has to contain several (four) three letter strings seperated by blanks.")
+        parser.add_argument("-s", "--sys-indicator", default='', help=indicator_help)
+        parser.add_argument("-g", "--grundstellung", default='', help="A basic setting or grundstellung if required by the messaging procedure")
+        parser.add_argument("-t", "--type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")        
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
-        args = parser.parse_args() 
+        args = parser.parse_args()
+        result =  {'in_file': args.in_file, 'out_file': args.out_file, 'config_file': args.config_file, 'sys-indicator':args.sys_indicator, 'doencrypt':args.command != COMMANDS[1]}
+        result['grundstellung'] = args.grundstellung.lower()
+        result['type'] = args.type
                         
-        return {'in_file': args.in_file, 'out_file': args.out_file, 'config_file': args.config_file, 'kenngruppen':args.kenngruppen.split(), 'doencrypt':args.command != COMMANDS[1]}        
+        return result
 
     ## \brief This method writes the message parts given to a file like object.
     #
@@ -1875,6 +1901,24 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             out_file.write(i)
             out_file.write('\n\n')        
 
+    def _generate_msg_proc_obj(self, machine_name, sys_indicator, grundstellung):
+        factory = MessageProcedureFactory(self.machine, self.random, self.server)
+        #generator = factory.get_post1940_enigma
+        #generator = factory.get_pre1940_enigma
+        #generator = factory.get_generic_enigma        
+        #generator = factory.get_post1940_4wheel_enigma
+        #generator = factory.get_pre1940_4wheel_enigma
+        #generator = factory.get_generic_4wheel_engima
+        #generator = factory.get_generic_m4
+        #generator = factory.get_generic_sg39
+        generator = factory.get_generic_kl7
+        #generator = factory.get_generic_typex
+        #generator = factory.get_sigaba_basic
+        #generator = factory.get_sigaba_grundstellung
+        #generator = factory.get_generic_nema
+        
+        return generator(sys_indicator, grundstellung)
+
     ## \brief This method verifies the parameters as specified on the command line and controls en-/decryption.
     #
     #  \param [args] A dictionary as returned by parse_args(). 
@@ -1885,38 +1929,25 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         result = tlvsrvapp.ERR_OK        
         text = ''
         out_text = ''
-        do_encrypt = args['doencrypt']
-        factory = MessageProcedureFactory(self.machine, self.random, self.server)
-        #generator = factory.get_post1940_enigma
-        #generator = factory.get_tirpitz_post1940
-        #generator = factory.get_generic_4wheel_engima
-        #generator = factory.get_generic_sg39
-        #generator = factory.get_generic_kl7
-        #generator = factory.get_generic_typex
-        generator = factory.get_sigaba_basic
-        #generator = factory.get_sigaba_grundstellung
-        #generator = factory.get_generic_nema
+        do_encrypt = args['doencrypt']        
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
         
         # Load input text
         with open(args['in_file'], 'r') as f_in:
-            text = f_in.read()
+            text = f_in.read()                
         
         if do_encrypt:
-            # Perform encryption        
-            kenngruppen = list(filter(lambda x: len(x) == 3, args['kenngruppen']))
-            if len(kenngruppen) == 0:
-                raise EnigmaException('No usable Kenngruppen specified!')
-            
-            #enigma_proc = generator(kenngruppen)
-            enigma_proc = generator('ABCDE')
+            # Perform encryption
+            if args['sys-indicator'] == '':
+                raise EnigmaException('A system indicator has to be provided via the -s/--sys-indicator option')
+                
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'])                                
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
-            #enigma_proc = generator([])
-            enigma_proc = generator('ABCDE')
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), 'ert zui ops cfg', args['grundstellung'])
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data

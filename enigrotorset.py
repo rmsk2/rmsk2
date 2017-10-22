@@ -237,6 +237,7 @@ PERM_Y_269_N = "lcmsbeioqjxfawkthdrznvypgu"
 PERM_Y_269_UKW = "yruhqsldpxngokmiebfzcwvjat"
 
 # Notches for Typex rotors of set SP_02390
+# NOTCH_Y_269 = "ejotz"
 NOTCH_Y_269 = "fmsz"
 
 # Notches for Typex rotors of set SP_02390
