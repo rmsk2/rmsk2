@@ -42,6 +42,7 @@ INTERNAL_INDICATOR = 'internal_indicator'
 EXTERNAL_INDICATOR = 'external_indicator'
 MESSAGE_LENGTH = 'message_length'
 PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']
+DUMMY_SYS_INDICATOR = 'ert zui ops cfg'
 
 NO_SHIFT_CHAR = ''
 
@@ -1787,12 +1788,12 @@ class MessageProcedureFactory:
 
     def get_generic_m4(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 4)
-        result.msg_size = 250
-        result.formatter.limits = (4, 10)
+        result.msg_size = 248
+        result.formatter.limits = (4, 8)
         
         return result
 
-    def get_generic_4wheel_engima(self, system_indicator, grundstellung):
+    def get_generic_4wheel_enigma(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 4)
         result.msg_size = 250
         
@@ -1901,23 +1902,49 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             out_file.write(i)
             out_file.write('\n\n')        
 
-    def _generate_msg_proc_obj(self, machine_name, sys_indicator, grundstellung):
+    def _generate_msg_proc_obj(self, machine_name, sys_indicator, grundstellung, proc_type):
         factory = MessageProcedureFactory(self.machine, self.random, self.server)
-        #generator = factory.get_post1940_enigma
-        #generator = factory.get_pre1940_enigma
-        #generator = factory.get_generic_enigma        
-        #generator = factory.get_post1940_4wheel_enigma
-        #generator = factory.get_pre1940_4wheel_enigma
-        #generator = factory.get_generic_4wheel_engima
-        #generator = factory.get_generic_m4
-        #generator = factory.get_generic_sg39
-        generator = factory.get_generic_kl7
-        #generator = factory.get_generic_typex
-        #generator = factory.get_sigaba_basic
-        #generator = factory.get_sigaba_grundstellung
-        #generator = factory.get_generic_nema
         
-        return generator(sys_indicator, grundstellung)
+        if proc_type == 'post1940':
+            if machine_name in ['Enigma', 'M3', 'KDEnigma']:
+                return factory.get_post1940_enigma(sys_indicator, grundstellung)
+            elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'M4Enigma', 'RailwayEnigma']:
+                return factory.get_post1940_4wheel_enigma(sys_indicator, grundstellung)
+            else:
+                raise EnigmaException('Unsupported message procedure for machine type')
+        elif proc_type == 'pre1940':
+            if machine_name in ['Enigma', 'M3', 'KDEnigma']:
+                return factory.get_pre1940_enigma(sys_indicator, grundstellung)
+            elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'M4Enigma', 'RailwayEnigma']:
+                return factory.get_pre1940_4wheel_enigma(sys_indicator, grundstellung)
+            else:
+                raise EnigmaException('Unsupported message procedure for machine type')
+        elif proc_type == 'sigaba':
+            if machine_name in ['CSP889', 'CSP2900']:
+                return factory.get_sigaba_basic(sys_indicator, grundstellung)
+            else:
+                raise EnigmaException('Unsupported message procedure for machine type')
+        elif proc_type == 'grundstellung':
+            if machine_name in ['Enigma', 'M3', 'KDEnigma']:
+                return factory.get_generic_enigma(sys_indicator, grundstellung)
+            elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'RailwayEnigma']:
+                return factory.get_generic_4wheel_enigma(sys_indicator, grundstellung)
+            elif machine_name == 'M4Enigma':
+                return factory.get_generic_m4(sys_indicator, grundstellung)
+            elif machine_name == 'Typex':
+                return factory.get_generic_typex(sys_indicator, grundstellung)
+            elif machine_name in ['CSP889', 'CSP2900']:
+                return factory.get_sigaba_grundstellung(sys_indicator, grundstellung)
+            elif machine_name == 'KL7':
+                return factory.get_generic_kl7(sys_indicator, grundstellung)
+            elif machine_name == 'Nema':
+                return factory.get_generic_nema(sys_indicator, grundstellung)
+            elif machine_name == 'SG39':
+                return factory.get_generic_sg39(sys_indicator, grundstellung)
+            else:
+                raise EnigmaException('Unsupported message procedure for machine type')
+        else:        
+            raise EnigmaException('Type of message procedure unknown')
 
     ## \brief This method verifies the parameters as specified on the command line and controls en-/decryption.
     #
@@ -1934,6 +1961,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
         
+        #print(self.machine.get_description())
+        
         # Load input text
         with open(args['in_file'], 'r') as f_in:
             text = f_in.read()                
@@ -1943,11 +1972,11 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             if args['sys-indicator'] == '':
                 raise EnigmaException('A system indicator has to be provided via the -s/--sys-indicator option')
                 
-            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'])                                
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'], args['type'])                                
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
-            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), 'ert zui ops cfg', args['grundstellung'])
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['type'])
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data
