@@ -592,7 +592,7 @@ class RotorSetTests(simpletest.SimpleTest):
                 # test get_rotor_set_names() method
                 known_rotor_sets = typex.get_rotor_set_names()
                 known_rotor_sets.sort()
-                last_result = (known_rotor_sets == ['Y269', 'defaultset'])
+                last_result = (known_rotor_sets == ['Y269', 'Y2695', 'defaultset'])
                 result = result and last_result
                 if not last_result:
                     self.append_note("Unexpected rotor set names returned: " + str(known_rotor_sets))

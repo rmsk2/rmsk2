@@ -1361,7 +1361,8 @@ class RenderController:
         elif (machine_name == 'Typex') or (machine_name == 'TypexY269')  or (machine_name == 'TypexPlugsY269'): # Typex
             # Set up column mapping            
             keysheet.column_mapping = {'Wheel settings':PlugsColumn(14, 'rotors'), 'Rings':Column(5, 'rings'), \
-                                       'Reflector':Column(26, 'reflector'), 'Plugboard':Column(26, 'plugs')}
+                                       'Reflector':Column(26, 'reflector'), 'Plugboard':Column(26, 'plugs'), \
+                                       'Basic':RandStringColumn(5, 5), 'System':RandStringColumn(6, 5)}
                                        
             keysheet.column_mapping['Wheel settings'].uppercase = False
             keysheet.column_mapping['Rings'].uppercase = False
@@ -1373,6 +1374,9 @@ class RenderController:
             if machine_name == 'TypexPlugsY269':
                 keysheet.columns.append('Plugboard')
                 keysheet.column_mapping['Plugboard'].uppercase = False
+                
+            keysheet.columns.append('Basic')
+            keysheet.columns.append('System')
             
             result['isgerman'] = False
             result['state'] = rotorsim.TypexState.get_default_config()
@@ -1387,12 +1391,12 @@ class RenderController:
                                
         elif (machine_name == 'NemaWar') or ((machine_name == 'NemaTraining')): # Nema war and training models
             # Set up column mapping            
-            keysheet.column_mapping = {'Walzen':Column(6, 'rotors'), 'Nockenringe':Column(11, 'ringselect'), 'Codewort':RotorPosColumn(10)}
+            keysheet.column_mapping = {'Walzen':Column(6, 'rotors'), 'Nockenringe':Column(11, 'ringselect'), 'Codewort':RotorPosColumn(10), 'System':RandStringColumn(6, 5)}
             
             keysheet.column_mapping['Walzen'].uppercase = False
             
             # Columns to include
-            keysheet.columns = ['Walzen', 'Nockenringe', 'Codewort']
+            keysheet.columns = ['Walzen', 'Nockenringe', 'Codewort', 'System']
             
             result['state'] = rotorsim.NemaState.get_default_config()
             result['randparm'] = machine_name[4:].lower()
@@ -1401,14 +1405,14 @@ class RenderController:
             # Set up column mapping
             keysheet.column_mapping = {'Index Rotors':PlugsColumn(14, 'index'), 'Control Rotors':PlugsColumn(14, 'control'),\
                                        'Cipher Rotors':PlugsColumn(14, 'cipher'), 'Index Pos':SIGABAIndexRotorPosColumn(9),\
-                                       '26-30 Check':CheckStringColumn(11, 5, lambda x:x[0:5]+'oooooooooo', 'a' * 30)} 
+                                       '26-30 Check':CheckStringColumn(11, 5, lambda x:x[0:5]+'oooooooooo', 'a' * 30), 'System':RandStringColumn(6, 5)} 
                                        
             keysheet.column_mapping['Index Rotors'].uppercase = False
             keysheet.column_mapping['Control Rotors'].uppercase = False
             keysheet.column_mapping['Cipher Rotors'].uppercase = False
             
             # Columns to include
-            keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', '26-30 Check']
+            keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'System', '26-30 Check']
             
             result['isgerman'] = False            
             result['state'] = rotorsim.SigabaMachineState.get_default_config()
@@ -1419,13 +1423,14 @@ class RenderController:
             # Set up column mapping
             keysheet.column_mapping = {'Rotors':Column(8, 'rotors'), 'Alphabet Ring Pos':Column(23, 'alpharings'),\
                                        'Notch Rings':Column(15, 'notchselect'), 'Notch Ring Pos':Column(14, 'notchrings'),\
-                                       'Basic Alignment':KL7RotorPosColumn(15), '36-45 Check':CheckStringColumn(11, 10, lambda x:'aaaaaaa', 'l' * 45, True)}         
+                                       'Basic Alignment':KL7RotorPosColumn(15), '36-45 Check':CheckStringColumn(11, 10, lambda x:'aaaaaaa', 'l' * 45, True), \
+                                       'System':RandStringColumn(6, 5)}         
                
             keysheet.column_mapping['Notch Ring Pos'].uppercase = False
             keysheet.column_mapping['Rotors'].uppercase = False
             
             # Columns to include
-            keysheet.columns = ['Rotors', 'Alphabet Ring Pos', 'Notch Rings', 'Notch Ring Pos', 'Basic Alignment', '36-45 Check']
+            keysheet.columns = ['Rotors', 'Alphabet Ring Pos', 'Notch Rings', 'Notch Ring Pos', 'Basic Alignment', 'System', '36-45 Check']
             
             result['isgerman'] = False
             result['state'] = rotorsim.KL7State.get_default_config()
@@ -1439,14 +1444,14 @@ class RenderController:
             # Set up column mapping for Walzen subheet
             keysheet.column_mapping = {'Walzen':Column(6, 'rotors'), 'Ringe':Column(5, 'rings'),\
                                        'Steckerbrett':Column(26, 'plugs'), 'Umkehrwalze':Column(26, 'reflector'),
-                                       'Kenngruppen':KenngruppenColumn(15, 4), 'Grundst.':RotorPosColumn(8)}
+                                       'System':RandStringColumn(6, 5), 'Grundst.':RotorPosColumn(8)}
                                        
             keysheet.column_mapping['Steckerbrett'].uppercase = False
             keysheet.column_mapping['Umkehrwalze'].uppercase = False
             keysheet.column_mapping['Ringe'].uppercase = False
             
             # Columns to include in Walzen subsheet
-            keysheet.columns = ['Walzen', 'Ringe', 'Steckerbrett', 'Umkehrwalze', 'Grundst.', 'Kenngruppen']
+            keysheet.columns = ['Walzen', 'Ringe', 'Steckerbrett', 'Umkehrwalze', 'Grundst.', 'System']
         
             result['sheets'].append(keysheet)
             

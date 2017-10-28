@@ -34,6 +34,7 @@
 #define RAND_PARM_Y269 "y269"
 #define RAND_PARM_PLUGS_SP02390 "plugs02390"
 #define RAND_PARM_PLUGS_Y269 "plugsy269"
+#define RAND_PARM_PLUGS_Y2695 "plugsy2695"
 
 
 /*! \brief Set of input chars used when in letters mode.
@@ -56,6 +57,10 @@ rotor_set typex_set_SP_02390(26);
  */
 rotor_set typex_set_Y_269(26);
 
+/*! \brief Rotor and ring data for Typex rotor set Y_2695
+ */
+rotor_set typex_set_Y_2695(26);
+
 /*! \brief Holds all Typex rotor sets
  */
 map<string, rotor_set*> typex_rotor_sets::typex_sets;
@@ -70,6 +75,7 @@ rotor_set *typex_rotor_sets::get_rotor_set(const char *set_name)
     {
         typex_sets[DEFAULT_SET] = &typex_set_SP_02390;
         typex_sets[Y269] = &typex_set_Y_269;
+        typex_sets[Y2695] = &typex_set_Y_2695;
     }
     
     // Check if specified rotor set name is valid
@@ -105,6 +111,25 @@ rotor_set *typex_rotor_sets::get_rotor_set(const char *set_name)
             typex_sets[real_set_name]->set_const_ids(const_ids_y269);
         }
 
+        if (real_set_name == Y2695)
+        {
+            //                                    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
+            vector<unsigned int> new_ring_data = {0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1};
+        
+            vector<unsigned int> y_2695_ids = {TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C, TYPEX_Y_269_D, TYPEX_Y_269_E, 
+                                              TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J,
+                                              TYPEX_Y_269_K, TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N, TYPEX_ETW, 
+                                              TYPEX_Y_269_UKW};          
+            
+           vector<unsigned int> y_2695_ring_ids = {TYPEX_Y_269_A, TYPEX_Y_269_B, TYPEX_Y_269_C, TYPEX_Y_269_D, TYPEX_Y_269_E, 
+                                              TYPEX_Y_269_F, TYPEX_Y_269_G, TYPEX_Y_269_H, TYPEX_Y_269_I, TYPEX_Y_269_J,
+                                              TYPEX_Y_269_K, TYPEX_Y_269_L, TYPEX_Y_269_M, TYPEX_Y_269_N};          
+            
+            enigma_rotor_factory::get_rotor_set()->slice_rotor_set(*typex_sets[real_set_name], y_2695_ids, y_2695_ids);  
+            set<unsigned int> const_ids_y2695 = {TYPEX_ETW, TYPEX_Y_269_UKW};
+            typex_sets[real_set_name]->set_const_ids(const_ids_y2695);
+            typex_sets[real_set_name]->replace_ring_data(y_2695_ring_ids, new_ring_data);
+        }
     }
     
     return typex_sets[real_set_name];
@@ -135,6 +160,11 @@ string typex::map_rand_parm_to_set_name(string& rand_param)
     {
         result = Y269;
     }
+
+    if (rand_param == RAND_PARM_PLUGS_Y2695)
+    {
+        result = Y2695;
+    }
     
     if ((rand_param == RAND_PARM_SP02390) || (rand_param == RAND_PARM_PLUGS_SP02390))
     {
@@ -161,7 +191,7 @@ bool typex::randomize(string& param)
         known_rotors = "abcdefg";
     }
 
-    if (name_rotor_set == Y269)
+    if ((name_rotor_set == Y269) || (name_rotor_set == Y2695))
     {
         known_rotors = "abcdefghijklmn";
     }
@@ -179,7 +209,7 @@ bool typex::randomize(string& param)
             selected_rotors += ((reverse_rotors.get_next_val() == 0) ? 'N' : 'R');
         }
 
-        if ((param == RAND_PARM_PLUGS_Y269) || (param == RAND_PARM_PLUGS_SP02390))
+        if ((param == RAND_PARM_PLUGS_Y269) || (param == RAND_PARM_PLUGS_SP02390) || (param == RAND_PARM_PLUGS_Y2695))
         {
             permutation perm = rmsk::std_alpha()->get_random_permutation(); 
             plugs = rmsk::std_alpha()->perm_as_string(perm);           
@@ -260,6 +290,7 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     
     add_rotor_set(DEFAULT_SET, typex_rotor_sets::get_rotor_set(DEFAULT_SET));
     add_rotor_set(Y269, typex_rotor_sets::get_rotor_set(Y269));
+    add_rotor_set(Y2695, typex_rotor_sets::get_rotor_set(Y2695));
     
     stepper = NULL;
     machine_name = MNAME_TYPEX;
@@ -312,7 +343,8 @@ typex::typex(unsigned int ukw_id, rotor_id slow_id, rotor_id middle_id, rotor_id
     randomizer_params.push_back(randomizer_descriptor(RAND_PARM_SP02390, "Force rotor set SP02390 and no plugboard"));
     randomizer_params.push_back(randomizer_descriptor(RAND_PARM_Y269, "Force rotor set Y269 and no plugboard"));
     randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_SP02390, "Include plugboard and rotor set SP02390"));
-    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_Y269, "Include plugboard and rotor set Y269"));            
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_Y269, "Include plugboard and rotor set Y269"));
+    randomizer_params.push_back(randomizer_descriptor(RAND_PARM_PLUGS_Y2695, "Include plugboard and rotor set Y269 with five notches"));            
     
     unvisualized_rotor_names.insert(ETW);        
     unvisualized_rotor_names.insert(UMKEHRWALZE);  

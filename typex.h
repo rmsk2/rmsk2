@@ -28,6 +28,7 @@
 #define STATOR1 "stator1"
 #define STATOR2 "stator2"
 #define Y269 "Y269"
+#define Y2695 "Y2695"
 
 
 using namespace Glib;

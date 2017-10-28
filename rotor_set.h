@@ -122,6 +122,11 @@ public:
      */                        
     virtual void replace_permutations(random_generator *rand_gen = NULL);    
 
+    /*! \brief Replaces the ring data of all the rings whose ids are contained in the ids_to_change vector with the data specified in
+     *         the new_ring_data_parameter.
+     */                        
+    virtual void replace_ring_data(vector<unsigned int>& ids_to_change, vector<unsigned int>& new_ring_data);    
+
     /*! \brief Copies part of this rotor set into the rotor_set specified by parameter new_set. The parameters rotor_ids_to_copy and
      *         ring_ids_to_copy specify the rotors and rings to copy into the new set.
      */                        

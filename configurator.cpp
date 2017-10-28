@@ -1044,7 +1044,7 @@ void typex_configurator::change_rotor_set(string& rotor_set_name)
         typex_max_rotor = 'g';        
     }
 
-    if (rotor_set_name == Y269)
+    if ((rotor_set_name == Y269) || (rotor_set_name == Y2695))
     {
         typex_base_id = TYPEX_Y_269_A;
         typex_ukw_id = TYPEX_Y_269_UKW;

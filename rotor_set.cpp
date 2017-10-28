@@ -290,6 +290,17 @@ void rotor_set::randomize(unsigned int num_rotors, rotor_ring_random_source *ran
     randomize(desired_ids, rand_source);
 }
 
+void rotor_set::replace_ring_data(vector<unsigned int>& ids_to_change, vector<unsigned int>& new_ring_data)
+{    
+    for (int i : ids_to_change)
+    {
+        if (ring_data_vals.count(i) != 0)
+        {
+            ring_data_vals[i] = new_ring_data;
+        }
+    }
+}
+
 void rotor_set::replace_permutations(random_generator *rand_gen)
 {
     vector<unsigned int> temp;
