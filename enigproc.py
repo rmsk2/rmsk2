@@ -33,17 +33,27 @@ import functools
 
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
-# 1534 = 15tle = 15tl = 167 = RJF GNZ =
+## \brief Matches stuff like 1534 = 15tle = 15tl = 167 = RJF GNZ =
 ENIGMA_HEADER_EXP = '^[0-9]{{4}} = [0-9]+(tl|tle) = [0-9]+tl = [0-9]+ = ([A-Z]{{{0}}}) ([A-Z]{{{0}}}) =$'
+## \brief Dictionary key that names the rotor starting position during an en- or decryption
 MESSAGE_KEY = 'message_key'
+## \brief Dictionary key that names the rotor starting position when preparing a Post 1940 Enigma message
 HEADER_GRP_1 = 'start_pos'
+## \brief Dictionary key that names the encrypted message key when preparing a Post 1940 Enigma message
 HEADER_GRP_2 = 'encrypted_message_key'
+## \brief Dictionary key that names the indicator used for deriving the message key when using the default SIGABA message procedure 
 INTERNAL_INDICATOR = 'internal_indicator'
+## \brief Dictionary key that names the indicator used for identification of the crypto net when using the default SIGABA message procedure 
 EXTERNAL_INDICATOR = 'external_indicator'
+## \brief Dictionary key that names the number of ciphertext characters when using the default SIGABA message procedure 
 MESSAGE_LENGTH = 'message_length'
+## \brief List that contains the allowed keywords for the -t/--type option
 PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']
+## \brief Dummy value for the system indicator used when instantiating a MessageProcedure object for decryption.
 DUMMY_SYS_INDICATOR = 'ert zui ops cfg'
 
+## \brief Constructing objects of the ShiftedIndicatorTransformer class or its children require to specify the characters that cause
+#         shifting of the input alphabets. Use this constant to signify that there is no shifting character.
 NO_SHIFT_CHAR = ''
 
 ## \brief This class is used to signal exceptions to calling code.
@@ -58,6 +68,10 @@ class EnigmaException(Exception):
 ## \brief This class serves as a base class for a "thing" that knows how to "prepare" plaintexts before encryption
 #         and reverse this preparation after decryption to reconstruct the original plaintext.
 #
+#  Children of this class are intended to be used to replace special characters in the input data that can not be
+#  directly processed by the underlying rotor machine by characters or groups of characters that can be fed into the
+#  machine and vice versa. The transformed plaintext is called the encoded plaintext.
+#
 class TransportEncoder:
     ## \brief Constructor
     #
@@ -65,18 +79,18 @@ class TransportEncoder:
         ## \brief A vector of chars that is used to filter the input data when doing encryptions.
         self._allowed_plain_chars = 'abcdefghijklmnopqrstuvwxyz'
     
-    ## \brief This method transform a plaintext into an encoded form before that encoded form ist encrypted.
+    ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
     #
-    #  \param [plaintext] A string. Contains the plaintext to transform
+    #  \param [plaintext] A string. Contains the plaintext to transform.
     #
     #  \returns A string. The encoded plaintext
     #
     def transform_plaintext_enc(self, plaintext):
         return ''.join(list(filter(lambda x: x in self._allowed_plain_chars, plaintext.lower())))
 
-    ## \brief This method transforms a decryped plaintext into its original form.
+    ## \brief This method transforms a decryped (and encoded) plaintext into its original form.
     #
-    #  \param [plaintext] A string. Contains the plaintext to transform
+    #  \param [plaintext] A string. Contains the encoded plaintext to transform
     #
     #  \returns A string. The decoded plaintext
     #    
@@ -117,9 +131,9 @@ class ArmyEncoder(TransportEncoder):
     #         the rules set out in the message procedure back into a more human readable form. In a way this
     #         is the inverse of transform_plaintext_enc().
     #
-    #  \param [full_plain] A string. Input text as created by the cipher machine.
+    #  \param [full_plain] A string. Output text as created by the cipher machine.
     #
-    #  \returns A string. It contains transformed plaintext.
+    #  \returns A string. It contains the transformed plaintext.
     #                    
     def transform_plaintext_dec(self, full_plain):
         full_plain = full_plain.lower()
@@ -132,17 +146,21 @@ class ArmyEncoder(TransportEncoder):
         return full_plain        
 
 
-## \brief This class implements the transport encoder used by the german army during WWII for use with the Engima.
+## \brief This class implements the transport encoder used by the SIGABA. When doing encryptions the SIGABA implementation of
+#         rmsk2 does not allow the character Z as an input character because Z is used to represent the blank character. Among
+#         other things this class transforms any Z charatcters in the plaintext into the character X as would be done by a
+#         real SIGABA.
 #
 class SIGABAEncoder(TransportEncoder):
     ## \brief Constructor
     #
     def __init__(self):
         super().__init__()
+        ## \brief Allowed input characters. Note the absence of Z and the presence of ' ' as the last character.
         self._allowed_plain_chars = 'abcdefghijklmnopqrstuvwxy '
         
     ## \brief This method filters out characters which are not allowed as input and transforms the plaintext according to
-    #         the rules set out in the message procedure.
+    #         the rules set out in the SIGABA message procedure.
     #
     #  \param [full_plain] A string. Input text for an encryption as specified by the caller.
     #
@@ -156,13 +174,13 @@ class SIGABAEncoder(TransportEncoder):
         full_plain = full_plain.replace('?', ' ques')
         return ''.join(list(filter(lambda x: x in self._allowed_plain_chars, full_plain)))
 
-    ## \brief This method transforms the raw plaintext coming out of the machine according to
-    #         the rules set out in the message procedure back into a more human readable form. In a way this
+    ## \brief This method transforms the raw decrypted plaintext coming out of the SIGABA according to
+    #         the rules set out in the SIGABA message procedure back into a more human readable form. In a way this
     #         is the inverse of transform_plaintext_enc().
     #
-    #  \param [full_plain] A string. Input text as created by the cipher machine.
+    #  \param [full_plain] A string. Output text as created by the cipher machine.
     #
-    #  \returns A string. It contains transformed plaintext.
+    #  \returns A string. It contains the transformed plaintext.
     #                    
     def transform_plaintext_dec(self, full_plain):
         full_plain = full_plain.lower()
@@ -170,58 +188,103 @@ class SIGABAEncoder(TransportEncoder):
         return full_plain        
 
 
+## \brief This class implements a transport encoder that knows an unshifted letter and a shifted figure alphabet. Any
+#         character i contained only in the figure alphabet is replaced by >i<, i.e. during encryption the machine is put
+#         into figures mode then the special character is processed and then the machine is immediately put back into
+#         letter mode. This may not be efficient in some special cases.
+#
 class ShiftingEncoder(TransportEncoder):
-    ## \brief Constructor
+    ## \brief Constructor.
+    #
+    #  \param [letter_alpha] A string. It has to contain the characters allowed in letter mode.
+    #
+    #  \param [figure_alpha] A string. It has to contain the characters allowed in figures mode.
+    #
+    #  \returns Nothing.
     #
     def __init__(self, letter_alpha, figure_alpha):
+        ## \brief A string. Contains the characters allowed in letter mode.
         self._letter_alpha = letter_alpha
+        ## \brief A string. Contains the characters allowed in figures mode.
         self._figure_alpha = figure_alpha
-    
+
+    ## \brief This method replaces any input character i that is only contained in the figures alphabet by >i<.
+    #
+    #  \param [plaintext] A string. Contains the unencoded plaintext.
+    #
+    #  \returns A string. The transformed plaintext.
+    #    
     def transform_shifted_characters(self, plaintext):
         result = ''
 
         for i in plaintext:
             if i in self._letter_alpha:
                 result += i
-            else:            
-                if (i != ' ') and (i in self._figure_alpha):
-                    result += '>' + i + '<'
+            elif i in self._figure_alpha:
+                result += '>' + i + '<'
         
-        return result
-                
-    
-    ## \brief This method transform a plaintext into an encoded form before that encoded form ist encrypted.
+        return result                
+
+    ## \brief This method transforms generic special characters (i.e. german umlauts) into characters that can be processed
+    #         directly by all rotor machines.    
     #
-    #  \param [plaintext] A string. Contains the plaintext to transform
+    #  \param [plaintext] A string. Contains the plaintext to transform.
     #
-    #  \returns A string. The encoded plaintext
-    #
-    def transform_plaintext_enc(self, plaintext):
+    #  \returns A string. The encoded plaintext without umlauts.
+    #    
+    def transform_special_characters(self, plaintext):
+        # Exclude the special generic shifting characters < and > from user supplied input text
         plaintext = ''.join(list(filter(lambda x: x not in '<>', plaintext.lower())))
+        # Replace umlauts
         plaintext = plaintext.replace('ä', 'ae')
         plaintext = plaintext.replace('ö', 'oe')
         plaintext = plaintext.replace('ü', 'ue')                        
         plaintext = plaintext.replace('ß', 'ss')
+        
+        return plaintext
+        
+    
+    ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
+    #
+    #  \param [plaintext] A string. Contains the plaintext to transform.
+    #
+    #  \returns A string. The encoded plaintext.
+    #
+    def transform_plaintext_enc(self, plaintext):
+        # Transform umlauts and filter out generic shfiting characters
+        plaintext = self.transform_special_characters(plaintext)        
+        # Only allow characters that are in the letter or figures alphabet
         plaintext = ''.join(list(filter(lambda x: (x in self._letter_alpha) or (x in self._figure_alpha), plaintext)))
         
         result = self.transform_shifted_characters(plaintext)
                 
         return result
 
+
+## \brief This class implements a transport encoder that transforms plaintext according to the properties of and procedures
+#         defined for the KL7 machine. The KL7 allows blanks in its input alphabet during encryptions. The characters J and
+#         V are special in that they switch between letter and figures mode. Z is a replacement for the blank character. Any
+#         Z typed during encryption input is encrypted and decrypted as an X. Any typed J is encrypted and decrypted as I.
+#
 class KL7Encoder(ShiftingEncoder):
     ## \brief Constructor
     #
     def __init__(self):
         super().__init__("abcdefghi>klmnopqrstuvwxy ", "abcd3fgh8>klmn9014s57<2x6 ")
 
+    ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
+    #
+    #  \param [plaintext] A string. Contains the plaintext to transform.
+    #
+    #  \returns A string. The encoded plaintext
+    #
     def transform_plaintext_enc(self, plaintext):
-        plaintext = ''.join(list(filter(lambda x: x not in '<>', plaintext.lower())))
-        plaintext = plaintext.replace('ä', 'ae')
-        plaintext = plaintext.replace('ö', 'oe')
-        plaintext = plaintext.replace('ü', 'ue')                        
-        plaintext = plaintext.replace('ß', 'ss')
+        # Transform umlauts and filter out generic shfiting characters
+        plaintext = self.transform_special_characters(plaintext)
+        # Transform additional special characters
         plaintext = plaintext.replace('j', 'i')
-        plaintext = plaintext.replace('z', 'x')        
+        plaintext = plaintext.replace('z', 'x')
+        # Filter out stuff that is neither in the letter nor the figures alphabet
         plaintext = ''.join(list(filter(lambda x: (x in self._letter_alpha) or (x in self._figure_alpha), plaintext)))
         
         result = self.transform_shifted_characters(plaintext)
@@ -244,13 +307,14 @@ class TypexEncoder(ShiftingEncoder):
 
 ## \brief This class serves as a base class for a "thing" that knows how create indicator groups during encryption
 #         and is able to reconstruct the message key from the indicator groups parsed from the ciphertext during
-#         decryption. This class and its children is supposed to not know how the indicator groups are represented
+#         decryption. This class and its children are supposed to not know how the indicator groups are represented
 #         in ciphertext. They deal with the groups as simple strings.
 #
 class IndicatorProcessor:
     ## \brief Constructor.
     #
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
+    #
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #
     def __init__(self, server, rand_gen):
@@ -263,13 +327,15 @@ class IndicatorProcessor:
     #         to create a full message part during encryption.
     #
     #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
     #         is called.
+    #
     #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
     #         operation.
     #
-    #  \returns A dictionary that maps strings to strings. It has to contain a key 'message_key' that specifies the
-    #           starting positions of the machines rotors at the beginning of the encryption of the body of this message
+    #  \returns A dictionary that maps strings to strings. It has to contain a key MESSAGE_KEY that specifies the
+    #           starting positions of the machine's rotors at the beginning of the encryption of the body of this message
     #           part.
     #
     def create_indicators(self, machine, this_part, num_parts):
@@ -277,16 +343,16 @@ class IndicatorProcessor:
         
         return
             
-    ## \brief Children have to oeverride this method. It is intended to recreate the message key from the indicator groups
+    ## \brief Children have to override this method. It is intended to recreate the message key from the indicator groups
     #         as parsed from the ciphertext of a message part during decryption.
     #
-    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create the encrypted indicator groups.
+    #
     #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
     #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption.
     #
-    #  \returns A dictionary that maps strings to strings. It has to contain a key 'message_key' that specifies the
-    #           starting positions of the machines rotors at the beginning of the decryption of the body of this message
-    #           part.
+    #  \returns A dictionary that maps strings to strings. It contains a key MESSAGE_KEY that specifies the starting positions 
+    #           of the machines rotors at the beginning of the decryption of the body of this message part.
     #    
     def derive_message_key(self, machine, already_parsed_indicators):
         result = already_parsed_indicators
@@ -305,14 +371,21 @@ class IndicatorProcessor:
 
 ## \brief This class serves as a base class for a "thing" that knows how create indicator groups during encryption
 #         and is able to reconstruct the message key from the indicator groups parsed from the ciphertext during
-#         decryption with an Enigma that uses the kenngruppen indicator system.
+#         decryption with an Enigma that uses the kenngruppen indicator system. It only adds methods that allow
+#         to generate a new kenngruppe.
 #
 class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
     ## \brief Constructor.
     #
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
+    #
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
-    #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
+    #
+    #  \param [kenngruppen] A sequence of 3 letter strings. Specifies the kenngruppen to use.
+    #
+    #  \param [num_rotors] An integer. It has to specify the number of settable rotors in the Engima machine.
+    #
+    #  \returns Nothing.
     #
     def __init__(self,  server, rand_gen, kenngruppen, num_rotors):
         super().__init__(server, rand_gen)
@@ -322,11 +395,12 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
         self._group_shuffle = []
         ## \brief Points to the current read position in self._group_shuffle.
         self._shuffle_pos = 0
+        ## \brief Specifies the number of settable rotors in the machine.
         self._num_rotors = num_rotors        
 
     ## \brief This method changes the kenngruppen that are in used in this object.
     #
-    #  \param [new_kenngruppen] A sequence of strings. It has to contain the new kenngruppen.
+    #  \param [new_kenngruppen] A sequence of three letter strings. It has to contain the new kenngruppen.
     #
     #  \returns Nothing.
     #
@@ -355,7 +429,7 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
 
     ## \brief This method resets the mechanism that is used to determine the next kenngruppe to use.
     #
-    #  \returns A string.
+    #  \returns Nothing.
     #
     def reset(self):
         self._group_shuffle = []
@@ -364,23 +438,31 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
 
 ## \brief This class implements the indicator system that was used by the german army and air force from 1940
 #         onward. The machine operator chooses a random starting position and a random message key. The indicator
-#         groups consist of the random starting position and the message key encrypted with the starting position.
+#         groups consist of the random starting position and the message key encrypted using the starting position.
 #
 class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     ## \brief Constructor.
     #
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
+    #
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
+    #
     #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
+    #
+    #  \param [num_rotors] An integer. It has to specify the number of settable rotors in the Engima machine.
+    #
+    #  \returns Nothing.
     #
     def __init__(self,  server, rand_gen, kenngruppen, num_rotors = 3):
         super().__init__(server, rand_gen, kenngruppen, num_rotors)
 
-    ## \brief This method creates the indicator groups for the implemented post 1940 messaging procedure.
+    ## \brief This method creates the indicator groups for the post 1940 messaging procedure.
     #
-    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create the encrypted indicator groups.
+    #
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
     #         is called.
+    #
     #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
     #         operation.
     #
@@ -404,12 +486,13 @@ class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     ## \brief This method recreates the message key from the indicator groups.
     #
     #  \param [machine] A rotorsim.RotorMachine object. It is used to decrypt the message key.
+    #
     #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
     #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption. I.e.
     #         it has to contain at least the the keys HEADER_GRP_1, HEADER_GRP_2.
     #
-    #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY that specifies the the starting 
-    #           position for the rotors when the body of a message part is decrypted.
+    #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY to already_parsed_indicators.
+    #           It specifies the the starting position for the rotors when the body of a message part is decrypted.
     #        
     def derive_message_key(self, machine, already_parsed_indicators):
         result = already_parsed_indicators
@@ -428,9 +511,15 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     ## \brief Constructor.
     #
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
-    #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
-    #  \param [kenngruppen] A sequence of strings. Specifies the kennruppen to use.
     #
+    #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
+    #
+    #  \param [kenngruppen] A sequence of three letter strings. Specifies the kennruppen to use.
+    #
+    #  \param [num_rotors] An integer. It has to specify the number of settable rotors in the Engima machine.
+    #
+    #  \returns Nothing.
+    #    
     def __init__(self,  server, rand_gen, kenngruppen, grundstellung, num_rotors = 3):
         super().__init__(server, rand_gen, kenngruppen, num_rotors)
         ## \brief Holds the basic setting of the rotors which is used to encrypt the message key.
@@ -446,7 +535,7 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
 
     ## \brief This property setter allows to change the grundstellung.
     #
-    #  \param [new_grundsellung] A string. The new grundstellung.
+    #  \param [new_grundsellung] A string of length self._num_rotors. The new grundstellung.
     #
     #  \returns Nothing
     #
@@ -454,11 +543,13 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     def grundstellung(self, new_grundstellung):
         self._grundstellung = new_grundstellung
 
-    ## \brief This method creates the indicator groups for the messaging procedure in force before 1940.
+    ## \brief This method creates the indicator groups for the messaging procedure used before 1940.
     #
     #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
     #         is called.
+    #
     #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
     #         operation.
     #
@@ -482,12 +573,13 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     ## \brief This method recreates the message key from the indicator groups.
     #
     #  \param [machine] A rotorsim.RotorMachine object. It is used to decrypt the message key.
+    #
     #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
     #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption. I.e.
     #         it has to contain at least the the keys HEADER_GRP_1, HEADER_GRP_2.
     #
-    #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY that specifies the the starting 
-    #           position for the rotors when the body of a message part is decrypted.
+    #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY to already_parsed_indicators that
+    #           specifies the position of the rotors when the body of a message part is decrypted.
     #        
     def derive_message_key(self, machine, already_parsed_indicators):
         result = already_parsed_indicators
@@ -504,23 +596,47 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
 ## \brief This class is a simple struct that is to be returned by any message key tester.
 #
 class MsgKeyTestResult:
+    ## \brief Constructor.
+    #
+    #  \param [verified] A boolean. Is True if the message key candidate was successfully verified.
+    #
+    #  \param [transformed] A string. it contains the transformed message key candidate.
+    #
+    #  \returns Nothing.
+    #    
     def __init__(self, verified, transformed):
+        ## \brief A boolean.
         self.verified = verified
+        ## \brief A string.
         self.transformed = transformed
 
 
 ## \brief This class implements an indicator system that uses a fixed rotor alignment (the Grundstellung) to derive.
 #         the message key from a randomly selected indicator. In principle instances of this class can be used with any
-#         rotor machine. It creates only one indicator group the size of which has to be equal to the number of
-#         settable rotors in the underlying rotor machine.
+#         rotor machine. It creates only one indicator group. The message key is derived from a random indicator by encrypting
+#         this indicator.
+#
+#  As some machines do not allow all characters in the range a-z during encryptions (KL7, Typex, SIGABA) or do not allow all output
+#  characters in determining the message key (SG39) indicator candidates additionally have to be transformed and verified.
+#
+#  Before encryption it has to be verified that a random indicator is valid. The SIGABA for instance excludes certain values
+#  like O and Z. Additionally some machines (SIGABA, KL7, Typex) do not allow all characters in the range a-z during encryptions.
+#  This has to be compensated for by a transformation of the random indicator before encryption. Finally after encryption of the
+#  verified and transformed indicator another check has to be performed as for instance the SG39 allows only certain values in
+#  the last three characters of a rotor position.
 #
 class GrundstellungIndicatorProc(IndicatorProcessor):
     ## \brief Constructor.
     #
     #  \param [server] An object that has the same interface as pyrmsk2.tlvobject.TlvServer.
+    #
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
+    #
     #  \param [indicator size] An integer. It has to specify the number of characters in an indicator group.
+    #
     #  \param [step_before_proc] A boolean. If True the machine is stepped once before doing any encryptions. Needed for KL7.
+    #
+    #  \returns Nothing.
     #
     def __init__(self,  server, rand_gen, indicator_size, step_before_proc = False):
         super().__init__(server, rand_gen)
@@ -528,18 +644,18 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         self._grundstellung = ''
         ## \brief Holds the size in characters of the indicator group.
         self._indicator_size = indicator_size
-        ## \brief Specifies the key word that can be used by a formatter to create or parse the header lines.
+        ## \brief Specifies the keyword that can be used by a formatter to create or parse the header lines.
         self._key_words = ['rand_indicator']
-        ## \brief Verifies that an indicator candidate is valid.
+        ## \brief Verifies before encryption that an indicator candidate is valid.
         self._verifier = (lambda x: len(x) == self._indicator_size)
-        ## \brief Transforms an indicator candidate if that is necessary.
+        ## \brief Transforms an indicator candidate before encryption if that is necessary.
         self._transformer = lambda x: x
-        ## \brief Tests and if necessary transforms the generated message key
+        ## \brief Tests and if necessary transforms the generated message key after encryption.
         self._msg_key_tester = lambda x: MsgKeyTestResult(True, x)
         ## \brief Step underlying machine before encryptions
         self._step_before_proc = step_before_proc
 
-    ## \brief This property returns the key words that can be used by an object with the same interface as Formatter.
+    ## \brief This property returns the keywords that can be used by an object with the same interface as Formatter.
     #
     #  \returns A sequence of strings.
     #    
@@ -603,7 +719,7 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     def msg_key_tester(self, new_msg_key_tester):
         self._msg_key_tester = new_msg_key_tester        
     
-    ## \brief This property returns the transformer that can be used to transform message key candidates.
+    ## \brief This property returns the transformer that can be used to transform message key candidates before encryption.
     #
     #  \returns A callable object that takes a string and returns a string.
     #
@@ -613,7 +729,7 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
 
     ## \brief This property setter allows to change the transformer.
     #
-    #  \param [new_ntransformer] A callable object that takes a string and returns a string.
+    #  \param [new_transformer] A callable object that takes a string and returns a string.
     #
     #  \returns Nothing
     #
@@ -621,11 +737,13 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     def transformer(self, new_transformer):
         self._transformer = new_transformer        
 
-    ## \brief This method creates the indicator groups for the messaging procedure in force before 1940.
+    ## \brief This method creates the indicator group for the Grundstellung messaging procedure.
     #
-    #  \param [machine] A rotorsim.RotorMachine object. It is used to create encrypted indicator groups.
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to create the encrypted indicator group.
+    #
     #  \param [this_part] An integer. It specifies the sequence number of the message part for which this method
     #         is called.
+    #
     #  \param [num_parts] An integer. It has to specify the overall number of message parts of in the current encryption
     #         operation.
     #
@@ -640,19 +758,23 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         
         while not indicator_found:
             indicator_candidate = self._rand_gen.get_rand_string(self._indicator_size)
+            # Transform and verify indicator candidate before encryption
             candidate_found = self._verifier(self._transformer(indicator_candidate))
             
             if candidate_found:
+                # Set machine to defined grundstellung
                 machine.set_rotor_positions(self.grundstellung)
-                result['rand_indicator'] = indicator_candidate
+                result[self._key_words[0]] = indicator_candidate
                 machine.go_to_letter_state()
                 
                 if self._step_before_proc:
                     machine.step()
                 
-                msg_key_candidate = machine.encrypt(self._transformer(result['rand_indicator']))
+                # Encrypt parsed indicator resulting in message key candidate
+                msg_key_candidate = machine.encrypt(self._transformer(result[self._key_words[0]]))
                 machine.go_to_letter_state()
                 
+                # Test message key candidate after encryption of random indicator
                 test_res = self._msg_key_tester(msg_key_candidate)                
                 indicator_found = test_res.verified
                 
@@ -661,12 +783,13 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
         
         return result    
 
-    ## \brief This method recreates the message key from the indicator groups.
+    ## \brief This method recreates the message key from the indicator group.
     #
-    #  \param [machine] A rotorsim.RotorMachine object. It is used to decrypt the message key.
-    #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method
-    #         this dictionary has to contain the indicator groups as parsed from the current message part during decryption. I.e.
-    #         it has to contain at least the the keys contained in self._key_words.
+    #  \param [machine] A rotorsim.RotorMachine object. It is used to recreate the message key.
+    #
+    #  \param [already_parsed_indicators] A dictionary that maps strings to strings. When calling this method this dictionary
+    #         has to contain the indicator group as parsed from the current message part during decryption. I.e. it has to
+    #         contain at least the the key contained in self._key_words.
     #
     #  \returns A dictionary that maps strings to strings. This method adds the key MESSAGE_KEY that specifies the the starting 
     #           position for the rotors when the body of a message part is decrypted.
@@ -674,16 +797,20 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     def derive_message_key(self, machine, already_parsed_indicators):
         result = already_parsed_indicators
         machine.set_rotor_positions(self.grundstellung)
-        rand_indicator = self._transformer(result['rand_indicator'])
+        # Compensate for blanks and shifting characters ...
+        rand_indicator = self._transformer(result[self._key_words[0]])
         
+        # Check that transformed indicator is valid
         if self._verifier(rand_indicator):    
             machine.go_to_letter_state()
             
             if self._step_before_proc:
                 machine.step()            
-                
+            
+            # Encrypt random indicator resulting in message key candidate    
             msg_key_candidate = machine.encrypt(rand_indicator)
-            machine.go_to_letter_state()            
+            machine.go_to_letter_state()
+            # Test message key candidate 
             test_res = self._msg_key_tester(msg_key_candidate)
             
             if test_res.verified:
@@ -727,6 +854,7 @@ class SIGABAIndicatorProcessorBase(IndicatorProcessor):
             internal_indicator_found = ('o' not in result) and ('z' not in result)
         
         return result    
+
 
 class SIGABAGrundstellungIndicatorProcessor(SIGABAIndicatorProcessorBase):
     def __init__(self, server, rand_gen):
@@ -972,7 +1100,7 @@ class Formatter:
 
 
 ## \brief This class implements a generic formatter that can be used with any rotor machine. It creates a header of the
-#         form "Message number of this part/Number of all parts = Number of groups = header groups separated by space =".
+#         form "System indicator = Message number of this part/Number of all parts = Number of groups = header groups separated by space =".
 #         The number and size of the header groups can be selected during object construction. 
 #
 #  Example: 345TT = 4/5 = 49 = ESF = 
