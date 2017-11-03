@@ -51,6 +51,50 @@ other information. Key sheets can either be generated in HTML or TXT format. Her
         will appear on the sheet.</p>
     </item>
     <item>
+        <title>Message Procedure combo box</title>
+        <p>This combo box allows you to state the type of message procedure the newly generated key sheet will be used for. The parameters
+        suitable for the selected message procedure (kenngruppen, basic rotor settings, ...) will then be added to the keysheet. The following 
+        message procedures are currently known:</p>
+        
+        <table frame="all" rules="all" shade="rows">
+            <tr>
+                <td><p><em>Procedure</em></p></td> <td><p><em>Description</em></p></td>
+            </tr>
+            <tr>
+                <td><p><code>grundstellung</code></p></td>
+                <td><p>This procedure can be used with any machine and makes use of a so called basic rotor setting or grundstellung for each day.
+                The operator chooses a random indicator which is sent in the clear to the receiver. The receiver uses the grundstellung
+                to encrypt the indicator. The encryption result is then used as the rotor position for decryption (and obviously also for
+                encryption).
+                </p></td>
+            </tr>
+            <tr>
+                <td><p><code>post1940</code></p></td>
+                <td><p>This procedure can be used with any Enigma machine and was employed by the Germany Army and Luftwaffe during WWII after some 
+                point 1940. In effect it uses the ring setting as a sort of implicit grundstellung. The operator chooses two random starting positions
+                for the rotors and uses the first to encrypt the second. After that the first and the encrypted second position are sent to the receiver
+                who decrypts the second using the first and finally decrypts the message body using the decrypted second position.
+                </p></td>
+            </tr>
+            <tr>
+                <td><p><code>pre1940</code></p></td>
+                <td><p>This procedure can be used with any Enigma machine and was employed by the Germany Army and Luftwaffe early in WWII. Weaknesses
+                in this procedure allowed the polish codebreakers to achieve their initial break into Enigma traffic. It makes use of a daily
+                basic setting (Grundstellung). The operator has to choose a random starting position for the rotors which is then encrypted twice
+                using the grundstellung.
+                </p></td>
+            </tr>
+            <tr>
+                <td><p><code>sigaba</code></p></td>
+                <td><p>This procedure makes use of the features built into the SIGABA to generate pseudo random message keys from five letter
+                indicators. This was achieved by a special mode that allowed to manually step the control rotors which in turn stepped the 
+                cipher rotors to a pseudorandom position.
+                </p></td>
+            </tr>            
+        </table>
+        
+    </item>
+    <item>
         <title>Output format radio buttons</title>
         <p>These radio buttons can be used to select the output format, i.e. at the moment either HTML or TXT.</p>
     </item>
@@ -90,10 +134,10 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>M3 and Services Enigma</p></td>
         <td><p>M3, Services</p></td>
         <td><p>
-        Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung), the plugboard (Steckerbrett) 
-        and Kenngruppen. Kenngruppen have been used in Army and Air Force messages to allow the recipient to determine to 
-        which key or crypto net the received message belongs. See also 
-        <link href="http://users.telenet.be/d.rijmenants/en/enigmaproc.htm">here</link>
+        Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and the plugboard (Steckerbrett). 
+        If using the <code>post1940</code> or <code>pre1940</code> message procedure Kenngruppen are provided. A Grundstellung is added when
+        using the <code>pre1940</code> or <code>grundstellung</code> procedure. The <code>grundstellung</code> procedure also makes use of a system
+        indicator, which, as the Kenngruppen, can be used to determine the key or crypto net to which a received message belongs.
         </p></td>
     </tr>
     <tr>
@@ -115,16 +159,12 @@ can be used to set up the rotor machines in question.</p>.
     <tr>
         <td><p>M4 Enigma</p></td>
         <td><p>M4</p></td>
-        <td><p>M4 Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and the plugboard (Steckerbrett) but
-        no Kenngruppen as the German Navy historically did not make use of Kenngruppen.
-        </p></td>
-    </tr>
-    <tr>
-        <td><p>M4 Enigma with Kenngruppen</p></td>
-        <td><p>M4KGr</p></td>
-        <td><p>Sheets generated for this keyword also specify Kenngruppen in addition to the columns normally given for an M4. Even though        
-        this type of sheet is historically incorrect it has been implemented in order to use the Army and Air Force message procedures
-        with an M4.
+        <td><p>M4 Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and the plugboard (Steckerbrett).        
+        If using the <code>post1940</code> or <code>pre1940</code> message procedure Kenngruppen are provided. A Grundstellung is added when
+        using the <code>pre1940</code> or <code>grundstellung</code> procedure. The <code>grundstellung</code> procedure also makes use of a system
+        indicator, which, as the Kenngruppen, can be used to determine the key or crypto net to which a received message belongs.
+        It has to be noted that the M4 was exclusively used by the german navy which historically used neither of the aformentioned
+        message procedures.
         </p></td>
     </tr>
     <tr>
@@ -132,13 +172,19 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>Railway, Abwehr, Tirpitz</p></td>
         <td><p>Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and Kenngruppen. None of the three
         machine had a plugboard.
+        If using the <em>post1940</em> or <em>pre1940</em> message procedure Kenngruppen are provided. A Grundstellung is added when
+        using the <em>pre1940</em> or <em>grundstellung</em> procedure. The <em>grundstellung</em> procedure also makes use of a system
+        indicator, which, as the Kenngruppen, can be used to determine the key or crypto net to which a received message belongs.
         </p></td>
     </tr>
     <tr>
         <td><p>KD Enigma</p></td>
         <td><p>KD</p></td>
-        <td><p>Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung), a description of the plugs to be set on
-        the Umkehrwalze D and Kenngruppen. This machine did not have a classical plugboard.
+        <td><p>Key sheets contain the rotor settings (Walzenlage), the ring settings (Ringstellung) and a description of the plugs to be set on
+        the Umkehrwalze D. This machine did not have a classical plugboard.
+        If using the <code>post1940</code> or <code>pre1940</code> message procedure Kenngruppen are provided. A Grundstellung is added when
+        using the <code>pre1940</code> or <code>grundstellung</code> procedure. The <code>grundstellung</code> procedure also makes use of a system
+        indicator, which, as the Kenngruppen, can be used to determine the key or crypto net to which a received message belongs.        
         </p></td>
     </tr>
     <tr>
@@ -180,7 +226,8 @@ can be used to set up the rotor machines in question.</p>.
         It is created by first setting all control and cipher rotors to the O position. After that 30 A characters are encrypted. The final
         five letter group (containing the ciphertext for the 26th to the 30th A) is the check value. When pasting the rotor settings
         from a key sheet into the correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces have to be removed.
-        Additionally a system indicator is provided (System) that can be used to distinguish different crypto nets.
+        Additionally a system indicator is provided (System) that can be used to distinguish different crypto nets. When using the 
+        <em>grundstellung</em> procedure an initial rotor rotor setting (Initial) is also added to the key sheet.
         </p></td>
     </tr>
     <tr>
@@ -201,9 +248,8 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>SG39</p></td>
         <td><p>Key sheets for the SG39 consist of two pages. The first page specifies the wheel settings (Walzen), the ring settings (Ringe),
         a permutation for the plugboard (Steckerbrett) and the thirteen plugs for the rewirable reflector (Umkehrwalze). Additionally
-        a basic positon of the four rotors and three notch wheels are specified. Instead of Kenngruppen a system indicator (System) is provided.
-        The second page contains the specification of the pins to set on the three moving rotors (Walze Eins, Walze Zwei and Walze Drei) and
-        the notch wheels (Rad Eins, Rad Zwei, Rad Drei).
+        a basic positon of the four rotors and three notch wheels is specified (Grundst.). Instead of Kenngruppen a system indicator (System)
+        is provided. The second page contains the specification of the pins to set on the notch wheels (Rad Eins, Rad Zwei, Rad Drei).
         </p></td>
     </tr>
 </table>

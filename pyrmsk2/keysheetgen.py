@@ -1299,7 +1299,10 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']                
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')
+                
             
             if machine_name == 'M3':
                 keysheet.column_mapping['Walzenlage'].col_width = 14
@@ -1312,9 +1315,11 @@ class RenderController:
         elif (machine_name == 'M3D') or (machine_name == 'ServicesD'): # M3 and Services with Umkehrwalze D
             # Columns to include
             if msg_proc_type == 'grundstellung':            
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Umkehrwalze D', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Umkehrwalze D', 'Kenngruppen']
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                
 
             if machine_name == 'M3D':
                 keysheet.column_mapping['Walzenlage'].col_width = 14
@@ -1329,7 +1334,9 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Kenngruppen']                   
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Kenngruppen']
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                                   
         
             keysheet.column_mapping['Walzenlage'].col_width = 11
         
@@ -1341,7 +1348,9 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']                                                                
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen'] 
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                                                                               
             
             result['state'] = rotorsim.M4EnigmaState.get_default_config()
             result['randparm'] = 'egal'    
@@ -1351,7 +1360,9 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']                                         
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                                                         
             
             keysheet.column_mapping['Walzenlage'].col_width = 10            
             
@@ -1363,7 +1374,9 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Kenngruppen']                                                                 
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Kenngruppen'] 
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                                                                                
             
             keysheet.column_mapping['Walzenlage'].col_width = 10
             
@@ -1375,7 +1388,9 @@ class RenderController:
             if msg_proc_type == 'grundstellung':            
                 keysheet.columns = ['Walzenlage', 'Ringstellung', 'Grundst.', 'System']
             else:
-                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']                                                                                         
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']  
+                if msg_proc_type == 'pre1940':
+                    keysheet.columns.append('Grundst.')                                                                                                       
             
             keysheet.column_mapping['Walzenlage'].col_width = 12
             
@@ -1430,14 +1445,17 @@ class RenderController:
             keysheet.column_mapping = {'Index Rotors':PlugsColumn(14, 'index'), 'Control Rotors':PlugsColumn(14, 'control'),\
                                        'Cipher Rotors':PlugsColumn(14, 'cipher'), 'Index Pos':SIGABAIndexRotorPosColumn(9),\
                                        '26-30 Check':CheckStringColumn(11, 5, lambda x:x[0:5]+'oooooooooo', 'a' * 30), \
-                                       'Basic':RandStringColumn(5, 5), 'System':RandStringColumn(6, 5)} 
+                                       'Initial':RandStringColumn(7, 5), 'System':RandStringColumn(6, 5)} 
                                        
             keysheet.column_mapping['Index Rotors'].uppercase = False
             keysheet.column_mapping['Control Rotors'].uppercase = False
             keysheet.column_mapping['Cipher Rotors'].uppercase = False
             
-            # Columns to include            
-            keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'Basic', 'System', '26-30 Check']
+            # Columns to include
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'Initial', 'System', '26-30 Check']
+            else:
+                keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'System', '26-30 Check']
             
             result['isgerman'] = False            
             result['state'] = rotorsim.SigabaMachineState.get_default_config()

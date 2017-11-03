@@ -1946,132 +1946,31 @@ class MessageProcedure:
         return self._machine.decrypt(ciphertext) # decrypt
 
 
-## \brief This class helps to derive indicators for KL7 and Typex.
-#  
-#  When doing encryptions Typex and KL7 use two different input alphabets between one can switch by entering certain
-#  special characters. rmsk2 represents these input characters in a machine independent way as '>' (switch into figures mode)
-#  and '<' (switch into letter mode). When in the corresponding mode (and only during encryptions) all simulators implemented by 
-#  rmsk2 only accept input characters from either the letters or figures alphabet. This has the consequence that at any given
-#  time when doing encryptions not all characters that are visible on the  keyboard can be processed by these machines. 
-#  
-#  For instance pressing the letter 'Z' switches a Typex into figures mode. But behind the scenes the Typex does not receive 
-#  a 'Z' but a '>' as an input character. On top of that any 'Z' characters in input data are ignored by the Typex simulator.
-#  This  becomes a problem when 'Z' is intended to be part of an indicator. 
-#
-#  This problem is twofold: 1. The Typex does not accept 'Z' as input in the first place and 
-#                           2. When in figures mode quite a few additonal characters are ignored by the simulator. For instance
-#                              the letter 'Q' is ignored but the letter '1' is now a legal input character.
+## \brief This class helps to derive indicators intended for the message procedure implemented by GrundstellungIndicatorProc when
+#         using machines that accept only a subset of a-z in their unshifted input alphabet. Or put in another way: It helps
+#         with deriving indicators for machines which use some of the characters in a-z as stand ins for special characters like
+#         space, letter shigt or figure shift.
 # 
-#  This class is intended to transform input strings in such a way that all characters can be processed by the underlying
-#  rotor machine. In order to do this the method transform() tracks the mode (letter, figures) the machine would be in when
-#  receving a given number of input characters. It then replaces all special characters by their machine independent 
-#  representation ('>', '<' or ' ') and additionally replaces normal characters by their figures mode equivalent if neccessary.
-#
-class ShiftedIndicatorTransformer:
+class SpecialCharIndicatorHelper:
     ## \brief Constructor
     #
-    #  \param [letter alpha] A string that represents the input alphabet in letter mode.
-    #
-    #  \param [figure_alpha] A string that represents the input alphabet in figures mode.
-    #
-    #  \param [space_char] A string. It gives the machine dependent character that is used in place of the blank character.
-    #
-    #  \param [shift_char] A string. It gives the machine dependent character that is used to switch the machine into figures
-    #         mode when the machine is in letter mode.
-    #
-    #  \param [unshift_char] A string. It gives the machine dependent character that is used to switch the machine into letter
-    #         mode when the machine is in letter mode. The constant NO_SHIFT_CHAR can be used to signify that no such character
-    #         exists.
-    #
-    #  \param [shift_figure_char] A string. It gives the machine dependent character that is used to switch the machine into figures
-    #         mode when the machine is in figures mode. The constant NO_SHIFT_CHAR can be used to signify that no such character
-    #         exists.
-    #
-    #  \param [unshift_figure_char] A string. It gives the machine dependent character that is used to switch the machine into letter
-    #         mode when the machine is in figures mode. 
+    #  \param [chars_to_avoid] A string that contains the characters which may not appear in indicators for the message procedure
+    #         imlemented by GrundstellungIndicatorProc.
     #
     #  \returns Nothing.
     #    
-    def __init__(self, letter_alpha, figure_alpha, space_char, shift_char, unshift_char, shift_figure_char, unshift_figure_char):
-        self._letter_alpha = letter_alpha
-        self._figure_alpha = figure_alpha
-        self._space_char = space_char
-        self._shift_char = shift_char
-        self._unshift_char = unshift_char
-        self._shift_figure_char = shift_figure_char
-        self._unshift_figure_char = unshift_figure_char
-        # Is a dictionary that maps the characters a-z to the integers 0-25, i.e. to their index in the standard alphabet.
-        self._inverse_std = {}
-        
-        count = 0
-        for i in 'abcdefghijklmnopqrstuvwxyz':
-            self._inverse_std[i] = count
-            count += 1   
+    def __init__(self, chars_to_avoid):
+        ## \brief Contains invalid characters
+        self._chars_to_avoid = set(chars_to_avoid)
 
-    ## \brief This method transforms the input string in such a way that the underlying rotor machine does not ignore any of
-    #         the input characters as described above.
+    ## \brief This method verifies an indicator candidate.
     #
-    #  \param [indicator_candidate] A string. A string consisting of randomly chosen characters from the range a-z that are intended
-    #         to be used as an indicator.
+    #  \param [indicator_candidate] A string. Holds the indicator candidate to be verified.
     #
-    #  \returns A string in which all special characters have been replaced by their machine independent version and if nececssary all normal
-    #           characters have been replaced by their figures mode equivalent.
-    #                
-    def transform(self, indicator_candidate):
-        result = ''
-        current_alpha = self._letter_alpha
-        
-        for i in indicator_candidate:
-            # Special character that represents the blank character is replaced by blank
-            if i == self._space_char:
-                result += ' '
-            else:
-                # Process characters in letter more
-                if current_alpha == self._letter_alpha:            
-                    if i == self._shift_char:
-                        current_alpha = self._figure_alpha
-                        result += '>' # replace character by machine independent 'go to figures mode' character
-                    elif i == self._unshift_char:
-                        current_alpha = self._letter_alpha
-                        result += '<' # replace character by machine independent 'go to letter mode' character
-                    else:
-                        # No special character: Use corresponding character from letter alphabet
-                        result += current_alpha[self._inverse_std[i]]
-                # Process characters in figures more
-                else:            
-                    if i == self._shift_figure_char:
-                        current_alpha = self._figure_alpha
-                        result += '>' # replace character by machine independent 'go to figures mode' character
-                    elif i == self._unshift_figure_char:
-                        current_alpha = self._letter_alpha
-                        result += '<' # replace character by machine independent 'go to letter mode' character
-                    else:
-                        # No special character: Use corresponding character from figures alphabet
-                        result += current_alpha[self._inverse_std[i]]
-        
-        return result
-
-
-## \brief This class is used to help generating indicators for the Typex.
-#  
-class TypexIndicatorTransformer(ShiftedIndicatorTransformer):
-    ## \brief Constructor
-    #
-    #  \returns Nothing.
-    #    
-    def __init__(self):
-        super().__init__("abcdefghijklmnopqrstu<w y>", "-'vz3%x£8*().,9014/57<2 6>", 'x', 'z', 'v', 'z', 'v')
-
-
-## \brief This class is used to help generating indicators for the KL7.
-#  
-class KL7IndicatorTransformer(ShiftedIndicatorTransformer):
-    ## \brief Constructor
-    #
-    #  \returns Nothing.
-    #
-    def __init__(self):
-        super().__init__("abcdefghi>klmnopqrstuvwxy ", "abcd3fgh8>klmn9014s57<2x6 ", 'z', 'j', NO_SHIFT_CHAR, 'j', 'v')
+    #  \returns A boolean. Return value is True in case the indicator candidate is acceptable.
+    #        
+    def verify_indicator(self, indicator_candidate):
+        return len(set(indicator_candidate).intersection(self._chars_to_avoid)) == 0
 
 
 ## \brief This class helps to derive indicators for the SG39.
@@ -2372,8 +2271,8 @@ class MessageProcedureFactory:
     #
     def get_generic_typex(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 5)
-        typex_trans = TypexIndicatorTransformer()
-        result.indicator_proc.transformer = typex_trans.transform
+        typex_verifier = SpecialCharIndicatorHelper('xzv')
+        result.indicator_proc.verifier = typex_verifier.verify_indicator
         result.encoder = TypexEncoder()
         
         return result
@@ -2412,9 +2311,8 @@ class MessageProcedureFactory:
         result = self.get_generic_machine(system_indicator, grundstellung, 7, True)
         result.msg_size = 500
         result.formatter.limits = (5, 10)
-        kl7_trans = KL7IndicatorTransformer()
-        result.indicator_proc.transformer = kl7_trans.transform
-        
+        kl7_verifier = SpecialCharIndicatorHelper('zj')
+        result.indicator_proc.verifier = kl7_verifier.verify_indicator        
         result.encoder = KL7Encoder()
         
         return result
