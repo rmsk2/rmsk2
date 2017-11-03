@@ -21,6 +21,7 @@
 
 
 import sys
+import traceback
 import os
 import re
 import argparse
@@ -29,8 +30,11 @@ import pyrmsk2.rotorsim as rotorsim
 import pyrmsk2.rotorrandom as rotorrandom
 
 
-MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'M4KGr', 'Railway', 'Abwehr', 'KD', \
+MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', \
                  'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
+                 
+## \brief List that contains the allowed keywords for specifying the message procedure
+PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']                 
 
 
 ## \brief An excpetion class that is used for constructing exception objects in this module. 
@@ -1174,16 +1178,19 @@ class RenderController:
     #
     #  \param [classification] Is a string. It specifies the classification level of the generated key sheets.    
     #
+    #  \param [msg_proc] Is a string. It specifies the message procedure in use with the sheet.    
+    #
     #  \param [formatter] Is a callable object which allows to generate the file name of state files. Signature
     #         has to be formatter(dir_name, net_name, year, month, day). The formatter has to return a string.
     #    
-    def __init__(self, serv, machine_type, net_name, classification, formatter):
+    def __init__(self, serv, machine_type, net_name, classification, msg_proc, formatter):
         self._server = serv
         self._machine_type = machine_type
         self._net_name = net_name
         self._classification = classification
         self._renderer = TextKeysheetRenderer()
         self._formatter = formatter
+        self._msg_proc = msg_proc
 
     ## \brief This property returns the renderer object which is used to generate the key sheet.
     #
@@ -1216,7 +1223,7 @@ class RenderController:
     #  \returns Nothing.
     #                                
     def generate_sheet(self, year, month, out_file, state_file_prefix = None):        
-        state_and_param = self.configure_key_sheet(self._server, self._machine_type, year, month, self._net_name, self._classification)
+        state_and_param = self.configure_key_sheet(self._server, self._machine_type, year, month, self._net_name, self._classification, self._msg_proc)
 
         if state_and_param['state'] != None:
             try:
@@ -1263,14 +1270,16 @@ class RenderController:
     #
     #  \param [classification] Is a string. Specifies the classification level of the sheet.
     #        
+    #  \param [msg_proc_type] Is a string. Specifies the message procedure used with the sheet.
+    #        
     #  \returns A dictionary containing the string keys:
     #           'state': Maps to a rotorsim.StateSpec() object that represents the default state for
     #                    the given machine type.
     #           'randparam': Maps to a string object that serves as a randomizer parameter in Keysheet.fill().
     #           'isgerman': Maps to a boolean that is True if the language on the sheet is German.
-    #           'sheets': Maps to a vector of Keysheet objects. The first object is the "main sheet" 
+    #           'sheets': Maps to a vector of Keysheet objects. The first object is the "main sheet". 
     #                        
-    def configure_key_sheet(self, tlv_server, machine_name, year, month, net_name, classification):
+    def configure_key_sheet(self, tlv_server, machine_name, year, month, net_name, classification, msg_proc_type = ''):
         result = {'state':None, 'randparm':'', 'isgerman':True, 'sheets':[]}
         keysheet = Keysheet(tlv_server, self._formatter)
         
@@ -1282,11 +1291,15 @@ class RenderController:
         # Generic columns for an Enigma key sheet
         keysheet.column_mapping = {'Walzenlage':RotorColumn(20, 'rotors'), 'Ringstellung':RingColumn(12, 'rings'), \
                                    'Kenngruppen':KenngruppenColumn(15, 4), 'Umkehrwalze D':PlugsColumn(35, 'ukwdperm'), \
-                                   'Steckerbrett':PlugsColumn(29, 'plugs'), 'Uhr':UhrDialColumn(3, 'plugs')}
+                                   'Steckerbrett':PlugsColumn(29, 'plugs'), 'Uhr':UhrDialColumn(3, 'plugs'), \
+                                   'Grundst.':RotorPosColumn(8), 'System':RandStringColumn(6, 5)}
     
         if (machine_name == 'M3') or (machine_name == 'Services'): # M3 and Services
-            # Columns to include        
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
+            # Columns to include
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
             
             if machine_name == 'M3':
                 keysheet.column_mapping['Walzenlage'].col_width = 14
@@ -1298,7 +1311,10 @@ class RenderController:
             
         elif (machine_name == 'M3D') or (machine_name == 'ServicesD'): # M3 and Services with Umkehrwalze D
             # Columns to include
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Umkehrwalze D', 'Kenngruppen']
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
 
             if machine_name == 'M3D':
                 keysheet.column_mapping['Walzenlage'].col_width = 14
@@ -1309,8 +1325,11 @@ class RenderController:
             result['randparm'] = 'ukwdonly'
             
         elif machine_name == 'ServicesUhr': # Services with Uhr and Umkehrwalze D
-            # Columns to include        
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Kenngruppen']
+            # Columns to include
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Uhr', 'Umkehrwalze D', 'Kenngruppen']                   
         
             keysheet.column_mapping['Walzenlage'].col_width = 11
         
@@ -1318,22 +1337,21 @@ class RenderController:
             result['randparm'] = 'fancy'
             
         elif machine_name == 'M4': # Enigma M4 without Kenngruppen
-            # Columns to include            
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett']
-            
-            result['state'] = rotorsim.M4EnigmaState.get_default_config()
-            result['randparm'] = 'egal'    
-            
-        elif machine_name == 'M4KGr': # Enigma M4 with Kenngruppen
-            
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']
+            # Columns to include
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Steckerbrett', 'Kenngruppen']                                                                
             
             result['state'] = rotorsim.M4EnigmaState.get_default_config()
             result['randparm'] = 'egal'    
             
         elif (machine_name == 'Railway') or (machine_name == 'Abwehr'): # Railway and Abwehr Enigma
             # Columns to include            
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']                                         
             
             keysheet.column_mapping['Walzenlage'].col_width = 10            
             
@@ -1342,7 +1360,10 @@ class RenderController:
             
         elif machine_name == 'KD': # KD Enigma
             # Columns to include            
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Kenngruppen']
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Umkehrwalze D', 'Kenngruppen']                                                                 
             
             keysheet.column_mapping['Walzenlage'].col_width = 10
             
@@ -1350,8 +1371,11 @@ class RenderController:
             result['randparm'] = 'ukwdonly'
             
         elif machine_name == 'Tirpitz': # Tirpitz Enigma
-            # Columns to include            
-            keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']
+            # Columns to include
+            if msg_proc_type == 'grundstellung':            
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Grundst.', 'System']
+            else:
+                keysheet.columns = ['Walzenlage', 'Ringstellung', 'Kenngruppen']                                                                                         
             
             keysheet.column_mapping['Walzenlage'].col_width = 12
             
@@ -1405,14 +1429,15 @@ class RenderController:
             # Set up column mapping
             keysheet.column_mapping = {'Index Rotors':PlugsColumn(14, 'index'), 'Control Rotors':PlugsColumn(14, 'control'),\
                                        'Cipher Rotors':PlugsColumn(14, 'cipher'), 'Index Pos':SIGABAIndexRotorPosColumn(9),\
-                                       '26-30 Check':CheckStringColumn(11, 5, lambda x:x[0:5]+'oooooooooo', 'a' * 30), 'System':RandStringColumn(6, 5)} 
+                                       '26-30 Check':CheckStringColumn(11, 5, lambda x:x[0:5]+'oooooooooo', 'a' * 30), \
+                                       'Basic':RandStringColumn(5, 5), 'System':RandStringColumn(6, 5)} 
                                        
             keysheet.column_mapping['Index Rotors'].uppercase = False
             keysheet.column_mapping['Control Rotors'].uppercase = False
             keysheet.column_mapping['Cipher Rotors'].uppercase = False
             
-            # Columns to include
-            keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'System', '26-30 Check']
+            # Columns to include            
+            keysheet.columns = ['Index Rotors', 'Control Rotors', 'Cipher Rotors', 'Index Pos', 'Basic', 'System', '26-30 Check']
             
             result['isgerman'] = False            
             result['state'] = rotorsim.SigabaMachineState.get_default_config()
@@ -1587,6 +1612,31 @@ class KeysheetGeneratorMain:
             
         return '{}{}_{}_{}.ini'.format(dir_name, year, month, day)
 
+    ## \brief This method can be used to test whether a given machine can be used with the specified message procedure.
+    #  
+    #  \param [machine_name] Is a string. It specifies the name of the machine (See MACHINE_NAMES).
+    #
+    #  \param [msg_proc_type] Is a string. It specifies the name of the message procedure (See PROC_TYPES).
+    #
+    #  \returns Nothing. Throws exception if it fails.
+    #
+    @staticmethod
+    def verify_proc_type(machine_name, msg_proc_type):
+        if msg_proc_type == 'grundstellung':
+            if machine_name not in MACHINE_NAMES:
+                raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")
+        elif msg_proc_type == 'post1940':
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz']:
+                raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
+        elif msg_proc_type == 'pre1940':
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz']:
+                raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
+        elif msg_proc_type == 'sigaba':
+            if machine_name not in ['CSP889', 'CSP2900']:
+                raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
+        else:
+            raise KeysheetException("Unknown message procedure " + msg_proc_type)
+
     ## \brief This method brings together all puzzle pieces in order to actually generate the key sheets.
     #  
     #  \param [args] Is an object having the following attributes:
@@ -1598,7 +1648,8 @@ class KeysheetGeneratorMain:
     #         save_states    A boolean or None. Is True of state file are to be saved.
     #         out            A string or None. Output directory for all sheet or state files.
     #         html           A boolean. True if HTML output is to be generated.
-    #         tlv_server     A string. Full path of the tlv_server binary. 
+    #         tlv_server     A string. Full path of the tlv_server binary.
+    #         msg_proc_type  A string. Specifies the message procedure for which this sheet is intended. 
     #
     #  \param [reporter] An object with the same interface as ReporterBase.
     #
@@ -1606,7 +1657,9 @@ class KeysheetGeneratorMain:
     #
     @staticmethod
     def generate_sheets(args, reporter):
-        try:
+        try:            
+            KeysheetGeneratorMain.verify_proc_type(args.type, args.msg_proc_type)
+            
             out = sys.stdout
             renderer = None            
             
@@ -1627,7 +1680,7 @@ class KeysheetGeneratorMain:
                                                 
             with rotorsim.tlvobject.TlvServer(binary = args.tlv_server) as serv:
                 
-                ctrl = RenderController(serv, args.type, args.net, args.classification, KeysheetGeneratorMain.format_state_name)
+                ctrl = RenderController(serv, args.type, args.net, args.classification, args.msg_proc_type, KeysheetGeneratorMain.format_state_name)
                 ctrl.renderer = renderer
 
                 try:                                
@@ -1658,6 +1711,7 @@ class KeysheetGeneratorMain:
 
         except KeysheetException as e:
             reporter.report_error('Unable to generate keysheet: {}'.format(e))        
+            #reporter.report_error(str(e) + traceback.format_exc(10))            
         except rotorsim.tlvobject.TlvException as e:
             reporter.report_error('Problem talking to TLV server: {}'.format(e))
         except IOError as e:
@@ -1665,7 +1719,8 @@ class KeysheetGeneratorMain:
         except OSError as e:
             reporter.report_error('Operating system error: {}'.format(e))
         except Exception as e:
-            reporter.report_error('Unable to generate keysheet. {}'.format(e))
+            reporter.report_error('Unable to generate keysheet. {}'.format(e))                
+            #reporter.report_error(str(e) + traceback.format_exc(10))
         
         reporter.all_done()
     

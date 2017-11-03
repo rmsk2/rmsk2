@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ def execute():
                         help="Store keysheet and optionally state files in directory as named by this option and not stdout.")
     parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
     parser.add_argument("--tlv-server", help="Path to TLV server binary", default=rotorsim.tlvobject.get_tlv_server_path())
+    parser.add_argument("--msg-proc-type", help="Type of message procedure", default='', choices=PROC_TYPES)
     
     # Calls sys.exit() when command line can not be parsed or when --help is requested
     args = parser.parse_args()        

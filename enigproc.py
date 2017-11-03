@@ -15,12 +15,12 @@
 ################################################################################
 
 #!/usr/bin/env python3
-## @package enigproc Implements a command line application that allows to en- and decrypt a message following the message procedure defined by the german army and air force.
+## @package enigproc Implements a command line application that allows to en- and decrypt a message following one of several implemented message procedures.
 #         
 #           
 # \file enigproc.py
-# \brief Implements a command line application that allows to en- and decrypt a message following the message procedure 
-#        defined by the german army and air force for Enigma usage.
+# \brief Implements a command line application that allows to en- and decrypt a message following one of several implemented message procedures. 
+#        
 
 import sys
 import pyrmsk2.tlvsrvapp as tlvsrvapp
@@ -30,6 +30,7 @@ import datetime
 import argparse
 import re
 import functools
+from pyrmsk2.keysheetgen import PROC_TYPES
 
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
@@ -47,10 +48,10 @@ INTERNAL_INDICATOR = 'internal_indicator'
 EXTERNAL_INDICATOR = 'external_indicator'
 ## \brief Dictionary key that names the number of ciphertext characters when using the default SIGABA message procedure 
 MESSAGE_LENGTH = 'message_length'
-## \brief List that contains the allowed keywords for the -t/--type option
-PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']
 ## \brief Dummy value for the system indicator used when instantiating a MessageProcedure object for decryption.
 DUMMY_SYS_INDICATOR = 'ert zui ops cfg'
+
+GRUND_DEFAULT = ''
 
 ## \brief Constructing objects of the ShiftedIndicatorTransformer class or its children require to specify the characters that cause
 #         shifting of the input alphabets. Use this constant to signify that there is no shifting character.
@@ -1149,7 +1150,7 @@ class Formatter:
         self._group_size, self._groups_per_line = limits
     
     ## \brief Children have to override this method. It is intended to return a formatted ciphertext during encryptions 
-    #         together with the character and group count of the message part in form of dictionary.
+    #         together with the character and group count of the message part in form of a BodyStruct object.
     #
     #  \param [ciphertext] A string specifying the unformatted ciphertext.
     #
@@ -1228,13 +1229,16 @@ class Formatter:
 #         form "System indicator = Message number of this part/Number of all parts = Number of groups = header groups separated by space =".
 #         The number and size of the header groups can be selected during object construction. 
 #
-#  Example: 345TT = 4/5 = 49 = ESF = 
-#  
-#  In this case there is one header group of size 3 
-#
-#  452TU = 4/5 = 50 = ESFTG JJUZG =
+#  Example header: 452TU = 4/5 = 50 = ESFTG JJUZG =
 # 
-#  And here we have two header groups of size 5.
+#  Here we have two header groups of size 5.
+#  
+#  Full example:
+#
+#  AMESA = 1/1 = 19 = XTEI =
+#
+#  ZCBOA ZKQIP VGXPQ RMSPR RXBLX AKIBR PZKFZ YACER TURRM PGHVW
+#  RUAUS PYMZL QUFPI VBFBE UKTKC CKGOZ SZREQ CNBAA EIBM
 #
 class GenericFormatter(Formatter):
     ## \brief This method formats the body of a rotor machine message.
@@ -1664,7 +1668,7 @@ class MsgPartStruct:
 #         maximum number of characters per part can be set using the msg_size property. In order to implement its
 #         functionality objects of this class use a TransportEncoder, a Formatter and an IndicatorProcessor object.
 #
-# In short the encoder knows how to transform the original plaintext, maybe containing characters which
+# In short the transport encoder knows how to transform the original plaintext, maybe containing characters which
 # are not in the input alphabet of the rotor machine, into a string that only contains characters the rotor machine
 # can understand. It also does the reverse, i.e. transforming the decrypted ciphertext into its original form with
 # special characters. 
@@ -2458,8 +2462,8 @@ class MessageProcedureFactory:
 # ----------------------------------------------------------------------------------------------------
 
 
-## \brief This class implemets a command line application that allows to en- and decrypt a message following
-#         the message procedure defined by the german army and air force from 1940 on.
+## \brief This class implements a command line application that allows to en- and decrypt a message following one of several
+#         messageing procedures includung the procedure used by the german army and air force from 1940 on.
 #
 class EngimaProc(tlvsrvapp.TlvServerApp):
     ## \brief Constructor.
@@ -2484,7 +2488,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         parser.add_argument("-o", "--out-file", default='-', help="Store output in file named by this parameter. Print to stdout if not specified.")
         parser.add_argument("-f", "--config-file", required=True, help="Machine state (as created for instance by rotorstate) to use.")
         parser.add_argument("-s", "--sys-indicator", default='', help=indicator_help)
-        parser.add_argument("-g", "--grundstellung", default='', help="A basic setting or grundstellung if required by the messaging procedure")
+        parser.add_argument("-g", "--grundstellung", default=GRUND_DEFAULT, help="A basic setting or grundstellung if required by the messaging procedure")
         parser.add_argument("-t", "--type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")        
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
@@ -2536,6 +2540,9 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             else:
                 raise EnigmaException('Unsupported message procedure for machine type')
         elif proc_type == 'pre1940':
+            if grundstellung == GRUND_DEFAULT:
+                raise EnigmaException('Grundstellung missing. Add -g/--grundstellung option.')
+        
             if machine_name in ['Enigma', 'M3', 'KDEnigma']:
                 return factory.get_pre1940_enigma(sys_indicator, grundstellung)
             elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'M4Enigma', 'RailwayEnigma']:

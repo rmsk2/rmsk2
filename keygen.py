@@ -223,7 +223,9 @@ class SheetGenArgs:
     #        
     #  \param [net] Is a string. It has to contain the name of the key or crypto net which is to appear on the key sheet.
     #            
-    def __init__(self, machine, year, month, classification, net):
+    #  \param [msg_proc_type] Is a string. It has to specify the type of the message procdure the keysheet is intended.
+    #            
+    def __init__(self, machine, year, month, classification, net, msg_proc_type = ''):
         self.type = machine
         self.year = year
         self.month = month
@@ -233,6 +235,7 @@ class SheetGenArgs:
         self.out = None
         self.html = False
         self.tlv_server = keysheetgen.rotorsim.tlvobject.get_tlv_server_path()
+        self.msg_proc_type = msg_proc_type
 
 
 ## \brief A class that abstracts the background process that is started when key sheets for a whole year
@@ -344,10 +347,26 @@ class KeyGenWindow(Gtk.Window):
         size_request = self._net_name_entry.set_size_request(width + 300, height)        
         self._net_name_entry.set_hexpand(True)
         grid.attach(self._net_name_entry, 1, 4, 1, 1)
+        
+        # Message procedure row        
+        proc_label = Gtk.Label('Message Procedure:')
+        grid.attach(proc_label, 0, 5, 1, 1)
+        
+        self._proc_combo = Gtk.ComboBoxText()
+        self._proc_combo.set_hexpand(True)
+        self._proc_combo.set_entry_text_column(0)
+
+        for proc_type in keysheetgen.PROC_TYPES:
+            self._proc_combo.append_text(proc_type)
+            
+        self._proc_combo.set_active(0)
+        
+        grid.attach(self._proc_combo, 1, 5, 1, 1)
+        
 
         # Output format row
         html_label = Gtk.Label('Output format:')
-        grid.attach(html_label, 0, 5, 1, 1)
+        grid.attach(html_label, 0, 6, 1, 1)
                                 
         self._html_button = Gtk.RadioButton('HTML')
         self._html_button.set_hexpand(True)
@@ -357,20 +376,20 @@ class KeyGenWindow(Gtk.Window):
         radio_hbox.pack_start(self._html_button, True, True, 0)
         radio_hbox.pack_start(self._text_button, True, True, 0)        
 
-        grid.attach(radio_hbox, 1, 5, 1, 1)
+        grid.attach(radio_hbox, 1, 6, 1, 1)
 
         # Save state files row
         save_state_label = Gtk.Label('Save state files:')
-        grid.attach(save_state_label, 0, 6, 1, 1)
+        grid.attach(save_state_label, 0, 7, 1, 1)
                                 
         self._save_state_button = Gtk.CheckButton()
         self._save_state_button.set_active(False)
         self._save_state_button.set_hexpand(True)
-        grid.attach(self._save_state_button, 1, 6, 1, 1)
+        grid.attach(self._save_state_button, 1, 7, 1, 1)
 
         # Output directory row
         outdir_label = Gtk.Label('Output directory:')
-        grid.attach(outdir_label, 0, 7, 1, 1)
+        grid.attach(outdir_label, 0, 8, 1, 1)
         
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
                                 
@@ -383,7 +402,7 @@ class KeyGenWindow(Gtk.Window):
         self._file_button.connect("clicked", self.select_directory)
         hbox.pack_start(self._file_button, False, True, 0)
         
-        grid.attach(hbox, 1, 7, 1, 1)
+        grid.attach(hbox, 1, 8, 1, 1)
         
         # Generate button        
         self._main_button = Gtk.Button("Generate")
@@ -483,7 +502,7 @@ class KeyGenWindow(Gtk.Window):
         if self._outdir_entry.get_text() != '':
             # Get sheet generation parameters from GUI  
             args = SheetGenArgs(keysheetgen.MACHINE_NAMES[self._machine_combo.get_active()], int(self._year_entry.get_value()), self._month_combo.get_active(),\
-                                self._classifciation_entry.get_text(), self._net_name_entry.get_text())
+                                self._classifciation_entry.get_text(), self._net_name_entry.get_text(), keysheetgen.PROC_TYPES[self._proc_combo.get_active()])
             
             args.out = self._outdir_entry.get_text()
             args.html = self._html_button.get_active()
