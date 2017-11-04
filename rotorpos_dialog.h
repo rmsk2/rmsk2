@@ -50,6 +50,9 @@ public:
     virtual ~rotorpos_dialog() { ; }
 
 protected:
+    /*! \brief Holds entry box used to enter new rotor positions. */
+    Gtk::Entry pos_entry;
+
     /*! \brief Holds a grid with two rows and two colums. */    
     Gtk::Grid config_items;
 
@@ -60,10 +63,7 @@ protected:
      *         dialog is closed with OK. 
      */        
     Glib::ustring& positions;
-    
-    /*! \brief Holds entry box used to enter new rotor positions. */
-    Gtk::Entry pos_entry;
-    
+        
     /*! \brief Holds Label left of pos_entry. */        
     Gtk::Label pos_label;
     

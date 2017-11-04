@@ -51,6 +51,9 @@ public:
     virtual ~randomizer_dialog() { ; }
 
 protected:
+    /*! \brief Combobox that holds the selection of andomizer parameters the user can choose from. */
+    Gtk::ComboBoxText param_combo;
+
     /*! \brief Holds a grid with two rows and two colums. */    
     Gtk::Grid randomizer_items;
 
@@ -60,10 +63,7 @@ protected:
     /*! \brief Changed to the randomizer parameter value chosen by the user when dialog is closed with OK. 
      */        
     string& parameter;
-    
-    /*! \brief Combobox that holds the selection of andomizer parameters the user can choose from. */
-    Gtk::ComboBoxText param_combo;
-        
+            
     /*! \brief Holds Label left of param_combo. */        
     Gtk::Label param_label;
     
