@@ -101,6 +101,97 @@ class TransportEncoder:
         return result
 
 
+## \brief This class implements a transport encoder that accepts arbitrary unicode strings as input and transforms
+#         the input in such a way that only a defined subset of characters appears in the output.
+#
+class ModernEncoder:
+    ## \brief Constructor
+    #
+    #  \param [encoder_alphabet] A string. Contains the characters that may appear in encoded output.
+    #
+    #  \returns Nothing.
+    #        
+    def __init__(self, encoder_alphabet):
+        ## \brief A string that stores the set of output characters.
+        self._encoder_alpha = encoder_alphabet
+        ## \brief An integer that stores the number of output characters.
+        self._radix = len(self._encoder_alpha)
+        ## \brief A dictionary that maps strings to ints. Maps any character to its position in self._encoder_alpha.
+        self._inv_alpha = {}
+        
+        count = 0
+        
+        for i in self._encoder_alpha:
+            self._inv_alpha[i] = count
+            count += 1
+
+    ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
+    #
+    #  \param [plaintext] A string. Contains the plaintext to transform.
+    #
+    #  \returns A string. The encoded plaintext
+    #    
+    def transform_plaintext_enc(self, data_to_encode):
+        raw_bytes = data_to_encode.encode()
+        
+        return self.encode_bytes(raw_bytes)
+
+    ## \brief This method transforms an array of bytes into a string which contains only characters from self._encoder_alpha.
+    #
+    #  \param [raw_bytes] A bytearray or bytes object. Contains the input bytes to transform.
+    #
+    #  \returns A string. The encoded input data.
+    #        
+    def encode_bytes(self, raw_bytes):
+        result = ''
+        
+        for i in raw_bytes:
+            result += self._encoder_alpha[i // self._radix]
+            result += self._encoder_alpha[i % self._radix]
+            
+        return result
+
+    ## \brief This method transforms a decryped (and encoded) plaintext into its original form.
+    #
+    #  \param [plaintext] A string. Contains the encoded plaintext to transform
+    #
+    #  \returns A string. The decoded plaintext
+    #    
+    def transform_plaintext_dec(self, data_to_decode):
+        raw_bytes = self.decode_bytes(data_to_decode)
+        
+        return raw_bytes.decode()
+
+    ## \brief This method transforms a string encoded with self.encode_bytes() back into a bytearray object.
+    #
+    #  \param [data_to_decode] A string that is to be decoded.
+    #
+    #  \returns A bytearray object.
+    #            
+    def decode_bytes(self, data_to_decode):
+        raw_bytes = bytearray()
+        raw_digits = []
+        
+        if (len(data_to_decode) % 2) != 0:
+            raise EnigmaException('Input length not divisible by 2')
+        
+        for i in data_to_decode:
+            if i not in self._encoder_alpha:
+                raise EngimaException('Illegal character ' + i)
+            
+            raw_digits.append(self._inv_alpha[i])
+        
+        for i in range(len(raw_digits) // 2):
+            temp = self._radix * raw_digits[2 * i] + raw_digits[2 * i + 1]
+            
+            if temp > 255:
+                raise EnigmaException('Illegal byte value encountered at ' + str(2 * i))
+        
+            raw_bytes.append(temp)
+        
+        return raw_bytes
+
+
 ## \brief This class implements the transport encoder used by the german army during WWII for use with the Engima.
 #
 class ArmyEncoder(TransportEncoder):
@@ -1930,14 +2021,10 @@ class MessageProcedure:
         indicators = help.indicators
         indicators = self.formatter.parse_ciphertext_header(indicators, cipher_text_part.header) # Determine rest of indicators from header           
         indicators = self.indicator_proc.derive_message_key(self._machine, indicators) # Derive message key from indicators   
-        self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key
-        
-        #print(self._machine.get_rotor_positions())
+        self._machine.set_rotor_positions(indicators[MESSAGE_KEY]) # Set message key        
         
         if self._step_before_proc:
-            self._machine.step()
-            
-        #print(self._machine.get_rotor_positions())            
+            self._machine.step()            
         
         # Use message length to strip padding off at the end of the message body
         if MESSAGE_LENGTH in indicators.keys():
@@ -1946,10 +2033,13 @@ class MessageProcedure:
         return self._machine.decrypt(ciphertext) # decrypt
 
 
+# ----------------------------------------------------------------------------------------------------
+
+
 ## \brief This class helps to derive indicators intended for the message procedure implemented by GrundstellungIndicatorProc when
 #         using machines that accept only a subset of a-z in their unshifted input alphabet. Or put in another way: It helps
 #         with deriving indicators for machines which use some of the characters in a-z as stand ins for special characters like
-#         space, letter shigt or figure shift.
+#         space, letter shift or figure shift.
 # 
 class SpecialCharIndicatorHelper:
     ## \brief Constructor
@@ -2088,7 +2178,7 @@ class MessageProcedureFactory:
         return result
 
     ## \brief This method parses a string containing several kenngruppen seperated by blanks into a vector of three
-    #         letter kenngruppen. Raises an excption if this is not possible.
+    #         letter kenngruppen. Raises an exception if this is not possible.
     #
     #  \param [system_indicator] A string. Contains the kenngruppen as specified on the command line. 
     #
@@ -2276,7 +2366,7 @@ class MessageProcedureFactory:
         result.encoder = TypexEncoder()
         
         return result
-
+    
     ## \brief This method constructs a MessageProcedure object for an SG39 that uses the grundstellung procedure
     #         as implemented by GrundstellungIndicatorProc, the basic ArmyEncoder transport encoder and a GenericFormatter.
     #         Ciphertext uses 5 letter groups.
@@ -2387,13 +2477,15 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         parser.add_argument("-f", "--config-file", required=True, help="Machine state (as created for instance by rotorstate) to use.")
         parser.add_argument("-s", "--sys-indicator", default='', help=indicator_help)
         parser.add_argument("-g", "--grundstellung", default=GRUND_DEFAULT, help="A basic setting or grundstellung if required by the messaging procedure")
-        parser.add_argument("-t", "--type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")        
+        parser.add_argument("-t", "--type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")
+        parser.add_argument("-m", "--modern-encoder", required=False, action="store_true", default=False, help="User modern encoder.")        
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
         args = parser.parse_args()
         result =  {'in_file': args.in_file, 'out_file': args.out_file, 'config_file': args.config_file, 'sys-indicator':args.sys_indicator, 'doencrypt':args.command != COMMANDS[1]}
         result['grundstellung'] = args.grundstellung.lower()
         result['type'] = args.type
+        result['use_modern_encoder'] = args.modern_encoder
                         
         return result
 
@@ -2484,7 +2576,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         result = tlvsrvapp.ERR_OK        
         text = ''
         out_text = ''
-        do_encrypt = args['doencrypt']        
+        do_encrypt = args['doencrypt'] 
+        allowed_output_chars = 'abcdefghiklmopqrstuwy'       
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -2500,11 +2593,19 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             if args['sys-indicator'] == '':
                 raise EnigmaException('A system indicator has to be provided via the -s/--sys-indicator option')
                 
-            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'], args['type'])                                
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'], args['type'])
+            
+            if args['use_modern_encoder']:
+                enigma_proc.encoder = ModernEncoder(allowed_output_chars)
+                                            
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
             enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['type'])
+            
+            if args['use_modern_encoder']:
+                enigma_proc.encoder = ModernEncoder(allowed_output_chars)
+            
             out_text_parts = [enigma_proc.decrypt(text)]        
         
         # Save output data

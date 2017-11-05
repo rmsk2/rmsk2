@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,12 @@ protected:
     /*! \brief Holds entry box used to enter new rotor positions. */
     Gtk::Entry pos_entry;
 
+    /*! \brief Holds Label left of pos_entry. */        
+    Gtk::Label pos_label;
+    
+    /*! \brief Empty label used as a spacer below pos_label. */    
+    Gtk::Label empty_label;
+
     /*! \brief Holds a grid with two rows and two colums. */    
     Gtk::Grid config_items;
 
@@ -62,13 +68,7 @@ protected:
     /*! \brief Holds the rotor positions displayed to the user on entering the dialog. Changed to new value entered by the user when
      *         dialog is closed with OK. 
      */        
-    Glib::ustring& positions;
-        
-    /*! \brief Holds Label left of pos_entry. */        
-    Gtk::Label pos_label;
-    
-    /*! \brief Empty label used as a spacer below pos_label. */    
-    Gtk::Label empty_label;
+    Glib::ustring& positions;        
 };
 
 #endif /* __rotorpos_dialog_h__ */

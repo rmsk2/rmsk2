@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include<randomizer_dialog.h>
 
 randomizer_dialog::randomizer_dialog(Gtk::Window& parent, string& randomizer_parameter, vector<randomizer_descriptor>& param_choices)
-    : Dialog("Randomize settings", parent, true), parameter(randomizer_parameter), param_label("Possible randomizer parameters"), empty_label("")
+    : Dialog("Randomize settings", parent, true), param_label("Possible randomizer parameters"), empty_label(""), parameter(randomizer_parameter)
 {
     add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     ok_button = add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);

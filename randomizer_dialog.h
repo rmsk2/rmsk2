@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,12 @@ protected:
     /*! \brief Combobox that holds the selection of andomizer parameters the user can choose from. */
     Gtk::ComboBoxText param_combo;
 
+    /*! \brief Holds Label left of param_combo. */        
+    Gtk::Label param_label;
+    
+    /*! \brief Empty label used as a spacer below param_label. */    
+    Gtk::Label empty_label;
+
     /*! \brief Holds a grid with two rows and two colums. */    
     Gtk::Grid randomizer_items;
 
@@ -64,12 +70,6 @@ protected:
      */        
     string& parameter;
             
-    /*! \brief Holds Label left of param_combo. */        
-    Gtk::Label param_label;
-    
-    /*! \brief Empty label used as a spacer below param_label. */    
-    Gtk::Label empty_label;
-
     /*! \brief This mapping maps the human understandable description to the keyword known to the randomize method. */    
     std::map<string, string> description_keyword_mapping;
 

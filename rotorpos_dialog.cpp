@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include<rotorpos_dialog.h>
 
 rotorpos_dialog::rotorpos_dialog(Gtk::Window& parent, Glib::ustring& rotor_positions)
-    : Dialog("Rotor positions", parent, true), positions(rotor_positions), pos_label("Positions"), empty_label("")
+    : Dialog("Rotor positions", parent, true), pos_label("Positions"), empty_label(""), positions(rotor_positions)
 {
     add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     ok_button = add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);    
