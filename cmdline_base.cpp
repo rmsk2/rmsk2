@@ -63,7 +63,7 @@ ostream *cmdline_base::determine_output_stream(string& file_name, ofstream& file
     return result;
 }
 
-int cmdline_base::save_machine_state(string& file_name, rotor_machine *machine, bool delimiter_first)
+int cmdline_base::save_machine_state(string& file_name, rotor_machine *machine, bool delimiter_first, bool use_delimiter)
 {
     Glib::KeyFile ini_file;
     int result = RETVAL_OK;
@@ -82,7 +82,7 @@ int cmdline_base::save_machine_state(string& file_name, rotor_machine *machine, 
         // Write state to stdout using 0xFF as delimiter between the state and the output data
         machine->save_ini(ini_file);
         
-        if (delimiter_first)
+        if (delimiter_first && use_delimiter)
         {                
             cout << (char)(255);
         }
@@ -91,7 +91,7 @@ int cmdline_base::save_machine_state(string& file_name, rotor_machine *machine, 
         ini_data = data_temp;
         cout << ini_data;
 
-        if (!delimiter_first)
+        if ((!delimiter_first) && use_delimiter)
         {                
             cout << (char)(255);
         }

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -410,7 +410,7 @@ int rotor_sim::execute_command()
         // Save rotor machine state if required        
         if ((result == RETVAL_OK) and state_progression)
         {
-            if ((result = save_machine_state(state_file, the_machine.get())) != RETVAL_OK)
+            if ((result = save_machine_state(state_file, the_machine.get(), true, true)) != RETVAL_OK)
             {
                 cout << "Unable to save state information" << endl;
             } 

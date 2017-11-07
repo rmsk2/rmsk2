@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2017 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ protected:
      *
      *  In case of success RETVAL_OK is returned.
      */
-    int save_machine_state(string& file_name, rotor_machine *machine, bool delimiter_first = true);
+    int save_machine_state(string& file_name, rotor_machine *machine, bool delimiter_first, bool use_delimiter);
     
     /*! \brief This method reads data from the stream specified in parameter in_s and stores that data in the string referenced
      *         by parameter data_read until either the value stored in delimiter is read or the end of the stream is reached.

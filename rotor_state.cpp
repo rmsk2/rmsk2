@@ -107,7 +107,10 @@ protected:
     string rand_set_name;
     
     /*! \brief Contains a flag that is true if the corresponding command line option is boolean valued. */
-    map<string, bool> bool_config_map;     
+    map<string, bool> bool_config_map; 
+    
+    /*! \brief Determines whether delimiter byte 0xFF is written to stdout. */
+    bool use_delimiter;    
 };
 
 rotor_state::rotor_state()
@@ -123,7 +126,8 @@ rotor_state::rotor_state()
         ("pipe", "Pipe input data from stdin to stdout. Has no effect if an input file was specified.")
         ("output-file,o", po::value<string>(&output_file), "Save generated state in this output file. Optional. stdout used if missing.") 
         ("rand-set", po::value<string>(&rand_set_name), "Create a random rotor set, use it to generate a machine state and store the rotor set in a file named as specified by parameter. Optional.") 
-        ("load-set", po::value<string>(&rand_set_name), "Load a custom random rotor set from a file named as specified by parameter and use it to generate a machine state. Optional."); 
+        ("load-set", po::value<string>(&rand_set_name), "Load a custom random rotor set from a file named as specified by parameter and use it to generate a machine state. Optional.")
+        ("no-delimiter", "Omit delimiter OxFF byte when writing to stdout. Only has an effect if --output-file is not used or --stdout is specified."); 
         
     allowed_machine_names.insert("M4");
     allowed_machine_names.insert("M3");
@@ -137,6 +141,8 @@ rotor_state::rotor_state()
     allowed_machine_names.insert("Typex");
     allowed_machine_names.insert("Nema");
     allowed_machine_names.insert("SG39");
+    
+    use_delimiter = true;
 }
 
 void rotor_state::print_help_message(po::options_description *desc, string appendix)
@@ -419,6 +425,8 @@ int rotor_state::parse(int argc, char **argv)
                 break;            
             }
             
+            use_delimiter = (vm.count("no-delimiter") == 0);
+            
         } while(0); 
     }
     catch (exception& e)
@@ -496,7 +504,7 @@ int rotor_state::execute_command()
         }
         
         // Save machine state reached by now
-        result = save_machine_state(output_file, machine.get(), false);
+        result = save_machine_state(output_file, machine.get(), false, use_delimiter);
         if (result != RETVAL_OK)
         {
             cout << "Unable to save generated state" << endl;
@@ -507,7 +515,7 @@ int rotor_state::execute_command()
         if (vm.count("stdout") && (output_file != ""))
         {
             string temp_empty;
-            result = save_machine_state(temp_empty, machine.get(), false);
+            result = save_machine_state(temp_empty, machine.get(), false, use_delimiter);
             if (result != RETVAL_OK)
             {
                 cout << "Unable to save generated state" << endl;

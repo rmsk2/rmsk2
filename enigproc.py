@@ -2399,7 +2399,7 @@ class MessageProcedureFactory:
     #
     def get_generic_kl7(self, system_indicator, grundstellung):
         result = self.get_generic_machine(system_indicator, grundstellung, 7, True)
-        result.msg_size = 500
+        result.msg_size = 750
         result.formatter.limits = (5, 10)
         kl7_verifier = SpecialCharIndicatorHelper('zj')
         result.indicator_proc.verifier = kl7_verifier.verify_indicator        
@@ -2472,19 +2472,19 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         parser = argparse.ArgumentParser(description='A program that allows to en- and decrypt messages according to the WWII Enigma message procedure.',
                                          epilog='Example: enigproc.py encrypt -f state.ini -i input.txt -s "dff gtr lki vfd"')
         parser.add_argument("command", choices=COMMANDS, help="Action to take. Encrypt or decrypt.")
-        parser.add_argument("-i", "--in-file", required=True, help="Input file containing plaintext.")
+        parser.add_argument("-i", "--in-file", required=False, default='', help="Input file containing plaintext.")
         parser.add_argument("-o", "--out-file", default='-', help="Store output in file named by this parameter. Print to stdout if not specified.")
         parser.add_argument("-f", "--config-file", required=True, help="Machine state (as created for instance by rotorstate) to use.")
         parser.add_argument("-s", "--sys-indicator", default='', help=indicator_help)
         parser.add_argument("-g", "--grundstellung", default=GRUND_DEFAULT, help="A basic setting or grundstellung if required by the messaging procedure")
-        parser.add_argument("-t", "--type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")
+        parser.add_argument("-t", "--msg-proc-type", required=True, choices=PROC_TYPES, help="Type of messaging procedure")
         parser.add_argument("-m", "--modern-encoder", required=False, action="store_true", default=False, help="User modern encoder.")        
         
         # Calls sys.exit() when command line can not be parsed or when --help is requested
         args = parser.parse_args()
-        result =  {'in_file': args.in_file, 'out_file': args.out_file, 'config_file': args.config_file, 'sys-indicator':args.sys_indicator, 'doencrypt':args.command != COMMANDS[1]}
+        result =  {'in_file': args.in_file, 'out_file': args.out_file, 'config_file': args.config_file, 'sys_indicator':args.sys_indicator, 'doencrypt':args.command != COMMANDS[1]}
         result['grundstellung'] = args.grundstellung.lower()
-        result['type'] = args.type
+        result['msg_proc_type'] = args.msg_proc_type
         result['use_modern_encoder'] = args.modern_encoder
                         
         return result
@@ -2498,9 +2498,16 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
     #  \returns Nothing.
     #            
     def _output_formatted_message(self, formatted_parts, out_file):
-        for i in formatted_parts:
+        # Output all but the last part
+        for i in formatted_parts[:-1]:
             out_file.write(i)
-            out_file.write('\n\n')        
+            out_file.write('\n\n') # Separate parts by two empty lines
+        
+        # Output last part        
+        last_entry = formatted_parts[-1:]        
+        if len(last_entry) != 0:
+            out_file.write(last_entry[0])
+            out_file.write('\n') # Use only one LF in last line      
 
     ## \brief This method constructs a MessageProcedure object for a given machine and messageing procedure type. Raises an
     #         exception if the combination of requested messageing procedure and machine type is impossible or not yet implemented.
@@ -2585,15 +2592,18 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         #print(self.machine.get_description())
         
         # Load input text
-        with open(args['in_file'], 'r') as f_in:
-            text = f_in.read()                
+        if args['in_file'] != '':
+            with open(args['in_file'], 'r') as f_in:
+                text = f_in.read()
+        else:
+            text = sys.stdin.read()                
         
         if do_encrypt:
             # Perform encryption
-            if args['sys-indicator'] == '':
+            if args['sys_indicator'] == '':
                 raise EnigmaException('A system indicator has to be provided via the -s/--sys-indicator option')
                 
-            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys-indicator'], args['grundstellung'], args['type'])
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys_indicator'], args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
                 enigma_proc.encoder = ModernEncoder(allowed_output_chars)
@@ -2601,7 +2611,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             out_text_parts = enigma_proc.encrypt(text)
         else:
             # Perform decryption
-            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['type'])
+            enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
                 enigma_proc.encoder = ModernEncoder(allowed_output_chars)
