@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2016 Martin Grap
+# Copyright 2017 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,3 +42,10 @@ def get_doc_path(script_file = __file__):
             result = DEFAULT_DOC_PATH
         
     return result
+    
+## \brief This class is used to signal exceptions to calling code.
+#
+class EnigmaException(Exception):
+    def __init__(self, error_message):
+        Exception.__init__(self, 'Message procedure: ' + error_message)
+
