@@ -70,18 +70,18 @@ other information. Key sheets can either be generated in HTML or TXT format. Her
             </tr>
             <tr>
                 <td><p><code>post1940</code></p></td>
-                <td><p>This procedure can be used with any Enigma machine and was employed by the Germany Army and Luftwaffe during WWII after some 
-                point 1940. In effect it uses the ring setting as a sort of implicit grundstellung. The operator chooses two random starting positions
-                for the rotors and uses the first to encrypt the second. After that the first and the encrypted second position are sent to the receiver
-                who decrypts the second using the first and finally decrypts the message body using the decrypted second position.
+                <td><p>This procedure can be used with any Enigma machine and with the Typex. It was employed by the Germany Army and Luftwaffe during 
+                WWII after some point 1940. In effect it uses the ring setting as a sort of implicit grundstellung. The operator chooses two random
+                starting positions for the rotors and uses the first to encrypt the second. After that the first and the encrypted second position
+                are sent to the receiver who decrypts the second using the first and finally decrypts the message body using the decrypted second position.
                 </p></td>
             </tr>
             <tr>
                 <td><p><code>pre1940</code></p></td>
-                <td><p>This procedure can be used with any Enigma machine and was employed by the Germany Army and Luftwaffe early in WWII. Weaknesses
-                in this procedure allowed the polish codebreakers to achieve their initial break into Enigma traffic. It makes use of a daily
-                basic setting (Grundstellung). The operator has to choose a random starting position for the rotors which is then encrypted twice
-                using the grundstellung.
+                <td><p>This procedure can be used with any Enigma machine and with the Typex. It was employed by the Germany Army and Luftwaffe
+                early in WWII. Weaknesses in this procedure allowed the polish codebreakers to achieve their initial break into Enigma traffic. It makes
+                use of a daily basic setting (Grundstellung). The operator has to choose a random starting position for the rotors which is then encrypted 
+                twice using the grundstellung.
                 </p></td>
             </tr>
             <tr>
@@ -192,8 +192,10 @@ can be used to set up the rotor machines in question.</p>.
         <td><p>Typex, TypexY269</p></td>
         <td><p>Key sheets contain wheel settings, ring settings and a specification of the thirteen plugs to be set on the rewirable
         reflector. I have no information about how the message procedures for the Typex worked but the key sheet provides nontheless a basic alignment
-        (Basic) of the rotors for each day and a system indicator (System) that can be used to indicate the crypto net in which the key is used.
-        When pasting the rotor settings from a key sheet into the correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces 
+        (Basic) of the rotors for each day and a system indicator (System) that can be used to indicate the crypto net in which the key is used. On
+        top of that settings for the german <code>post1940</code> or <code>pre1940</code> procedures can be generated. The Grundstellung is contained in
+        the column named Basic and Kenngruppen are specified in the ID Groups column. When pasting the rotor settings from a key sheet into the
+        correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces 
         have to be removed.        
         </p></td>
     </tr>

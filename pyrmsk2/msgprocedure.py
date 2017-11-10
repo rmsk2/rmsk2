@@ -25,6 +25,7 @@ import functools
 
 import pyrmsk2.rotorsim as rotorsim
 import pyrmsk2.rotorrandom as rotorrandom
+from pyrmsk2 import EnigmaException as EnigmaException
 import pyrmsk2.transportencoder as transportencoder
 import pyrmsk2.indicatorprocessor as indicatorprocessor
 import pyrmsk2.formatter as formatter
@@ -647,6 +648,48 @@ class MessageProcedureFactory:
         result = self.get_generic_machine(system_indicator, grundstellung, 5)
         typex_verifier = SpecialCharIndicatorHelper('xzv')
         result.indicator_proc.verifier = typex_verifier.verify_indicator
+        result.encoder = transportencoder.TypexEncoder()
+        
+        return result
+
+    ## \brief This method constructs a MessageProcedure object for a Typex that uses the post1940 procedure
+    #         the TypexEncoder transport encoder and an EnigmaFormatter. Ciphertext uses 5 letter groups.
+    #
+    #  \param [system_indicator] A string. Has to contain the kenngruppen as one string separated by space characters.
+    #
+    #  \param [grundstellung] A string. Value is ignored.
+    #
+    #  \returns A MessageProcedure object.
+    #
+    def get_post1940_typex(self, system_indicator, grundstellung):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result.indicator_proc = indicatorprocessor.Post1940EnigmaIndicatorProc(self._server, self._rand_gen, self.get_and_test_kenngruppen(system_indicator), 5)        
+        typex_verifier = SpecialCharIndicatorHelper('xzv')
+        result.indicator_proc.verifier = typex_verifier.verify_indicator
+        result.formatter = formatter.EnigmaFormatter(5)
+        result.formatter.limits = (5, 10)
+        result.msg_size = 495
+        result.encoder = transportencoder.TypexEncoder()
+        
+        return result
+
+    ## \brief This method constructs a MessageProcedure object for a Typex that uses the pre1940 procedure
+    #         the TypexEncoder transport encoder and an EnigmaFormatter. Ciphertext uses 5 letter groups.
+    #
+    #  \param [system_indicator] A string. Has to contain the kenngruppen as one string separated by space characters.
+    #
+    #  \param [grundstellung] A string. Value is ignored.
+    #
+    #  \returns A MessageProcedure object.
+    #
+    def get_pre1940_typex(self, system_indicator, grundstellung):
+        result = MessageProcedure(self._machine, self._rand_gen, self._server)
+        result.indicator_proc = indicatorprocessor.Pre1940EnigmaIndicatorProc(self._server, self._rand_gen, self.get_and_test_kenngruppen(system_indicator), grundstellung, 5)        
+        typex_verifier = SpecialCharIndicatorHelper('xzv')
+        result.indicator_proc.verifier = typex_verifier.verify_indicator
+        result.formatter = formatter.EnigmaFormatter(5)
+        result.formatter.limits = (5, 10)
+        result.msg_size = 495
         result.encoder = transportencoder.TypexEncoder()
         
         return result

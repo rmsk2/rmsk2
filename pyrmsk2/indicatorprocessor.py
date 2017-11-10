@@ -126,7 +126,9 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
         ## \brief Points to the current read position in self._group_shuffle.
         self._shuffle_pos = 0
         ## \brief Specifies the number of settable rotors in the machine.
-        self._num_rotors = num_rotors        
+        self._num_rotors = num_rotors
+        ## \brief Verifies before encryption that an indicator candidate is valid.
+        self._verifier = (lambda x: len(x) == self._num_rotors)                
 
     ## \brief This method changes the kenngruppen that are in used in this object.
     #
@@ -164,6 +166,25 @@ class EnigmaKenngruppenIndicatorProc(IndicatorProcessor):
     def reset(self):
         self._group_shuffle = []
         self._shuffle_pos = 0 
+        
+    ## \brief This property returns the verifier that is used to check message key candidates before encrypting them
+    #         using the grundstellung.
+    #
+    #  \returns A callable object that takes a string and returns a bool. It is used to verify a message key candidate.
+    #
+    @property
+    def verifier(self):
+        return self._verifier
+
+    ## \brief This property setter allows to change the verifier.
+    #
+    #  \param [new_verifier] A callable object that takes a string and returns a bool.
+    #
+    #  \returns Nothing
+    #
+    @verifier.setter
+    def verifier(self, new_verifier):
+        self._verifier = new_verifier        
 
 
 ## \brief This class implements the indicator system that was used by the german army and air force from 1940
@@ -206,6 +227,10 @@ class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         result = {}
         
         result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)
+        
+        while not self._verifier(result[MESSAGE_KEY]):
+            result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)
+        
         result[HEADER_GRP_1] = self._rand_gen.get_rand_string(self._num_rotors)
         machine.set_rotor_positions(result[HEADER_GRP_1])
         result[HEADER_GRP_2] = machine.encrypt(result[MESSAGE_KEY])
@@ -228,6 +253,9 @@ class Post1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         result = already_parsed_indicators
         machine.set_rotor_positions(result[HEADER_GRP_1])
         result[MESSAGE_KEY] = machine.decrypt(result[HEADER_GRP_2])
+        
+        if not self._verifier(result[MESSAGE_KEY]):
+            raise EnigmaException('Invalid indicator')
         
         return result
 
@@ -293,6 +321,10 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         result = {}
         
         result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)
+        
+        while not self._verifier(result[MESSAGE_KEY]):
+            result[MESSAGE_KEY] = self._rand_gen.get_rand_string(self._num_rotors)        
+        
         machine.set_rotor_positions(self.grundstellung)
         result[HEADER_GRP_1] = machine.encrypt(result[MESSAGE_KEY])
         result[HEADER_GRP_2] = machine.encrypt(result[MESSAGE_KEY])
@@ -317,8 +349,8 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
         result[MESSAGE_KEY] = machine.decrypt(result[HEADER_GRP_1])
         temp = machine.decrypt(result[HEADER_GRP_2])
         
-        if result[MESSAGE_KEY] != temp:
-            raise EnigmaException("Header groups do not create same message key")
+        if (result[MESSAGE_KEY] != temp) or (not self._verifier(result[MESSAGE_KEY])):
+            raise EnigmaException("Header groups do not create same message key or message key invalid")
         
         return result
 

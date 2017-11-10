@@ -122,6 +122,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 return factory.get_post1940_enigma(sys_indicator, grundstellung)
             elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'M4Enigma', 'RailwayEnigma']:
                 return factory.get_post1940_4wheel_enigma(sys_indicator, grundstellung)
+            elif machine_name == 'Typex':
+                return factory.get_post1940_typex(sys_indicator, grundstellung)                
             else:
                 raise EnigmaException('Unsupported message procedure for machine type')
         elif proc_type == 'pre1940':
@@ -132,6 +134,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
                 return factory.get_pre1940_enigma(sys_indicator, grundstellung)
             elif machine_name in ['AbwehrEnigma', 'TirpitzEnigma', 'M4Enigma', 'RailwayEnigma']:
                 return factory.get_pre1940_4wheel_enigma(sys_indicator, grundstellung)
+            elif machine_name == 'Typex':
+                return factory.get_pre1940_typex(sys_indicator, grundstellung)                
             else:
                 raise EnigmaException('Unsupported message procedure for machine type')
         elif proc_type == 'sigaba':

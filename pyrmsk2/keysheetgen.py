@@ -1401,7 +1401,7 @@ class RenderController:
             # Set up column mapping            
             keysheet.column_mapping = {'Wheel settings':PlugsColumn(14, 'rotors'), 'Rings':Column(5, 'rings'), \
                                        'Reflector':Column(26, 'reflector'), 'Plugboard':Column(26, 'plugs'), \
-                                       'Basic':RandStringColumn(5, 5), 'System':RandStringColumn(6, 5)}
+                                       'Basic':RandStringColumn(5, 5), 'System':RandStringColumn(6, 5), 'ID Groups':KenngruppenColumn(15, 4)}
                                        
             keysheet.column_mapping['Wheel settings'].uppercase = False
             keysheet.column_mapping['Rings'].uppercase = False
@@ -1413,9 +1413,15 @@ class RenderController:
             if machine_name == 'TypexPlugsY269':
                 keysheet.columns.append('Plugboard')
                 keysheet.column_mapping['Plugboard'].uppercase = False
-                
-            keysheet.columns.append('Basic')
-            keysheet.columns.append('System')
+            
+            if msg_proc_type == 'pre1940':
+                keysheet.columns.append('Basic')            
+                keysheet.columns.append('ID Groups')            
+            elif msg_proc_type == 'post1940':
+                keysheet.columns.append('ID Groups')
+            else: 
+                keysheet.columns.append('Basic')
+                keysheet.columns.append('System')
             
             result['isgerman'] = False
             result['state'] = rotorsim.TypexState.get_default_config()
@@ -1644,10 +1650,10 @@ class KeysheetGeneratorMain:
             if machine_name not in MACHINE_NAMES:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")
         elif msg_proc_type == 'post1940':
-            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz']:
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269']:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
         elif msg_proc_type == 'pre1940':
-            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz']:
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269']:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
         elif msg_proc_type == 'sigaba':
             if machine_name not in ['CSP889', 'CSP2900']:
