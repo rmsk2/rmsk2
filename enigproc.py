@@ -28,7 +28,7 @@ import argparse
 import re
 from pyrmsk2.keysheetgen import PROC_TYPES
 from pyrmsk2 import EnigmaException as EnigmaException
-from pyrmsk2.msgprocedure import *
+import pyrmsk2.msgprocedure as msgprocedure
 
 ## \brief Maximum number of real plaintext characters in a message part. 
 COMMANDS = ['encrypt', 'decrypt']
@@ -115,7 +115,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
     #  \returns A MessageProcedure object.
     #
     def _generate_msg_proc_obj(self, machine_name, sys_indicator, grundstellung, proc_type):
-        factory = MessageProcedureFactory(self.machine, self.random, self.server)
+        factory = msgprocedure.MessageProcedureFactory(self.machine, self.random, self.server)
         
         if proc_type == 'post1940':
             if machine_name in ['Enigma', 'M3', 'KDEnigma']:
@@ -194,7 +194,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys_indicator'], args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
-                enigma_proc.encoder = ModernEncoder(allowed_output_chars)
+                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(allowed_output_chars)
                                             
             out_text_parts = enigma_proc.encrypt(text)
         else:
@@ -202,7 +202,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
-                enigma_proc.encoder = ModernEncoder(allowed_output_chars)
+                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(allowed_output_chars)
             
             out_text_parts = [enigma_proc.decrypt(text)]        
         
