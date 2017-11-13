@@ -21,6 +21,8 @@
 # \brief Implements the transport encoders known to rmsk2. 
 #    
 
+import functools
+import pyrmsk2.rotorrandom as rotorrandom
 from pyrmsk2 import EnigmaException as EnigmaException
 
 ## \brief This class serves as a base class for a "thing" that knows how to "prepare" plaintexts before encryption
@@ -58,29 +60,149 @@ class TransportEncoder:
         return result
 
 
-## \brief This class implements a transport encoder that accepts arbitrary unicode strings as input and transforms
-#         the input in such a way that only a defined subset of characters appears in the output.
+## \brief This class implements the Vigenere cipher on the basis of an arbitrary alphabet.
 #
-class ModernEncoder:
+class Vigenere:
     ## \brief Constructor
     #
-    #  \param [encoder_alphabet] A string. Contains the characters that may appear in encoded output.
+    #  \param [known_characters] A string. Contains the characters that make up the input and output alphabet.
     #
     #  \returns Nothing.
     #        
-    def __init__(self, encoder_alphabet):
-        ## \brief A string that stores the set of output characters.
-        self._encoder_alpha = encoder_alphabet
-        ## \brief An integer that stores the number of output characters.
-        self._radix = len(self._encoder_alpha)
-        ## \brief A dictionary that maps strings to ints. Maps any character to its position in self._encoder_alpha.
+    def __init__(self, known_characters):
+        self._alphabet = known_characters
         self._inv_alpha = {}
         
         count = 0
         
-        for i in self._encoder_alpha:
+        for i in self._alphabet:
             self._inv_alpha[i] = count
             count += 1
+
+    ## \brief This method implements the core of the en- and decryption operation.
+    #
+    #  \param [inputtest] A string. Contains either plaintext or ciphertext depending on the intended use of
+    #         this method.
+    #
+    #  \param [password] A string. Contains the password made up from characters contained in self._alphabet
+    #         that is used for en- and decryption. 
+    #
+    #  \param [proc] A callable object that takes two ints and returns an int. The caller has to supply
+    #         a function that knows how to process a single character of plain-/ciphertext and password and
+    #         uses this data to implement encryption or decryption. 
+    #
+    #  \returns A string. The result of en- or decryption.
+    #            
+    def _vigenere_process(self, inputtext, password, proc):
+        count_pw = 0
+        num_chars = len(self._alphabet)
+        len_pw = len(password)
+        raw_data = list(map(lambda x: self._inv_alpha[x], inputtext))
+        raw_pw = list(map(lambda x: self._inv_alpha[x], password))        
+        temp = []
+        
+        for i in raw_data:
+            temp.append(proc(i, raw_pw[count_pw]))
+            count_pw = (count_pw + 1) % len_pw
+        
+        result = ''.join(list(map(lambda x: self._alphabet[x], temp)))        
+        
+        return result    
+
+    ## \brief Convenience method implementing encryption.
+    #
+    #  \param [plaintext] A string. Contains the plaintext.
+    #
+    #  \param [password] A string. Contains the password made up from characters contained in self._alphabet
+    #         that is used for encryption. 
+    #
+    #  \returns A string. The result of encryption.
+    #                    
+    def encrypt(self, plaintext, password):
+        len_alpha = len(self._alphabet)
+        enc_func = lambda x,y: (x + y) % len_alpha
+        
+        return self._vigenere_process(plaintext, password, enc_func)
+
+    ## \brief Convenience method implementing decryption.
+    #
+    #  \param [ciphertext] A string. Contains the ciphertext.
+    #
+    #  \param [password] A string. Contains the password made up from characters contained in self._alphabet
+    #         that is used for decryption. 
+    #
+    #  \returns A string. The result of decryption.
+    #                        
+    def decrypt(self, ciphertext, password):
+        len_alpha = len(self._alphabet)
+        dec_func = lambda x,y: (x - y + len_alpha) % len_alpha
+        
+        return self._vigenere_process(ciphertext, password, dec_func)
+
+
+## \brief This class is a simple helper which allows to read a string character by character.
+#
+class CharBuf:
+    ## \brief Constructor
+    #
+    #  \param [all_chars] A string. Contains the string that is to be read
+    #
+    #  \returns Nothing.
+    #        
+    def __init__(self, all_chars):
+        self._buffer = all_chars
+        self._pos = 0
+
+    ## \brief This method implements reading the characters of the string in the buffer.
+    #
+    #  \returns A string of length 1 or ''.
+    #            
+    def get_next_char(self):
+        result = ''
+        
+        if self._pos < len(self._buffer):
+            result = self._buffer[self._pos]
+            self._pos += 1
+        
+        return result
+
+
+## \brief This class implements a transport encoder that accepts arbitrary unicode strings as input and transforms
+#         the input in such a way that only a defined subset of characters appears in the output. On top of that the
+#         encoded text is enciphered using the Vigenere cipher in order to mask the unfavourable frequency distribution 
+#         generated by the encoder. Additionally this makes known plaintext attacks harder.
+#
+class ModernEncoder:
+    ## \brief Constructor
+    #
+    #  \param [tlv_server] An object with the same interface as pyrmsk2.tlvobject.TlvServer.
+    #
+    #  \param [pw_length] An int. Contains the password length used for Vigenere encryption.
+    #
+    #  \returns Nothing.
+    #        
+    def __init__(self, tlv_server, pw_length = 9):
+        ## \brief Contains the password length used for Vigenere encryption
+        self._pw_length = pw_length
+        ## \brief Holds TLV server
+        self._server = tlv_server
+        ## \brief Contains all characters which are not translated
+        self._direct_chars = 'etaoinsrhld'
+        ## \brief Contains all characters which signify an encoded byte        
+        self._escape_chars = 'bcfgkmpquwy'
+        self._all_characters = self._direct_chars + self._escape_chars
+        
+        self._inv_alpha = {}        
+        count = 0        
+        for i in self._all_characters:
+            self._inv_alpha[i] = count
+            count += 1
+        
+        self._inv_escape = {}
+        count = 0        
+        for i in self._escape_chars:
+            self._inv_escape[i] = count
+            count += 1        
 
     ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
     #
@@ -89,23 +211,39 @@ class ModernEncoder:
     #  \returns A string. The encoded plaintext
     #    
     def transform_plaintext_enc(self, data_to_encode):
-        raw_bytes = data_to_encode.encode()
+        result = ''
+        pw = ''
         
-        return self.encode_bytes(raw_bytes)
+        result = self.encode_utf8(data_to_encode)
+        
+        with rotorrandom.RotorRandom(self._all_characters, self._server.address) as rand:
+            pw = rand.get_rand_string(self._pw_length)
+            vig = Vigenere(self._all_characters)
+            result = vig.encrypt(result, pw)
+        
+        return pw + result
 
-    ## \brief This method transforms an array of bytes into a string which contains only characters from self._encoder_alpha.
+    ## \brief This method transforms string into a string which contains only characters from self._all_characters.
     #
-    #  \param [raw_bytes] A bytearray or bytes object. Contains the input bytes to transform.
+    #  \param [in_string] A string. Contains the input data to transform.
     #
     #  \returns A string. The encoded input data.
     #        
-    def encode_bytes(self, raw_bytes):
+    def encode_utf8(self, in_string):
         result = ''
+        temp = []
         
-        for i in raw_bytes:
-            result += self._encoder_alpha[i // self._radix]
-            result += self._encoder_alpha[i % self._radix]
-            
+        for i in in_string:
+            if i in self._direct_chars:
+                temp += i
+            else:
+                raw_bytes = i.encode()                
+                for j in raw_bytes:
+                    temp_chars = self._escape_chars[j // 22] + self._all_characters[j % 22]                    
+                    temp += temp_chars
+        
+        result = ''.join(temp)
+        
         return result
 
     ## \brief This method transforms a decryped (and encoded) plaintext into its original form.
@@ -115,38 +253,60 @@ class ModernEncoder:
     #  \returns A string. The decoded plaintext
     #    
     def transform_plaintext_dec(self, data_to_decode):
-        raw_bytes = self.decode_bytes(data_to_decode)
-        
-        return raw_bytes.decode()
 
-    ## \brief This method transforms a string encoded with self.encode_bytes() back into a bytearray object.
+        if (len(data_to_decode) - self._pw_length) < 0:
+            raise EnigmaException('Input length too short')
+    
+        pw = data_to_decode[:self._pw_length]
+        
+        if not functools.reduce(lambda x,y: x and y, map(lambda x: x in self._all_characters, pw)):
+            raise EnigmaException('Some input characters not in encoder alphabet')
+        
+        ciphertext = data_to_decode[self._pw_length:]
+        vig = Vigenere(self._all_characters)
+        vig_plain = vig.decrypt(ciphertext, pw)
+        
+        result = self.decode_utf8(vig_plain)
+        
+        return result
+
+    ## \brief This method transforms a string encoded with self.encode_utf8() back into its original form.
     #
-    #  \param [data_to_decode] A string that is to be decoded.
+    #  \param [in_string] A string that is to be decoded.
     #
-    #  \returns A bytearray object.
+    #  \returns A string.
     #            
-    def decode_bytes(self, data_to_decode):
-        raw_bytes = bytearray()
-        raw_digits = []
+    def decode_utf8(self, in_string):
+        res = bytearray()
+        in_buf = CharBuf(in_string)
         
-        if (len(data_to_decode) % 2) != 0:
-            raise EnigmaException('Input length not divisible by 2')
+        i = in_buf.get_next_char()
         
-        for i in data_to_decode:
-            if i not in self._encoder_alpha:
-                raise EngimaException('Illegal character ' + i)
+        while i != '':
+            if i in self._direct_chars:
+                res += i.encode()
+            else:
+                if i in self._escape_chars:
+                    j = in_buf.get_next_char()
+                    
+                    if j != '':
+                        if j in self._all_characters:
+                            raw_byte = self._inv_escape[i] * 22 + self._inv_alpha[j]
+                            
+                            if raw_byte <= 255:
+                                res.append(raw_byte)
+                            else:
+                                raise EnigmaException('Structure of encoded text invalid')                             
+                        else:
+                            raise EnigmaException('Structure of encoded text invalid')
+                    else:
+                        raise EnigmaException('Premature end of encoded text')                    
+                else:
+                    raise EnigmaException('Structure of encoded text invalid')
             
-            raw_digits.append(self._inv_alpha[i])
+            i = in_buf.get_next_char()
         
-        for i in range(len(raw_digits) // 2):
-            temp = self._radix * raw_digits[2 * i] + raw_digits[2 * i + 1]
-            
-            if temp > 255:
-                raise EnigmaException('Illegal byte value encountered at ' + str(2 * i))
-        
-            raw_bytes.append(temp)
-        
-        return raw_bytes
+        return res.decode()
 
 
 ## \brief This class implements the transport encoder used by the german army during WWII for use with the Engima.
@@ -292,7 +452,6 @@ class ShiftingEncoder(TransportEncoder):
         
         return plaintext
         
-    
     ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
     #
     #  \param [plaintext] A string. Contains the plaintext to transform.

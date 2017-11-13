@@ -175,8 +175,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
         result = tlvsrvapp.ERR_OK        
         text = ''
         out_text = ''
-        do_encrypt = args['doencrypt'] 
-        allowed_output_chars = 'abcdefghiklmopqrstuwy'       
+        do_encrypt = args['doencrypt']
 
         # Load machine state
         self.machine.load_machine_state(args['config_file'])
@@ -198,7 +197,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), args['sys_indicator'], args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
-                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(allowed_output_chars)
+                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(self.server)
                                             
             out_text_parts = enigma_proc.encrypt(text)
         else:
@@ -206,7 +205,7 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
             enigma_proc = self._generate_msg_proc_obj(self.machine.get_description(), DUMMY_SYS_INDICATOR, args['grundstellung'], args['msg_proc_type'])
             
             if args['use_modern_encoder']:
-                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(allowed_output_chars)
+                enigma_proc.encoder = msgprocedure.transportencoder.ModernEncoder(self.server)
             
             out_text_parts = [enigma_proc.decrypt(text)]        
         
