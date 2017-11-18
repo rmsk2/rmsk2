@@ -224,7 +224,7 @@ class GenericFormatter(Formatter):
     #
     #  \param [ciphertext] A string specifying the unformatted ciphertext.
     #
-    #  \param [indicators] A dictionary that maps strings to strings. The indicators parameter is igonred by this implementation
+    #  \param [indicators] A dictionary that maps strings to strings. The indicators parameter is ignored by this implementation
     #         of format_body().
     #
     #  \returns A BodyStruct object.

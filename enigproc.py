@@ -51,8 +51,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
     #
     #  \param [argv] A vector of strings representing the command line parameters, i.e. sys.argv.
     #
-    #  \returns A dictionary containing the keys 'in_file', 'out_file', 'config_file', 'sys-indicator' and 'doencrypt', 'grundstellung' and
-    #           'type'.
+    #  \returns A dictionary containing the keys 'in_file', 'out_file', 'config_file', 'sys_indicator', 'doencrypt', 'grundstellung',
+    #           'msg_proc_type' and 'use_modern_encoder'.
     #        
     def parse_args(self, argv):
         # Set up command line parser        

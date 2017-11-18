@@ -206,7 +206,7 @@ class ModernEncoder:
 
     ## \brief This method transforms a plaintext into an encoded form before that encoded form ist encrypted.
     #
-    #  \param [plaintext] A string. Contains the plaintext to transform.
+    #  \param [data_to_encode] A string. Contains the plaintext to transform.
     #
     #  \returns A string. The encoded plaintext
     #    
@@ -248,7 +248,7 @@ class ModernEncoder:
 
     ## \brief This method transforms a decryped (and encoded) plaintext into its original form.
     #
-    #  \param [plaintext] A string. Contains the encoded plaintext to transform
+    #  \param [data_to_decode] A string. Contains the encoded plaintext to transform
     #
     #  \returns A string. The decoded plaintext
     #    

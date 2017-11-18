@@ -274,6 +274,8 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
     #
     #  \param [kenngruppen] A sequence of three letter strings. Specifies the kennruppen to use.
     #
+    #  \param [grundstellung] A string. Specifies the grundstellung valid for the day.
+    #
     #  \param [num_rotors] An integer. It has to specify the number of settable rotors in the Engima machine.
     #
     #  \returns Nothing.
@@ -293,7 +295,7 @@ class Pre1940EnigmaIndicatorProc(EnigmaKenngruppenIndicatorProc):
 
     ## \brief This property setter allows to change the grundstellung.
     #
-    #  \param [new_grundsellung] A string of length self._num_rotors. The new grundstellung.
+    #  \param [new_grundstellung] A string of length self._num_rotors. The new grundstellung.
     #
     #  \returns Nothing
     #
@@ -395,7 +397,7 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
     #
     #  \param [rand_gen] An object that has the same interface as pyrmsk2.rotorrandom.RotorRandom.
     #
-    #  \param [indicator size] An integer. It has to specify the number of characters in an indicator group.
+    #  \param [indicator_size] An integer. It has to specify the number of characters in an indicator group.
     #
     #  \param [step_before_proc] A boolean. If True the machine is stepped once before doing any encryptions. Needed for KL7.
     #
@@ -436,7 +438,7 @@ class GrundstellungIndicatorProc(IndicatorProcessor):
 
     ## \brief This property setter allows to change the grundstellung.
     #
-    #  \param [new_grundsellung] A string. The new grundstellung.
+    #  \param [new_grundstellung] A string. The new grundstellung.
     #
     #  \returns Nothing
     #
@@ -688,7 +690,7 @@ class SIGABAGrundstellungIndicatorProcessor(SIGABAIndicatorProcessorBase):
 
     ## \brief This property setter allows to change the grundstellung.
     #
-    #  \param [new_grundsellung] A string. The new grundstellung.
+    #  \param [new_grundstellung] A string. The new grundstellung.
     #
     #  \returns Nothing
     #
