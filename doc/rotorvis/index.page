@@ -27,7 +27,7 @@ in any way with either of these sites.
 to study in detail how the simulated machines work. This also opens up the possibility to maintain
 the software even after the original author has lost interest in the project. Rotorvis has been written
 using the <link href="http://www.gtkmm.org">gtkmm3</link> C++ toolkit for the Linux operating system and has been tested 
-to run under Debian (Wheezy and Jessie) and Ubuntu (12.04 LTS and 14.04 LTS). It is expected to work with any other modern Linux distrbution. 
+to run under Debian (Jessie and Stretch) and Ubuntu (14.04 LTS). It is expected to work with any other modern Linux distrbution. 
 Rotorvis provides simulators for the following machines:</p>
 
 <list>
