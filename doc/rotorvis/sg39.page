@@ -23,8 +23,8 @@ length the pinwheels had different sizes (21, 23 and 25 pins) which had no commo
 According to the above mentioned NSA document the Schlüsselgerät 39 had a dual printer, that printed the input characters as well as the output characters.
 </p>
 <p>When using an appropriate set of rotors the Schlüsselgerät 39 can be configured in such a way that it is compatible with an M4 Enigma and consequently with 
-any other Enigma variant used by the german military during WWII (i.e. Services and M3). Additionally making the reasonable assumption that SG39 rotors had settable
-rings makes this fully practical and even allows to use M4 key sheets.
+any other Enigma variant used by the german military during WWII (i.e. Services and M3). In order to make this possible fixed pins (one or two depending on 
+the rotor) were added to each SG39 rotor which fulfill the same function as the turn-over notches on standard Enigma rotors (see <link href="http://chris-intel-corner.blogspot.de/2017/08/missing-page-from-ticom-i-137.html">TICOM I-137</link>). 
 </p>
 <p>Using other rotor sets it would be easy to additionally achieve at least partial compatibility with any Enigma variant that has a stationary or settable (but
 not moving) reflector, i.e. any Enigma variant simulated by rmsk2 (including Typex) but not Abwehr. Full compatibility with KD could even be achieved in a more or less
@@ -82,11 +82,6 @@ This picture shows the dialog which can be used to configure the SG39:
     <item>
         <title><code>SG39 Pins wheel 3</code></title>
         <p>This configuration element has to contain at most 25 characters which can be from the range <code>a-y</code>. Each letter
-           corresponds to a set pin on the position specified by the letter.</p>
-    </item>    
-    <item>
-        <title><code>SG39 Pins rotor 1-3</code></title>
-        <p>Each of these configuration elements has to contain at most 26 characters which can be from the range <code>a-z</code>. Each letter
            corresponds to a set pin on the position specified by the letter.</p>
     </item>    
 </terms>
