@@ -30,7 +30,7 @@ from pyrmsk2.keysheetgen import PROC_TYPES
 from pyrmsk2 import EnigmaException as EnigmaException
 import pyrmsk2.msgprocedure as msgprocedure
 
-## \brief Maximum number of real plaintext characters in a message part. 
+## \brief Commands that are understood by this program. 
 COMMANDS = ['encrypt', 'decrypt']
 ## \brief Dummy value for the system indicator used when instantiating a MessageProcedure object for decryption.
 DUMMY_SYS_INDICATOR = 'ert zui ops cfg'
