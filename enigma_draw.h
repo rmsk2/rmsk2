@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ A Python3 interface to the C++ implementation of all the rotor machines is also 
 
 Finally help files in mallard format (http://projectmallard.org/) are included with the simulators that describe how to operate them. Documentation for the command line simulators and the key sheet generator is provided through this Wiki.
 
-This software was written between 2008 and 2017 between by Martin Grap (rmsk2@gmx.de) and is licensed under the Apache 2.0 license (http://www.apache.org/licenses/LICENSE-2.0).
+This software was written between 2008 and 2018 between by Martin Grap (rmsk2@gmx.de) and is licensed under the Apache 2.0 license (http://www.apache.org/licenses/LICENSE-2.0).
 
 You find more information and some documentation on the GitHub Wiki of this project: https://github.com/rmsk2/rmsk2/wiki
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -680,7 +680,7 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     
     // Setup object to handle help menu events
     help_menu_manager.set_parent_window(win);
-    help_menu_manager.set_text("/rotorvis/index.page", "An accurate simulator for the SIGABA, KL7, Nema, Typex and Schlüsselgerät 39 rotor machines.\nWritten in 2008-2017", "1.0", "Martin Grap");
+    help_menu_manager.set_text("/rotorvis/index.page", "An accurate simulator for the SIGABA, KL7, Nema, Typex and Schlüsselgerät 39 rotor machines.\nWritten in 2008-2018", "1.0", "Martin Grap");
 
     // Setup object to manage file handling menu events    
     file_helper.set_parent_window(win);

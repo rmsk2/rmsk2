@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ TAG_ERROR = 3
 
 ## \brief Text of Apache 2.0 license for about dialog.
 LICENSE_TEXT = """
-Copyright 2017 Martin Grap
+Copyright 2018 Martin Grap
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -597,7 +597,7 @@ class KeyGenWindow(Gtk.Window):
         about_dialog = Gtk.AboutDialog(self) 
         about_dialog.set_transient_for(self)
         about_dialog.set_program_name('Key Sheet Generator for rmsk2')
-        about_dialog.set_copyright('Copyright 2017 Martin Grap')
+        about_dialog.set_copyright('Copyright 2018 Martin Grap')
         about_dialog.set_version("1.0") 
         about_dialog.set_website("https://github.com/rmsk2/rmsk2/wiki/Key-sheet-generator") 
         about_dialog.set_website_label("GitHub Wiki for rmsk2") 
