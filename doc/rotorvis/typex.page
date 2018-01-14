@@ -10,7 +10,7 @@
 <title>About the machine</title>
 <p>
 The Typex was a cipher machine that was used by the UK during WWII and into first decades of the cold war. Cryptographically the Typex variant simulated by 
-Rotorvis and the <link href="http://cryptocellar.web.cern.ch/cryptocellar/CSG/">CSG</link> essentially is a
+Rotorvis and <link href="http://www.hut-six.co.uk/typex/">Geoff Sullivan</link> is essentially a
 modified commercial Enigma machine without a plugboard (even though later models also had an optional plugboard which Rotorvis also implements). Like the
 Enigma the Typex  has three moving rotors (the first three) and a reflector. Instead of a plugboard the Typex has two additional rotors which can be set
 by hand but do not step during En-/Decipherment (the last two). Cryptographically these two rotors have the same purpose as a plugboard: They prevent attacks
@@ -42,12 +42,12 @@ The configuration dialog for the Typex looks like this:
 <terms>
     <item>
         <title><code>Typex Rotor Set</code></title>
-        <p>Typex was used with several rotor sets. In this field the name of the rotor set to use can be entered. Currently two values are allowed: defaultset and Y269,
-        where defaultset corresponds to the rotor set named SP02390 in the Typex simulator of the CSG.</p>
+        <p>Typex was used with several rotor sets. In this field the name of the rotor set to use can be entered. Currently three values are allowed: defaultset, Y269 and Y2695,
+        where defaultset corresponds to the rotor set named SP02390 in the Typex simulator of Geoff Sullivan.</p>
     </item>
     <item>
         <title><code>Typex Rotors</code></title>
-        <p>Determines which rotors are placed in the machine and in what sequence. There are seven (defaultset) or 14 (Y269) rotors (<code>a-g</code> or <code>a-n</code>).
+        <p>Determines which rotors are placed in the machine and in what sequence. There are seven (defaultset) or 14 (Y269 and Y2695) rotors (<code>a-g</code> or <code>a-n</code>).
         Each one of them can be placed in Normal or in Reverse orientation in the machine. Therefore for each rotor its designation and orientation 
         (<code>N</code> or <code>R</code>) have to be specified. Exactly five of the possible rotors have to be placed in the machine.</p>
     </item>
@@ -73,24 +73,26 @@ The configuration dialog for the Typex looks like this:
 <section id="typex_differences">
 <title>Differences to the real machine and to other simulators</title>
 <list>
-    <item><p>In the real machine and in the simulator of the CSG the keys are labelled in such a way that the unshifted and shifted characters
+    <item><p>In the real machine and in the simulator of Geoff Sullivan the keys are labelled in such a way that the unshifted and shifted characters
     appear on top of each other instead of next to each other.</p></item>
-    <item><p>The real machine and the CSG simulator do not contain a figure lamp (<link type="topic" xref="elements#elem_figure_lamp">see also here</link>). But
+    <item><p>The real machine and the simulator of Geoff Sullivan do not contain a figure lamp (<link type="topic" xref="elements#elem_figure_lamp">see also here</link>). But
     operating the simulator is easier if one knows in which mode it currently is.</p></item>
-    <item><p>The real machine and the CSG simulator do feature an additional FIG and a LET key on the keyboard to switch between the corresponding modes.</p></item>
-    <item><p>When in figures mode the CSG simulator prints an apostrophe when the B or the N key is pressed. In my opinion it makes no sense to
+    <item><p>The real machine and the simulator of Geoff Sullivan do feature an additional FIG and a LET key on the keyboard to switch between the corresponding modes.</p></item>
+    <item><p>When in figures mode Geoff Sullivan's simulator prints an apostrophe when the B or the N key is pressed. In my opinion it makes no sense to
     place the apostrophe twice on the keyboard and leave out the comma. I therefore assume that one of the apostrophes really is a comma. And
     so in Rotorvis the N key produces a comma when encrypting in figures mode.</p></item>
-    <item><p>In contrast to the CSG simulator Rotorvis implements the optional plugboard that was present in late war Typex models.</p></item>
+    <item><p>In contrast to Geoff Sullivan's simulator Rotorvis implements the optional plugboard that was present in late war Typex models.</p></item>
     <item><p>Later Typex models not only had an optional plugboard, they also printed plaintext and ciphertext at the same time. This feature was
-    omitted from the CSG simulator but is implemented by Rotorvis.</p></item>    
+    omitted from Geoff Sullivan's simulator but is implemented by Rotorvis.</p></item>
+    <item><p>In Geoff Sullivan's simulator all rotors have four turnover notches which is a bit odd as the greatest common divisor of four and 26 is not one and
+    this reduces the period of the machine. Rotorvis therefore additionally implements the rotor set Y269 with five turnover notches. This set is called Y2695.</p></item>        
 </list>
 </section>
 
 <section id="typex_interoperability">
-<title>Interoperability with the CSG simulator</title>
+<title>Interoperability with Geoff Sullivan's simulator</title>
 <p>
-Currently Rotorvis only implements the rotor sets designated <code>SP02390</code> and <code>Y269</code> in the CSG simulator.
+Currently Rotorvis only implements the rotor sets designated <code>SP02390</code> and <code>Y269</code> in Geoff Sullivan's simulator.
 </p>
 </section>
 

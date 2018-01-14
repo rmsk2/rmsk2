@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,9 +148,14 @@ public:
      */
     file_operations_helper(const char *name_of_app) : menu_helper(name_of_app) { ; }
 
-    /*! \brief This method allows to handle the event when the user clicked on the "Load settings ..." menu item.
+    /*! \brief This method allows to handle the event when the user clicked on the "Load settings ..." menu item. Through
+     *         the parameter load_data you can specify a callback that actually handles the loading of data.
      */            
-    virtual void on_file_open();
+    virtual void on_file_open_with_callback(sigc::slot<bool, Glib::ustring&> load_data);
+
+    /*! \brief This method allows to handle the event when the user clicked on the "Load settings ..." menu item.
+     */                
+    virtual void on_file_open() { on_file_open_with_callback(load_settings); }
 
     /*! \brief This method allows to handle the event when the user clicked on the "Save settings ..." menu item. 
      *
@@ -163,6 +168,10 @@ public:
      *         the_machine and index_machine. The parameter index_machine may has to be NULL if there is no index machine.
      */        
     virtual void on_save_rotor_set_activate(rotor_machine *the_machine, rotor_machine *index_machine);
+
+    /*! \brief This method allows to load a rotor set saved in a file into the machine to which the_machine points.
+     */            
+    virtual void on_load_rotor_set_activate(rotor_machine *the_machine);
 
     /*! \brief This method allows to handle the event when the user clicked on the "Save settings as ..." menu item.
      *
@@ -185,11 +194,36 @@ public:
     
 protected:
 
+    /*! \brief This class is a helper for loading a rotor set.
+     */                    
+     class rotor_set_loader {
+     public:
+        /*! \brief Constructor. The parameter machine has to point to the machine into which the rotor set will be loaded.
+         */         
+        rotor_set_loader(rotor_machine* machine) { the_machine = machine; }
+
+        /*! \brief Implements the actual loading.
+         */                 
+        bool load_set(Glib::ustring& file_name);
+     
+     protected:
+        /*! \brief Holds the rotor machine into which a rotor set will be loaded.
+         */                 
+        rotor_machine *the_machine;
+     };
+
+
     /*! \brief This method does the actual saving of the settings. If the parameter desired_file_name contains a non empty string then
      *         the file selection dialog is not shown ("Save settings ..."). When it is empty the user is prompted to select a file name
      *         ("Save settings as ...").
      */                
     virtual void on_do_save(const Glib::ustring& desired_file_name);
+
+    /*! \brief This method allows to save all rotor sets that are currently known to the machine to which the parameter the_machine points. 
+     *         The parameter base_name has to contain a prefix to which the name of each rotor set is appended in order to generate the file
+     *         name used to save this set.
+     */                
+    virtual bool save_all_sets(rotor_machine *the_machine, Glib::ustring& base_name);
 
     /*! \brief Points to a string that holds the path of directory in which *last_file_opened lives. */        
     Glib::ustring *last_dir;

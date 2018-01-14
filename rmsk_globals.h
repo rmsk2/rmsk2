@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@
 #include<alphabet.h>
 
 class rotor_machine;
+
+/*! \brief Name of the default set that has to be present in each rotor_machine object.
+ */ 
+#define DEFAULT_SET "defaultset"
 
 // Machine names used in INI files that contain saved rotor_machine states.
 #define MNAME_ENIGMA_I "Enigma"

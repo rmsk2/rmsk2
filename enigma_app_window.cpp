@@ -183,7 +183,8 @@ void enigma_app_window::setup_menus()
 
     // Help menu
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
-    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));        
+    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));
+    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &enigma_app_window::on_load_rotor_set_data_activate));            
     menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
     insert_action_group("enigma", menu_action); 
@@ -275,6 +276,10 @@ void enigma_app_window::setup_menus()
     "        <attribute name='action'>enigma.saverotorset</attribute>"
     "      </item>"
     "      <item>"
+    "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
+    "        <attribute name='action'>enigma.loadrotorset</attribute>"
+    "      </item>"
+    "      <item>"
     "        <attribute name='label' translatable='no'>A_bout ...</attribute>"
     "        <attribute name='action'>enigma.about</attribute>"
     "      </item>"    
@@ -352,6 +357,11 @@ void enigma_app_window::update_stecker_brett()
 void enigma_app_window::on_save_rotor_set_data_activate()
 {
     file_helper.on_save_rotor_set_activate(enigma, NULL);
+}
+
+void enigma_app_window::on_load_rotor_set_data_activate()
+{
+    file_helper.on_load_rotor_set_activate(enigma);
 }
 
 void enigma_app_window::on_set_rotor_positions_activate()

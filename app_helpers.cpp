@@ -87,9 +87,78 @@ void help_menu_helper::on_about_activate()
 
 /* ------------------------------------------------------------------ */
 
+bool file_operations_helper::save_all_sets(rotor_machine *the_machine, Glib::ustring& base_name)
+{
+    vector<string> all_set_names = the_machine->get_rotor_set_names();
+    vector<string>::iterator iter;
+    bool save_failed = false;
+    string file_name;
+
+    for (iter = all_set_names.begin(); (iter != all_set_names.end()) && (!save_failed); ++iter)
+    {
+        file_name = base_name + "_" + *iter + ".ini";
+        save_failed = the_machine->get_rotor_set(*iter)->save(file_name);
+    }
+
+    return save_failed;
+}
+
+bool file_operations_helper::rotor_set_loader::load_set(Glib::ustring& file_name)
+{
+    bool load_failed = false;
+    rotor_set new_set(the_machine->get_rotor_set(DEFAULT_SET)->get_rotor_size());
+    string f_name = file_name;
+    vector<string> all_set_names = the_machine->get_rotor_set_names();
+    vector<unsigned int> original_rotor_ids, original_ring_ids, loaded_rotor_ids, loaded_ring_ids;
+    
+    // Load rotor set file into a new rotor_set object
+    load_failed = new_set.load(f_name);
+    
+    if (!load_failed)
+    {
+        string loaded_set_name = new_set.get_name();
+        // Check if the rotor set name in the file matches any set name in the machine we use
+        load_failed = std::count(all_set_names.begin(), all_set_names.end(), loaded_set_name) == 0;
+        
+        if (!load_failed)
+        {
+            // Check if the new set and the original set contain the same rotor and ring ids
+            rotor_set *set_to_load = the_machine->get_rotor_set(loaded_set_name);
+            set_to_load->get_ids(original_rotor_ids);
+            set_to_load->get_ring_ids(original_ring_ids);
+            new_set.get_ids(loaded_rotor_ids);
+            new_set.get_ring_ids(loaded_ring_ids);
+            
+            load_failed = (original_rotor_ids != loaded_rotor_ids) || (original_ring_ids != loaded_ring_ids);
+            
+            if (!load_failed)
+            {
+                // finally load the rotor set state into the target object
+                set_to_load->load(f_name);
+            }
+        }        
+    }    
+    
+    return load_failed;
+}
+
+void file_operations_helper::on_load_rotor_set_activate(rotor_machine *the_machine)
+{
+    rotor_set_loader loader(the_machine);
+    sigc::slot<bool, Glib::ustring&> load_data = sigc::mem_fun(&loader, &rotor_set_loader::load_set);
+    // Save name of last saved machine state
+    Glib::ustring saved_last_file = *last_file_opened;            
+    
+    on_file_open_with_callback(load_data);
+    
+    // This variable holds the name of the last saved machine state. Restore it to its original value. We did not
+    // load a machine state
+    *last_file_opened = saved_last_file;
+}
+
 void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machine, rotor_machine *index_machine)
 {
-    Gtk::FileChooserDialog file_dialog(*win, "Save default rotor set", Gtk::FILE_CHOOSER_ACTION_SAVE);
+    Gtk::FileChooserDialog file_dialog(*win, "Save rotor set data", Gtk::FILE_CHOOSER_ACTION_SAVE);
     Glib::RefPtr<Gtk::FileFilter> filter = Gtk::FileFilter::create();
     Glib::ustring temp_file_name;
     
@@ -99,8 +168,6 @@ void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machi
     file_dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     file_dialog.add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);
     file_dialog.set_transient_for(*win); 
-    string default_set_name = the_machine->get_default_set_name(); 
-    string chosen_file_name;   
     bool save_failed = false;
 
     // If last_dir is not empty then set the file selection dialog to open this directory.
@@ -113,24 +180,20 @@ void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machi
     {
         temp_file_name = file_dialog.get_filename();
         
-        if (temp_file_name.rfind(".ini") == Glib::ustring::npos)
+        if (temp_file_name.rfind(".ini") != Glib::ustring::npos)
         {
-            temp_file_name = temp_file_name + ".ini";
+            temp_file_name = temp_file_name.substr(0, temp_file_name.length() - 4);
         }
         
         file_dialog.hide();
         
-        chosen_file_name = temp_file_name;
-        
-        // Save default rotor set used in the_machine
-        save_failed = the_machine->get_rotor_set(default_set_name)->save(chosen_file_name);
+        save_failed = save_all_sets(the_machine, temp_file_name);
         
         // Save index rotor set if index_machine is not NULL
         if ((!save_failed) and (index_machine != NULL))
         {
-            default_set_name = index_machine->get_default_set_name();
-            chosen_file_name = chosen_file_name.substr(0, chosen_file_name.length() - 4) + "_index.ini";
-            save_failed = index_machine->get_rotor_set(default_set_name)->save(chosen_file_name);
+            Glib::ustring index_file_name = temp_file_name + "_index";
+            save_failed = save_all_sets(index_machine, index_file_name);
         }
 
         if (save_failed)
@@ -140,6 +203,7 @@ void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machi
         else
         {
             *last_dir = file_dialog.get_current_folder();
+            // Do not change last_file_opened. We did not save a machine state
             info_message("rotor set data successfully saved");
         }                        
     }
@@ -150,7 +214,7 @@ void file_operations_helper::on_save_rotor_set_activate(rotor_machine *the_machi
 }
 
 
-void file_operations_helper::on_file_open()
+void file_operations_helper::on_file_open_with_callback(sigc::slot<bool, Glib::ustring&> load_data)
 {
     Glib::ustring temp_file_name;
     Gtk::FileChooserDialog file_dialog(*win, "Open Settings file");
@@ -174,7 +238,7 @@ void file_operations_helper::on_file_open()
         temp_file_name = file_dialog.get_filename();
         file_dialog.hide();
         
-        if (load_settings(temp_file_name))
+        if (load_data(temp_file_name))
         {
             error_message("Loading settings file failed");
         }

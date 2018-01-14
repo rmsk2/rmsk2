@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -427,6 +427,7 @@ def write_rotor_set(out_file_name):
 
     fd.write(bytes('string enigma_rotor_set = "\\n\\\n', 'ascii'))
     fd.write(bytes('[general]\\n\\\n', 'ascii'))
+    fd.write(bytes('name=defaultset\\n\\\n', 'ascii'))
     fd.write(bytes('ids=' + id_str + "\\n\\\n", 'ascii'))
     fd.write(bytes("\\n\\\n", 'ascii'));
 

@@ -18,7 +18,7 @@ the notch rings look like additional rotors, but there are in fact only five wir
 <media type="image" src="nema.png"/>
 </p>
 <p>
-The leftmost rotor (shown at position M) is the refelctor and the rightmost element (shown at position V and coloured red) is the final notch ring. Between
+The leftmost rotor (shown at position M) is the reflector and the rightmost element (shown at position V and coloured red) is the final notch ring. Between
 these two elements rotors and notch rings alternate, i.e. when counted from the left the first, third, 5th, 7th and 9th elements are rotors, the rest are notch
 rings. It is possible that no rotor steps for up to three consecutive letters.
 </p>

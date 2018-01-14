@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,6 +265,7 @@ vector<string> rotor_machine::get_rotor_set_names()
 
 void rotor_machine::add_rotor_set(string& name, rotor_set *set)
 {
+    set->set_name(name);
     rotor_sets[name] = set;
 }
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,20 @@ public:
     /*! \brief Creates an empty rotor set, that contains rotors which all have r_size contacts and rings
      *         of equal size. 
      */
-    rotor_set(unsigned r_size) { rotor_size = r_size; }
+    rotor_set(unsigned r_size) { rotor_size = r_size;  rset_name = DEFAULT_SET;}
 
     /*! \brief Default constructor. Creates an empty rotor set, that contains rotors which all have a size
      *         of zero. 
      */
-    rotor_set() { rotor_size = 0; }
+    rotor_set() { rotor_size = 0; rset_name = DEFAULT_SET; }
+
+    /*! \brief Allows to change the rotor set name. The parameter new_name has to contain the new name.
+     */        
+    void set_name(string& new_name) { rset_name = new_name; }
+
+    /*! \brief Returns the name of the rotor set.
+     */            
+    string get_name() { return rset_name; }
     
     /*! \brief Returns a rotor/rotor_ring pair as specified by the supplied r_id parameter. If the rotor id
      *         is unknown an exception of type runtime_error is thrown.
@@ -206,7 +214,11 @@ protected:
     /*! \brief Holds the known ring data vectors and ring ids as well as the mapping of ring id to
      *         ring data vector.
      */            
-    map<unsigned int, vector<unsigned int> > ring_data_vals;  
+    map<unsigned int, vector<unsigned int> > ring_data_vals;
+
+    /*! \brief Holds the name of the rotor set by which it can be referred to in a ::rotor_machine object.
+     */                    
+    string rset_name;  
 };
 
 #endif /* rotor_set_h__ */

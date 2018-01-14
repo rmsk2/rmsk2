@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,6 @@
 #include<rotor_set.h>
 #include<printing_device.h>
 #include<rotor_keyboard.h>
-
-/*! \brief Name of the default set that has to be present in each rotor_machine object.
- */ 
-#define DEFAULT_SET "defaultset"
-
 
 class printing_device;
 class rotor_keyboard;

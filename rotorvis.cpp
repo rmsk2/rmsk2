@@ -89,7 +89,9 @@ public:
 
     /*! \brief Callback that is executed, when the "Save rotor set data" menu entry is selected.
      */    
-    virtual void on_save_rotor_set_activate();      
+    virtual void on_save_rotor_set_activate();  
+    
+    virtual void on_load_rotor_set_activate();    
     
     /*! \brief Method that can be used to set the least recently used directory. The new value has to be specified by the string referenced by the
      *         l_dir parameter.
@@ -408,6 +410,11 @@ void rotor_visual::on_save_rotor_set_activate()
         sigaba *s = dynamic_cast<sigaba *>(simulator_gui->get_machine());
         file_helper.on_save_rotor_set_activate(s, s->get_sigaba_stepper()->get_index_bank());   
     }
+}
+
+void rotor_visual::on_load_rotor_set_activate()
+{
+    file_helper.on_load_rotor_set_activate(simulator_gui->get_machine());
 }
 
 bool rotor_visual::do_load(Glib::ustring& desired_file_name)
@@ -771,6 +778,7 @@ void rotor_visual::setup_menus()
     // Help menu    
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
     menu_action->add_action("saverotorset", sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));    
+    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &rotor_visual::on_load_rotor_set_activate));        
     menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
     win->insert_action_group("rotorvis", menu_action); 
@@ -838,6 +846,10 @@ void rotor_visual::setup_menus()
     "      <item>"
     "        <attribute name='label' translatable='no'>Save rotor se_t data ...</attribute>"
     "        <attribute name='action'>rotorvis.saverotorset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
+    "        <attribute name='action'>rotorvis.loadrotorset</attribute>"
     "      </item>"
     "      <item>"
     "        <attribute name='label' translatable='no'>A_bout ...</attribute>"

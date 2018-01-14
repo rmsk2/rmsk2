@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,6 +135,7 @@ void rotor_set::save_ini(Glib::KeyFile& ini_file)
     }    
     
     ini_file.set_integer_list(GENERAL, "ids", data_temp);
+    ini_file.set_string(GENERAL, "name", rset_name);
     
     for (iter = perms.begin(); iter != perms.end(); ++iter)
     {
@@ -176,9 +177,10 @@ bool rotor_set::load_ini(Glib::KeyFile& ini_file)
     set<unsigned int> const_ids_temp;   
     
     
-    if (!(result = !ini_file.has_key(GENERAL, "ids")))
+    if (!(result = !ini_file.has_key(GENERAL, "ids") || !ini_file.has_key(GENERAL, "name")))
     {    
         id_list = ini_file.get_integer_list(GENERAL, "ids");
+        rset_name = ini_file.get_string(GENERAL, "name");
         
         for (unsigned int count = 0; (count < (unsigned int)id_list.size()) && (!result); count++)
         {

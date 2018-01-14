@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,8 @@ public:
     /*! \brief Callback that is executed, when the "Save rotor set data" menu entry is selected.
      */
     virtual void on_save_rotor_set_data_activate();
+    
+    virtual void on_load_rotor_set_data_activate();
         
     /*! \brief Callback that is executed, when the "Randomize" menu entry is selected.
      */        
