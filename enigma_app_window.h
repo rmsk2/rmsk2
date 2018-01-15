@@ -89,10 +89,16 @@ public:
      */
     virtual void on_ukwd_activate();    
 
-    /*! \brief Callback that is executed, when the "Save rotor set data" menu entry is selected.
+    /*! \brief Callback that is executed, when the "Rotor set|Save rotor set data" menu entry is selected.
      */
     virtual void on_save_rotor_set_data_activate();
-    
+
+    /*! \brief Callback that is executed, when the "Rotor set|Randomize rotor sets ..." menu entry is selected.
+     */            
+    virtual void on_randomize_rotor_set_data_activate();
+
+    /*! \brief Callback that is executed, when the "Rotor set|Laod a rotor set ..." menu entry is selected.
+     */    
     virtual void on_load_rotor_set_data_activate();
         
     /*! \brief Callback that is executed, when the "Randomize" menu entry is selected.
@@ -281,7 +287,10 @@ protected:
     /*! \brief Helper object that is used to manage the events that occur when the user requests to randomize machine settings. 
      */    
     randomizer_param_helper rand_helper;
-          
+
+    /*! \brief Helper object that is used to manage the event that occurs when the user requests to randomize all rotor sets. 
+     */    
+    rotor_set_rand_helper rand_rotor_set_helper;          
 };
 #endif /* __enigma_app_window_h__ */
 

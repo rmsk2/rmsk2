@@ -91,6 +91,12 @@ public:
      */    
     virtual void on_save_rotor_set_activate();  
     
+    /*! \brief Callback that is executed, when the "Rotor set|Randomize rotor sets ..." menu entry is selected.
+     */            
+    virtual void on_randomize_rotor_set_data_activate();    
+
+    /*! \brief Callback that is executed, when the "Rotor set|Laod a rotor set ..." menu entry is selected.
+     */        
     virtual void on_load_rotor_set_activate();    
     
     /*! \brief Method that can be used to set the least recently used directory. The new value has to be specified by the string referenced by the
@@ -237,6 +243,9 @@ protected:
      */    
     randomizer_param_helper rand_helper;
 
+    /*! \brief Helper object that is used to manage the event that occurs when the user requests to randomize all rotor sets. 
+     */    
+    rotor_set_rand_helper rand_rotor_set_helper;
 };
 
 void rotor_visual::set_titles(Glib::ustring& last_file_name)
@@ -311,6 +320,11 @@ void rotor_visual::on_configure_machine()
 void rotor_visual::on_set_rotor_positions()
 {
     pos_helper.set_rotor_positions(NULL);
+}
+
+void rotor_visual::on_randomize_rotor_set_data_activate()
+{
+    rand_rotor_set_helper.randomize_rotor_sets(the_machine.get());
 }
 
 void rotor_visual::on_randomize_machine()
@@ -673,7 +687,7 @@ void rotor_visual::on_mode_changed()
 }
 
 rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
-    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS), pos_helper(ROTORVIS), rand_helper(ROTORVIS)
+    : help_menu_manager(ROTORVIS), file_helper(ROTORVIS), clip_helper(ROTORVIS), loghelp(ROTORVIS), messages(ROTORVIS), pos_helper(ROTORVIS), rand_helper(ROTORVIS), rand_rotor_set_helper(ROTORVIS)
 {    
     last_file_name_used = "";
     win = main_win;
@@ -746,8 +760,12 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     // Setup object to manage log menu events
     loghelp.set_parent_window(win);
     loghelp.set_simulator(disp, simulator_gui);
-    
+
+    // Setup object to manage rotor machine randomization events    
     rand_helper.set_parent_window(win);
+    
+    // Setup object to manage rotor set randomization menu events    
+    rand_rotor_set_helper.set_parent_window(win);
     
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed)); 
     win->signal_delete_event().connect(sigc::mem_fun(*this, &rotor_visual::on_my_delete_event));              
@@ -774,11 +792,14 @@ void rotor_visual::setup_menus()
     menu_action->add_action("processclipboard", sigc::mem_fun(clip_helper, &clipboard_helper::process_clipboard));    
     
     menu_action->add_action("Quit", sigc::mem_fun(*this, &rotor_visual::on_quit_activate));
+
+    // Rotor set menu
+    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));
+    menu_action->add_action("randomizerotorset", sigc::mem_fun(*this, &rotor_visual::on_randomize_rotor_set_data_activate));        
+    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &rotor_visual::on_load_rotor_set_activate));        
     
     // Help menu    
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
-    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));    
-    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &rotor_visual::on_load_rotor_set_activate));        
     menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
     win->insert_action_group("rotorvis", menu_action); 
@@ -838,18 +859,25 @@ void rotor_visual::setup_menus()
     "      </section>"    
     "    </submenu>"
     "    <submenu>"
-    "      <attribute name='label' translatable='yes'>_Help</attribute>"
-    "      <item>"
-    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
-    "        <attribute name='action'>rotorvis.howtouse</attribute>"
-    "      </item>"
+    "      <attribute name='label' translatable='yes'>Rotor set</attribute>"
     "      <item>"
     "        <attribute name='label' translatable='no'>Save rotor se_t data ...</attribute>"
     "        <attribute name='action'>rotorvis.saverotorset</attribute>"
     "      </item>"
     "      <item>"
+    "        <attribute name='label' translatable='no'>Randomize rotor sets ...</attribute>"
+    "        <attribute name='action'>rotorvis.randomizerotorset</attribute>"
+    "      </item>"        
+    "      <item>"
     "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
     "        <attribute name='action'>rotorvis.loadrotorset</attribute>"
+    "      </item>"
+    "    </submenu>"    
+    "    <submenu>"
+    "      <attribute name='label' translatable='yes'>_Help</attribute>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
+    "        <attribute name='action'>rotorvis.howtouse</attribute>"
     "      </item>"
     "      <item>"
     "        <attribute name='label' translatable='no'>A_bout ...</attribute>"

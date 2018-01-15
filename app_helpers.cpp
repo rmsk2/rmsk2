@@ -532,3 +532,17 @@ void randomizer_param_helper::randomize_machine(rotor_machine *machine)
     }
 }
 
+/* ------------------------------------------------------------------ */
+
+void rotor_set_rand_helper::randomize_rotor_sets(rotor_machine *machine)
+{
+    vector<string> all_set_names = machine->get_rotor_set_names();
+    
+    for (string& count : all_set_names)
+    {
+        machine->get_rotor_set(count)->replace_permutations();
+    }
+    
+    info_message("Rotor sets randomized.\n\nRemember that you have to change or confirm the configuration of the machine in order to make it use the new rotor set data!");    
+}
+

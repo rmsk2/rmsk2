@@ -401,4 +401,24 @@ protected:
      */      
     bool was_cancelled;
 };
+
+/*! \brief An application class that allows to handle the event that occurs when the user activates the Rotor set|Randomize rotor sets ...
+ *         menu entry.
+ */    
+class rotor_set_rand_helper : public menu_helper {
+public:
+    /*! \brief Constructor. The parameter name_of_app has to contain the name of the app and is used to set the title
+     *         of any dialog window that is presented to the user while processing the event.
+     */
+    rotor_set_rand_helper(const char *name_of_app) : menu_helper(name_of_app) { ; }
+
+    /*! \brief This method randomizes all rotor sets known to the rotor_machine object to which the parameter machine points.
+     */    
+    virtual void randomize_rotor_sets(rotor_machine *machine);    
+
+    /*! \brief Destructor.
+     */                    
+    virtual ~rotor_set_rand_helper() { ; }
+};
+
 #endif /* __app_helpers_h__ */

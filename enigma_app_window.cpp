@@ -24,7 +24,7 @@
 
 
 enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
-    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA), pos_helper(ENIGMA), rand_helper(ENIGMA)
+    : conf(c), help_menu_manager(ENIGMA), file_helper(ENIGMA), clip_helper(ENIGMA), loghelp(ENIGMA), messages(ENIGMA), pos_helper(ENIGMA), rand_helper(ENIGMA), rand_rotor_set_helper(ENIGMA)
 {
     Glib::ustring window_title(" Enigma");
     
@@ -60,6 +60,9 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     // Setup object to handle clipboard processing menu events
     clip_helper.set_parent_window(this);    
     clip_helper.set_simulator(simulator_gui);    
+
+    // Setup object to manage rotor set randomization menu events    
+    rand_rotor_set_helper.set_parent_window(this);
     
     // Setup main window (stacking menu bar and simulator GUI object on top of each other)
     vbox1 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
@@ -181,10 +184,13 @@ void enigma_app_window::setup_menus()
     menu_action->add_action("randomize", sigc::mem_fun(*this, &enigma_app_window::on_randomize_activate));
     menu_action->add_action("ukwd", sigc::mem_fun(*this, &enigma_app_window::on_ukwd_activate));                        
 
+    // Rotor set menu
+    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));
+    menu_action->add_action("randomizerotorset", sigc::mem_fun(*this, &enigma_app_window::on_randomize_rotor_set_data_activate));
+    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &enigma_app_window::on_load_rotor_set_data_activate));
+
     // Help menu
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
-    menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));
-    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &enigma_app_window::on_load_rotor_set_data_activate));            
     menu_action->add_action("about", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_about_activate));
 
     insert_action_group("enigma", menu_action); 
@@ -266,18 +272,25 @@ void enigma_app_window::setup_menus()
     "      </item>"
     "    </submenu>"
     "    <submenu>"
-    "      <attribute name='label' translatable='no'>_Help</attribute>"
-    "      <item>"
-    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
-    "        <attribute name='action'>enigma.howtouse</attribute>"
-    "      </item>"
+    "      <attribute name='label' translatable='no'>Rotor set</attribute>"
     "      <item>"
     "        <attribute name='label' translatable='no'>Save rotor se_t data ...</attribute>"
     "        <attribute name='action'>enigma.saverotorset</attribute>"
     "      </item>"
     "      <item>"
+    "        <attribute name='label' translatable='no'>Randomize rotor sets ...</attribute>"
+    "        <attribute name='action'>enigma.randomizerotorset</attribute>"
+    "      </item>"    
+    "      <item>"
     "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
     "        <attribute name='action'>enigma.loadrotorset</attribute>"
+    "      </item>"
+    "    </submenu>"    
+    "    <submenu>"
+    "      <attribute name='label' translatable='no'>_Help</attribute>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>How to use the simulato_r ...</attribute>"
+    "        <attribute name='action'>enigma.howtouse</attribute>"
     "      </item>"
     "      <item>"
     "        <attribute name='label' translatable='no'>A_bout ...</attribute>"
@@ -480,8 +493,7 @@ void enigma_app_window::sync_rotor_pos()
             // Store this position in configuration
             conf.get_desc_at(count).rotor_pos = temp;
         }        
-    }
-    
+    }    
 }
 
 void enigma_app_window::save_state()
@@ -609,3 +621,7 @@ void enigma_app_window::on_randomize_activate()
     }
 }
 
+void enigma_app_window::on_randomize_rotor_set_data_activate()
+{
+    rand_rotor_set_helper.randomize_rotor_sets(enigma);
+}
