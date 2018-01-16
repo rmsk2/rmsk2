@@ -145,6 +145,37 @@ the simulator has regained the focus.
 </terms>
 </section>
 
+<section id="rotorvis_menu_rotor_sets">
+<title>The Rotor set menu</title>
+<p>The Rotor set menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>Save rotor set data ...</code></title>
+        <p>Allows to save the rotor set data (permutations and ring data) currently used by this software. For some machines more than one rotor set is saved.
+        In case of the SIGABA two files are saved. The rotor set of the cipher and driver rotors and the rotor set of the index rotors. SG39 and Typex are implemented
+        with several rotor sets which are all saved when selecting this menu entry.
+        </p>
+    </item>
+    <item>
+        <title><code>Randomize rotor sets ...</code></title>
+        <p>After selecting this menu item the permutations used in the current rotor set are randomized. The ring data is not modified. During randomization the permutations for 
+        some rotors are not changed. This is the case for all entry wheels (they are considered to be a physically unalterable part of the machine) and plugable reflectors as they 
+        can be changed by other means. If the original permutation is an involution it is replaced by another involution. 
+        </p>
+    </item>
+    <item>
+        <title><code>Load a rotor set ...</code></title>
+        <p>Load a rotor set file that was previously saved through the Save rotor set data ... entry.
+        </p>
+    </item>
+</terms>
+
+<note><p> Randomizing or loading rotor sets does not change the current configuration of the machine as this configuration was generated with the old
+rotor set data. You have to reconfigure the machine in order to make it use the new rotor sets. 
+</p></note>
+</section>
+
+
 <section id="rotorvis_menu_help">
 <title>The Help menu</title>
 <p>The Help menu contains the following entries:</p>
@@ -153,12 +184,6 @@ the simulator has regained the focus.
         <title><code>How to use this simulator ...</code></title>
         <p>Opens this help file.</p>
     </item>
-    <item>
-        <title><code>Save rotor set data ...</code></title>
-        <p>Allows to save the rotor set data (permutations and ring data) used by this software for simulating the currently selected machine. In case
-        of the SIGABA two files are saved. The rotor set of the cipher and driver rotors and the rotor set of the index rotors.
-        </p> 
-    </item>   
     <item>
         <title><code>About ...</code></title>
         <p>Gives some information about the author of this software.</p>

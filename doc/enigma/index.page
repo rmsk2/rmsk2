@@ -165,6 +165,34 @@ prepared using a KD Enigma, so this machine has to be considered unverified.
 </terms>
 </section>
 
+<section id="enigma_menu_rotor_sets">
+<title>The Rotor set menu</title>
+<p>The Rotor set menu contains the following entries:</p>
+<terms>
+    <item>
+        <title><code>Save rotor set data ...</code></title>
+        <p>Allows to save the rotor set data (permutations and ring data) currently used by this software. The saved rotor set contains the corresponding data for all Enigma variants simulated
+        by this program. It also includes the rotor set data for the Typex.
+        </p>
+    </item>
+    <item>
+        <title><code>Randomize rotor sets ...</code></title>
+        <p>After selecting this menu item the permutations used in the current rotor set are randomized. The ring data is not modified. During randomization the permutations for the
+        Eintrittswalze and UKW D are not changed. If the original permutation is an involution it is replaced by another involution. 
+        </p>
+    </item>
+    <item>
+        <title><code>Load a rotor set ...</code></title>
+        <p>Load a rotor set file that was previously saved through the Save rotor set data ... entry.
+        </p>
+    </item>
+</terms>
+
+<note><p> Randomizing or loading rotor sets does not change the current configuration of the machine as this configuration was generated with the old
+rotor set data. You have to reconfigure the machine in order to make it use the new rotor sets. 
+</p></note>
+</section>
+
 <section id="enigma_menu_help">
 <title>The Help menu</title>
 <p>The Help menu contains the following entries:</p>
@@ -172,12 +200,6 @@ prepared using a KD Enigma, so this machine has to be considered unverified.
     <item>
         <title><code>How to use this simulator ...</code></title>
         <p>Opens this help file.</p>
-    </item>
-    <item>
-        <title><code>Save rotor set data ...</code></title>
-        <p>Allows to save the rotor set data (permutations and ring data) used by this software. The saved rotor set contains the corresponding data for all Enigma variants simulated
-        by this program. It also includes the rotor set data for the Typex.
-        </p>
     </item>
     <item>
         <title><code>About ...</code></title>
