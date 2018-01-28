@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -458,17 +458,50 @@ unsigned int rotor_machine_proxy::set_rotor_set_state_processor(tlv_entry& param
         {
             vector<string> rotor_set_names = machine->get_rotor_set_names();
         
+            // Check if the named rotor set exists in the current machine
             if (std::count(rotor_set_names.begin(), rotor_set_names.end(), rotor_set_name) != 0)
             {
                 try
                 {
                     string set_state((char *)rotor_set_data.c_str(), rotor_set_data.length());
                     Glib::KeyFile ini_file;
+                    // load rotor set ini file
                     bool load_success = ini_file.load_from_data(set_state);
                 
-                    if (load_success && (!machine->get_rotor_set(rotor_set_name)->load_ini(ini_file)))
+                    // Check if ini file could be loaded successfully
+                    if (load_success)
                     {
-                        result = out_stream->write_error_tlv(ERR_OK);
+                        // load ini file into a test rotor set object
+                        rotor_set test_load_set(machine->get_rotor_set(rotor_set_name)->get_rotor_size());
+                        bool test_load_fail = test_load_set.load_ini(ini_file);
+                        
+                        // Check that loading the rotor set file was successfull and that the name of the original and
+                        // the loaded set match
+                        if ((!test_load_fail) && (test_load_set.get_name() == rotor_set_name))
+                        {                        
+                            vector<unsigned int> rotor_ids, ring_ids, rotor_ids_test, ring_ids_test;
+                            
+                            // Check that the loaded set and the current set contain the same rotor and ring ids.
+                            machine->get_rotor_set(rotor_set_name)->get_ids(rotor_ids);
+                            machine->get_rotor_set(rotor_set_name)->get_ring_ids(ring_ids);
+                            test_load_set.get_ids(rotor_ids_test);
+                            test_load_set.get_ring_ids(ring_ids_test);
+                                                        
+                            if ((rotor_ids == rotor_ids_test) && (ring_ids == ring_ids_test))
+                            {
+                                // Replace current set with ini file contents. Can not fail after the previous checks.
+                                machine->get_rotor_set(rotor_set_name)->load_ini(ini_file);
+                                result = out_stream->write_error_tlv(ERR_OK);
+                            }
+                            else
+                            {
+                                result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                            }
+                        }
+                        else
+                        {
+                            result = out_stream->write_error_tlv(ERR_CALL_FAILED);
+                        }                        
                     }
                     else
                     {
@@ -477,6 +510,7 @@ unsigned int rotor_machine_proxy::set_rotor_set_state_processor(tlv_entry& param
                 }
                 catch(...)
                 {
+                    // Loading the ini file did throw an ecxeption
                     result = out_stream->write_error_tlv(ERR_CALL_FAILED);
                 }                
             }

@@ -77,11 +77,11 @@ public:
      */    
     virtual boost::shared_ptr<rotor_ring> make_ring(unsigned int ring_id);
     
-    /*! \brief Returns all rotor ids known to this rotor_set.
+    /*! \brief Returns all rotor ids known to this rotor_set. The vector ids is sorted in ascending order.
      */        
     virtual void get_ids(vector<unsigned int>& ids);
 
-    /*! \brief Returns all ring ids known to this rotor_set.
+    /*! \brief Returns all ring ids known to this rotor_set. The vector ids is sorted in ascending order.
      */        
     virtual void get_ring_ids(vector<unsigned int>& ids);    
     
