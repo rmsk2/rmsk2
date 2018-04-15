@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 #include<rotor_machine.h>
+#include<numeric>
 
 /*! \file rotor_machine.cpp
  *  \brief Implementation of the rotor_machine class.
@@ -205,6 +206,30 @@ ustring rotor_machine::visualize_rotor_pos(const char *rotor_identifier)
     string help(rotor_identifier); 
     
     return visualize_rotor_pos(help);
+}
+
+vector<ustring> rotor_machine::visualize_active_permutations()
+{
+    vector<unsigned int> rotors_to_visualize(stepper->get_num_rotors());
+    iota(std::begin(rotors_to_visualize), std::end(rotors_to_visualize), 0);
+    
+    return rotor_perm_visualizer_help(rotors_to_visualize, *rmsk::std_alpha());
+}
+
+vector<ustring> rotor_machine::rotor_perm_visualizer_help(vector<unsigned int>& positions_to_select, alphabet<char>& alpha_to_use)
+{
+    vector<ustring> result;
+    permutation identity = alpha_to_use.get_identity();
+    
+    result.push_back(alpha_to_use.perm_as_string(identity));
+    
+    for (unsigned int count : positions_to_select)
+    {
+        ustring help = alpha_to_use.perm_as_string(*stepper->get_descriptor(count).r->get_perm());
+        result.push_back(help);
+    }
+    
+    return result;
 }
 
 ustring rotor_machine::visualize_all_positions()

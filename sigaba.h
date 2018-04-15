@@ -227,6 +227,10 @@ public:
      *         0123456789.
      */
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+    
+    /*! \brief Returns a string representation of all the permutations currently in use in this machine. 
+     */
+    virtual vector<ustring> visualize_active_permutations();    
 
     /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
      *
@@ -387,6 +391,10 @@ public:
     /*! \brief Calls sigaba_base_machine::visualize_sigaba_rotor_pos with the standard alphabet.
      */    
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+    
+    /*! \brief Returns a string representation of all the permutations currently in use in this machine. 
+     */
+    virtual vector<ustring> visualize_active_permutations();    
     
     /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
      *         of the machine.

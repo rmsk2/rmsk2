@@ -233,6 +233,13 @@ ustring sigaba_index_machine::visualize_rotor_pos(string& rotor_identifier)
     return visualize_sigaba_rotor_pos(rotor_identifier, index_alphabet);
 }
 
+vector<ustring> sigaba_index_machine::visualize_active_permutations()
+{
+    vector<unsigned int> positions_to_visualize = {0, 1, 2, 3, 4};
+    
+    return rotor_perm_visualizer_help(positions_to_visualize, index_alphabet);
+}
+
 void sigaba_index_machine::reset()
 {
     // Set all rotors to position 0
@@ -584,6 +591,21 @@ ustring sigaba::visualize_rotor_pos(string& rotor_identifier)
 {
     return visualize_sigaba_rotor_pos(rotor_identifier, *rmsk::std_alpha());
 }
+
+vector<ustring> sigaba::visualize_active_permutations()
+{
+    vector<ustring> result;
+    vector<ustring> index_perms = get_sigaba_stepper()->get_index_bank()->visualize_active_permutations();
+    vector<ustring> driver_perms = get_sigaba_stepper()->get_driver_machine()->visualize_active_permutations();
+    vector<ustring> crypt_perms = rotor_machine::visualize_active_permutations();
+    
+    result.insert(std::end(result), std::begin(index_perms), std::end(index_perms));
+    result.insert(std::end(result), std::begin(driver_perms), std::end(driver_perms));
+    result.insert(std::end(result), std::begin(crypt_perms) + 1, std::end(crypt_perms));
+    
+    return result;
+}
+
 
 ustring sigaba::visualize_all_positions()
 {

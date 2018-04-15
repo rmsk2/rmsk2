@@ -249,6 +249,14 @@ ustring nema::visualize_rotor_pos(string& rotor_identifier)
     return result;
 }
 
+vector<ustring> nema::visualize_active_permutations()
+{
+    vector<unsigned int> positions_to_visualize = {0, 2, 4, 6, 8, 10};
+    
+    return rotor_perm_visualizer_help(positions_to_visualize, nema_alpha);
+}
+
+
 bool nema::move_all_rotors(ustring& new_positions)
 {
     bool result = false;

@@ -321,6 +321,13 @@ ustring kl7::visualize_rotor_pos(string& rotor_identifier)
     return result;
 }
 
+vector<ustring> kl7::visualize_active_permutations()
+{
+    vector<unsigned int> positions_to_visualize = {0, 1, 2, 3, 4, 5, 6, 7};
+    
+    return rotor_perm_visualizer_help(positions_to_visualize, kl7_alpha);
+}
+
 bool kl7::move_all_rotors(ustring& new_positions)
 {
     bool result = false;    

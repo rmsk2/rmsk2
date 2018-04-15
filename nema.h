@@ -205,6 +205,10 @@ public:
      *         ustring of length one. The letter at position zero is lower case and in the range a-z.
      */
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
+    
+    /*! \brief Returns a string representation of all the permutations currently in use in this machine. 
+     */
+    virtual vector<ustring> visualize_active_permutations(); 
 
     /*! \brief Allows to create a special drive wheel that combines the notches of two other drive wheels.
      *

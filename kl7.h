@@ -204,6 +204,10 @@ public:
      */    
     virtual ustring visualize_rotor_pos(string& rotor_identifier);
     
+    /*! \brief Returns a string representation of all the permutations currently in use in this machine. 
+     */
+    virtual vector<ustring> visualize_active_permutations();    
+    
     /*! \brief Returns a string that contains a visualization of the rotor positions as shown in the rotor windows
      *         of the machine.
      *

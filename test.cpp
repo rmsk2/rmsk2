@@ -89,6 +89,14 @@ protected:
     /*! \brief Randomizes the default enigma rotor set and saves it.
      */        
     bool rand_rotor_set_test();
+    
+    /*! \brief Prints permutations.
+     */        
+    bool active_perms_test(); 
+
+    /*! \brief Append the vector of ustrings as notes of this test.
+     */            
+    void append_ustr_vector(vector<ustring>& msgs);
 };
 
 void alles_andere::append_config_notes(map<string, string> config_data)
@@ -99,6 +107,14 @@ void alles_andere::append_config_notes(map<string, string> config_data)
     {
         help = iter.first + ": " + iter.second;
         append_note(help);
+    }    
+}
+
+void alles_andere::append_ustr_vector(vector<ustring>& msgs)
+{
+    for (auto &count : msgs)
+    {
+        append_note(count.c_str());
     }    
 }
 
@@ -372,6 +388,74 @@ bool alles_andere::uhr_cabling_test()
     return result;
 }
 
+bool alles_andere::active_perms_test()
+{
+    bool result = true;
+    
+    append_note("Print active permutations test start");
+    
+    append_note("------ Enigma ------");
+    map<string, string> kw;    
+    string enigma_model = "Services";
+    boost::scoped_ptr<configurator> cnf2(configurator_factory::get_configurator(enigma_model));
+    kw[KW_ENIG_ROTOR_SELECTION] = "1153";
+    kw[KW_ENIG_RINGSTELLUNG] = "abc";
+    kw[KW_ENIG_STECKERBRETT] = "17:adcnetflgijvkzpuqywx";
+    kw[KW_USES_UHR] = CONF_TRUE;
+    kw[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+    boost::scoped_ptr<rotor_machine> test_machine(cnf2->make_machine(kw));
+    
+    auto all_perms = test_machine->visualize_active_permutations();
+    append_ustr_vector(all_perms);
+    
+    append_note("------ Enigma ------");    
+    
+    append_note("------ Nema ------");
+    boost::scoped_ptr<configurator> cnf_nema(configurator_factory::get_configurator(MNAME_NEMA));
+    map<string, string> kw_nema;    
+    kw_nema[KW_NEMA_ROTORS] = "abcd";
+    kw_nema[KW_NEMA_RINGS] = "12 13 14 15";
+    kw_nema[KW_NEMA_WAR_MACHINE] = CONF_TRUE;
+    boost::scoped_ptr<rotor_machine> test_nema(cnf_nema->make_machine(kw_nema));
+    
+    auto all_perms_nema = test_nema->visualize_active_permutations();
+    append_ustr_vector(all_perms_nema);
+    
+    append_note("------ Nema ------");   
+    
+    append_note("------ KL7 ------");
+    boost::scoped_ptr<configurator> cnf_kl7(configurator_factory::get_configurator(MNAME_KL7));
+    map<string, string> kw_kl7;    
+    kw_kl7[KW_KL7_ROTORS] = "lfcgabhd";
+    kw_kl7[KW_KL7_ALPHA_POS] = "17 1 1 23 1 36 1 1";
+    kw_kl7[KW_KL7_NOTCH_RINGS] = "2 4 3 11 7 1 10";
+    kw_kl7[KW_KL7_NOTCH_POS] = "eaaag+aa";
+    boost::scoped_ptr<rotor_machine> test_kl7(cnf_kl7->make_machine(kw_kl7));
+    
+    auto all_perms_kl7 = test_kl7->visualize_active_permutations();
+    append_ustr_vector(all_perms_kl7);
+    
+    append_note("------ KL7 ------");    
+    
+    append_note("------ SIGABA ------");
+    boost::scoped_ptr<configurator> cnf_sigaba(configurator_factory::get_configurator(MNAME_SIGABA));
+    map<string, string> kw_sigaba;    
+    kw_sigaba[KW_CIPHER_ROTORS] = "0N1N2R3N4N";
+    kw_sigaba[KW_CONTROL_ROTORS] = "5N6N7R8N9N";
+    kw_sigaba[KW_INDEX_ROTORS] = "0N1N2R3N4N";
+    kw_sigaba[KW_CSP_2900_FLAG] = CONF_FALSE;
+    boost::scoped_ptr<rotor_machine> test_sigaba(cnf_sigaba->make_machine(kw_sigaba));
+    
+    auto all_perms_sigaba = test_sigaba->visualize_active_permutations();
+    append_ustr_vector(all_perms_sigaba);
+
+    append_note("------ SIGABA ------");                
+    
+    append_note("Print active permutations test end");
+    
+    return result;
+}
+
 /*! 
  *  Currently this method calls testroutines for the Enigma (Uhr), SG39 and the KL7. Put
  *  your own tests here if you do not want to implement them in a separate class or method.
@@ -390,6 +474,7 @@ bool alles_andere::test()
     result = result && kl7_verification_test();
     result = result && enigma_configurator_test();
     result = result && sg39_as_m4_test();
+    result = result && active_perms_test();    
     result = result && rand_rotor_set_test();
     
     append_note("UKW D notation test start");

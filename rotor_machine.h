@@ -238,6 +238,10 @@ public:
      */
     virtual ustring visualize_all_positions();
     
+    /*! \brief Returns a string representation of all the permutations currently in use as rotors in this machine. 
+     */
+    virtual vector<ustring> visualize_active_permutations();
+    
     /*! \brief Takes a textual specification of the new rotor positions and moves the (visible) rotors accordingly.
      *
      *  Returns true if an error was encountered else false.
@@ -391,7 +395,9 @@ protected:
 
     /*! \brief This method encrypts the symbol specified in parameter symbol but does *not* step the machine.
      */                        
-    virtual unsigned int get_enc_symbol(unsigned int symbol);        
+    virtual unsigned int get_enc_symbol(unsigned int symbol);    
+    
+    vector<ustring> rotor_perm_visualizer_help(vector<unsigned int>& positions_to_select, alphabet<char>& alpha_to_use);    
 
     /*! \brief Holds the stpping_gear in use in this rotor_machine.
      */                    
