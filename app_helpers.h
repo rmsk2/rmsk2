@@ -59,6 +59,11 @@ public:
      *         in parameter message.
      */
     virtual void info_message(Glib::ustring& message) { message_dialog(message, Gtk::MESSAGE_INFO); }
+
+    /*! \brief Helper method that can be used to show an information dialog to the user displaying the message that results
+     *         from concatenating the stirngs in parameter messages.
+     */
+    virtual void info_message(vector<Glib::ustring>& messages);
     
     /*! \brief Helper method that can be used to show an information dialog to the user displaying the message given
      *         in parameter message.

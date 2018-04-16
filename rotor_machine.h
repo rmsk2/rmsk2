@@ -396,7 +396,12 @@ protected:
     /*! \brief This method encrypts the symbol specified in parameter symbol but does *not* step the machine.
      */                        
     virtual unsigned int get_enc_symbol(unsigned int symbol);    
-    
+
+    /*! \brief This method visualizes all permutations which are currently in use in this machine. The first parameter contains the
+     *         indices of the rotor slots which are intended to be visualized. Normally this vector contains all numbers between 0 and the
+     *         number of rotors in the machine. The second parameter references the alphabet which is to be used to map the permutations
+     *         to strings.
+     */    
     vector<ustring> rotor_perm_visualizer_help(vector<unsigned int>& positions_to_select, alphabet<char>& alpha_to_use);    
 
     /*! \brief Holds the stpping_gear in use in this rotor_machine.

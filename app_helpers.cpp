@@ -33,6 +33,18 @@ void menu_helper::message_dialog(Glib::ustring& message, Gtk::MessageType type)
     msg.run();                
 }
 
+void menu_helper::info_message(vector<Glib::ustring>& messages)
+{
+    ustring message_text;
+    
+    for (const auto &count : messages)
+    {
+        message_text += count + "\n";
+    }
+    
+    info_message(message_text);
+}
+
 /* ------------------------------------------------------------------ */
 
 const char *apache_license = "Copyright 2018 Martin Grap\n"

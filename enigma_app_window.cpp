@@ -188,6 +188,7 @@ void enigma_app_window::setup_menus()
     menu_action->add_action("saverotorset", sigc::mem_fun(*this, &enigma_app_window::on_save_rotor_set_data_activate));
     menu_action->add_action("randomizerotorset", sigc::mem_fun(*this, &enigma_app_window::on_randomize_rotor_set_data_activate));
     menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &enigma_app_window::on_load_rotor_set_data_activate));
+    menu_action->add_action("showrotors", sigc::mem_fun(*this, &enigma_app_window::on_show_rotors_activate));    
 
     // Help menu
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
@@ -285,6 +286,10 @@ void enigma_app_window::setup_menus()
     "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
     "        <attribute name='action'>enigma.loadrotorset</attribute>"
     "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Show active rotors ... </attribute>"
+    "        <attribute name='action'>enigma.showrotors</attribute>"
+    "      </item>"    
     "    </submenu>"    
     "    <submenu>"
     "      <attribute name='label' translatable='no'>_Help</attribute>"
@@ -624,4 +629,14 @@ void enigma_app_window::on_randomize_activate()
 void enigma_app_window::on_randomize_rotor_set_data_activate()
 {
     rand_rotor_set_helper.randomize_rotor_sets(enigma);
+}
+
+void enigma_app_window::on_show_rotors_activate()
+{
+    ustring message_intro = "Current rotor permutations:\n";
+    
+    auto visualized_perms = enigma->visualize_active_permutations();
+    visualized_perms.insert(std::begin(visualized_perms), message_intro);
+        
+    messages.info_message(visualized_perms);
 }

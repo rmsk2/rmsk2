@@ -16,6 +16,7 @@
 
 #include<rotor_machine.h>
 #include<numeric>
+#include<boost/lexical_cast.hpp>
 
 /*! \file rotor_machine.cpp
  *  \brief Implementation of the rotor_machine class.
@@ -221,11 +222,14 @@ vector<ustring> rotor_machine::rotor_perm_visualizer_help(vector<unsigned int>& 
     vector<ustring> result;
     permutation identity = alpha_to_use.get_identity();
     
-    result.push_back(alpha_to_use.perm_as_string(identity));
+    // Add strings representing the alphabet as header
+    result.push_back("#: " + alpha_to_use.perm_as_string(identity));
+    result.push_back("");
     
+    // Add the rotor permutations
     for (unsigned int count : positions_to_select)
     {
-        ustring help = alpha_to_use.perm_as_string(*stepper->get_descriptor(count).r->get_perm());
+        ustring help = boost::lexical_cast<string>(count) + ": " + alpha_to_use.perm_as_string(*stepper->get_descriptor(count).r->get_perm());
         result.push_back(help);
     }
     

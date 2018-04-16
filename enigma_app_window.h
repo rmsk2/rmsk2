@@ -100,6 +100,10 @@ public:
     /*! \brief Callback that is executed, when the "Rotor set|Laod a rotor set ..." menu entry is selected.
      */    
     virtual void on_load_rotor_set_data_activate();
+    
+    /*! \brief Callback that is executed, when the "Rotor set|Show active rotors ..." menu entry is selected.
+     */        
+    virtual void on_show_rotors_activate();    
         
     /*! \brief Callback that is executed, when the "Randomize" menu entry is selected.
      */        

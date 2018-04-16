@@ -112,7 +112,7 @@ void alles_andere::append_config_notes(map<string, string> config_data)
 
 void alles_andere::append_ustr_vector(vector<ustring>& msgs)
 {
-    for (auto &count : msgs)
+    for (const auto &count : msgs)
     {
         append_note(count.c_str());
     }    

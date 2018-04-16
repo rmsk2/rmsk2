@@ -98,6 +98,10 @@ public:
     /*! \brief Callback that is executed, when the "Rotor set|Laod a rotor set ..." menu entry is selected.
      */        
     virtual void on_load_rotor_set_activate();    
+
+    /*! \brief Callback that is executed, when the "Rotor set|Show active rotors ..." menu entry is selected.
+     */        
+    virtual void on_show_rotors_activate();    
     
     /*! \brief Method that can be used to set the least recently used directory. The new value has to be specified by the string referenced by the
      *         l_dir parameter.
@@ -429,6 +433,16 @@ void rotor_visual::on_save_rotor_set_activate()
 void rotor_visual::on_load_rotor_set_activate()
 {
     file_helper.on_load_rotor_set_activate(simulator_gui->get_machine());
+}
+
+void rotor_visual::on_show_rotors_activate()
+{
+    ustring message_intro = "Current rotor permutations:\n";
+    
+    auto visualized_perms = the_machine->visualize_active_permutations();
+    visualized_perms.insert(std::begin(visualized_perms), message_intro);
+        
+    messages.info_message(visualized_perms);
 }
 
 bool rotor_visual::do_load(Glib::ustring& desired_file_name)
@@ -796,7 +810,8 @@ void rotor_visual::setup_menus()
     // Rotor set menu
     menu_action->add_action("saverotorset", sigc::mem_fun(*this, &rotor_visual::on_save_rotor_set_activate));
     menu_action->add_action("randomizerotorset", sigc::mem_fun(*this, &rotor_visual::on_randomize_rotor_set_data_activate));        
-    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &rotor_visual::on_load_rotor_set_activate));        
+    menu_action->add_action("loadrotorset", sigc::mem_fun(*this, &rotor_visual::on_load_rotor_set_activate));
+    menu_action->add_action("showrotors", sigc::mem_fun(*this, &rotor_visual::on_show_rotors_activate));       
     
     // Help menu    
     menu_action->add_action("howtouse", sigc::mem_fun(help_menu_manager, &help_menu_helper::on_help_activate));
@@ -871,6 +886,10 @@ void rotor_visual::setup_menus()
     "      <item>"
     "        <attribute name='label' translatable='no'>Load a rotor set ...</attribute>"
     "        <attribute name='action'>rotorvis.loadrotorset</attribute>"
+    "      </item>"
+    "      <item>"
+    "        <attribute name='label' translatable='no'>Show active rotors ... </attribute>"
+    "        <attribute name='action'>rotorvis.showrotors</attribute>"
     "      </item>"
     "    </submenu>"    
     "    <submenu>"

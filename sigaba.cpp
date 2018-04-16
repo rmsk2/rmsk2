@@ -596,12 +596,13 @@ vector<ustring> sigaba::visualize_active_permutations()
 {
     vector<ustring> result;
     vector<ustring> index_perms = get_sigaba_stepper()->get_index_bank()->visualize_active_permutations();
+    index_perms.push_back("");
     vector<ustring> driver_perms = get_sigaba_stepper()->get_driver_machine()->visualize_active_permutations();
     vector<ustring> crypt_perms = rotor_machine::visualize_active_permutations();
     
     result.insert(std::end(result), std::begin(index_perms), std::end(index_perms));
     result.insert(std::end(result), std::begin(driver_perms), std::end(driver_perms));
-    result.insert(std::end(result), std::begin(crypt_perms) + 1, std::end(crypt_perms));
+    result.insert(std::end(result), std::begin(crypt_perms) + 2, std::end(crypt_perms));
     
     return result;
 }

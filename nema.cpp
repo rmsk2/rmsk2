@@ -339,11 +339,13 @@ bool nema::randomize(string& param)
         is_war_machine = true;
     }
     
+    // Set possible rings for war machine
     rings.push_back(12); rings.push_back(13); rings.push_back(14); rings.push_back(15);
     rings.push_back(17); rings.push_back(18);
     
     if (!is_war_machine)
     {
+        // Set possible rings for training machine
         rings.clear();
         rings.push_back(16); rings.push_back(19); rings.push_back(20); rings.push_back(21);
         num_rotors = 4;
@@ -353,12 +355,14 @@ bool nema::randomize(string& param)
     {
         permutation rotor_selection_perm = permutation::get_random_permutation(rand, num_rotors);
         permutation ring_selection_perm = permutation::get_random_permutation(rand, rings.size());            
-            
+        
+        // Construct random rotor setting    
         for(unsigned int count = 0; count < 4; count++)
         {
             rotors += 'a' + (char)(rotor_selection_perm.encrypt(count));
         }
 
+        // Construct random ring setting
         for(unsigned int count = 0; count < 4; count++)
         {
             selected_rings += (boost::lexical_cast<string>(rings[ring_selection_perm.encrypt(count)]) + " ");
