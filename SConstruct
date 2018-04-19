@@ -47,7 +47,7 @@ base_files += ['printing_device.cpp', 'rotor_keyboard.cpp', 'kl7.cpp', 'machine_
 
 base_visual_files = ['display_dialog.cpp', 'base_elements.cpp', 'rotor_window.cpp', 'keyboard_vis.cpp', 'selection_dialog.cpp']
 base_visual_files += ['rotor_draw.cpp', 'output_device.cpp', 'rotor_visualizer.cpp', 'special_rotor_visualizer.cpp', 'rotorpos_dialog.cpp']
-base_visual_files += ['randomizer_dialog.cpp']
+base_visual_files += ['randomizer_dialog.cpp', 'perm_display_dialog.cpp']
 
 rmsk_files = ['test.cpp', 'simple_test.cpp', 'rotor_test.cpp', 'machine_test.cpp', 'enigma_test.cpp', 'typex_test.cpp']
 rmsk_files += ['sigaba_test.cpp', 'nema_test.cpp', 'stepping_test.cpp', 'sg39_test.cpp', 'decipherment_test.cpp', 'kl7_test.cpp']

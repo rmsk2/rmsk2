@@ -34,6 +34,7 @@
 #include<simple_state.h>
 #include<app_helpers.h>
 #include<machine_config.h>
+#include<perm_display_dialog.h>
 
 #define ROTORVIS "rotorvis"
 
@@ -442,7 +443,10 @@ void rotor_visual::on_show_rotors_activate()
     auto visualized_perms = the_machine->visualize_active_permutations();
     visualized_perms.insert(std::begin(visualized_perms), message_intro);
         
-    messages.info_message(visualized_perms);
+    //messages.info_message(visualized_perms);
+    
+    perm_display_dialog perm_disp(*win, visualized_perms);
+    perm_disp.run();
 }
 
 bool rotor_visual::do_load(Glib::ustring& desired_file_name)

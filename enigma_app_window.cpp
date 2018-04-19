@@ -21,6 +21,7 @@
 #include<enigma_app_window.h>
 #include<boost/lexical_cast.hpp>
 #include<enigma_uhr.h>
+#include<perm_display_dialog.h>
 
 
 enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
@@ -638,5 +639,7 @@ void enigma_app_window::on_show_rotors_activate()
     auto visualized_perms = enigma->visualize_active_permutations();
     visualized_perms.insert(std::begin(visualized_perms), message_intro);
         
-    messages.info_message(visualized_perms);
+    //messages.info_message(visualized_perms);
+    perm_display_dialog perm_disp(*this, visualized_perms);
+    perm_disp.run();    
 }
