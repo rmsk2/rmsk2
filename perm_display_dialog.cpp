@@ -23,11 +23,14 @@
 perm_display_dialog::perm_display_dialog(Gtk::Window& parent, vector<Glib::ustring>& permutation_msgs)
     : Dialog("Show rotor permutations", parent, true)
 {
+    auto buttons = get_action_area();
+    buttons->set_layout(Gtk::ButtonBoxStyle::BUTTONBOX_EXPAND);
+    
     ok_button = add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK);
     
     scroll_bar.add(printer);
     Gtk::Box *v_box = get_content_area();
-    scroll_bar.set_size_request(400, 450);
+    scroll_bar.set_size_request(480, 450);
     
     printer.set_editable(false);
     printer.set_cursor_visible(false);

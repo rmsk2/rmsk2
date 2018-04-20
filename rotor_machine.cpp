@@ -221,15 +221,18 @@ vector<ustring> rotor_machine::rotor_perm_visualizer_help(vector<unsigned int>& 
 {
     vector<ustring> result;
     permutation identity = alpha_to_use.get_identity();
+    vector<string> rotor_identifiers;
+    get_stepping_gear()->get_rotor_identifiers(rotor_identifiers);
     
     // Add strings representing the alphabet as header
-    result.push_back("#: " + alpha_to_use.perm_as_string(identity));
-    result.push_back("");
+    result.push_back(alpha_to_use.perm_as_string(identity));
+    string separator(identity.get_size(), '-');
+    result.push_back(separator);
     
     // Add the rotor permutations
     for (unsigned int count : positions_to_select)
     {
-        ustring help = boost::lexical_cast<string>(count) + ": " + alpha_to_use.perm_as_string(*stepper->get_descriptor(count).r->get_perm());
+        ustring help = alpha_to_use.perm_as_string(*stepper->get_descriptor(count).r->get_perm()) + " (" + rotor_identifiers[count] + ")";
         result.push_back(help);
     }
     
