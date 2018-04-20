@@ -186,6 +186,12 @@ prepared using a KD Enigma, so this machine has to be considered unverified.
         <p>Load a rotor set file that was previously saved through the Save rotor set data ... entry.
         </p>
     </item>
+    <item>
+        <title><code>Show active rotors ...</code></title>
+        <p>Displays a dialog that shows the permutations that are currently in use in the machine. This can be used to display the randomized permutations
+        which were generated after selecting the <code>Randomize rotor sets ...</code> menu entry.
+        </p>
+    </item>       
 </terms>
 
 <note><p> Randomizing or loading rotor sets does not change the current configuration of the machine as this configuration was generated with the old
