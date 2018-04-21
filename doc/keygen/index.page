@@ -110,6 +110,12 @@ other information. Key sheets can either be generated in HTML or TXT format. Her
         right can be used to select a directory through the file chooser dialog.</p>        
     </item>
     <item>
+        <title>Rotor set to load edit box</title>
+        <p>This edit box enables you to optionally specify a custom rotor set file which is loaded before the keysheet is generated. The browse button
+        on the right can be used to select a file containing suitable rotor set data through the file chooser dialog. Leave the edit box empty in order
+        to use the default rotor set.</p>        
+    </item>
+    <item>
         <title>The Generate button</title>
         <p>Click this button to start the key sheet generation process. When sheets for a whole year are generated the progress bar on the top end
         of keygen's window will show the name of the month for which a sheet is currently generated.
@@ -201,11 +207,11 @@ can be used to set up the rotor machines in question.</p>.
     </tr>
     <tr>
         <td><p>Typex with plugboard</p></td>
-        <td><p>TypexPlugsY269</p></td>
+        <td><p>TypexPlugsY2695</p></td>
         <td><p>Key sheets contain wheel settings, ring settings, a specification of the thirteen plugs to be set on the rewirable
-        reflector, a plugboard configuration, a basic rotor setting and a system indicator. The rotor set in use is fixed to Y269. When pasting
-        the rotor settings from a key sheet into the correponding entry boxes in the <code>rotorvis</code> configuration dialog the spaces have
-        to be removed.
+        reflector, a plugboard configuration, a basic rotor setting and a system indicator. The rotor set in use is fixed to Y2695, i.e. the set
+        Y269 but with 5 instead of 4 turnover notches. When pasting the rotor settings from a key sheet into the correponding entry boxes in the
+        <code>rotorvis</code> configuration dialog the spaces have to be removed.        
         </p></td>
     </tr>    
     <tr>

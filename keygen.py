@@ -223,9 +223,12 @@ class SheetGenArgs:
     #        
     #  \param [net] Is a string. It has to contain the name of the key or crypto net which is to appear on the key sheet.
     #            
+    #  \param [rotor_set_file_name] Is a string. It has to contain the name of the file that contains a custom rotor set.
+    #         If this value is '' no custom rotor set is loaded.
+    #            
     #  \param [msg_proc_type] Is a string. It has to specify the type of the message procdure the keysheet is intended.
     #            
-    def __init__(self, machine, year, month, classification, net, msg_proc_type = ''):
+    def __init__(self, machine, year, month, classification, net, rotor_set_file_name, msg_proc_type):
         self.type = machine
         self.year = year
         self.month = month
@@ -236,6 +239,7 @@ class SheetGenArgs:
         self.html = False
         self.tlv_server = keysheetgen.rotorsim.tlvobject.get_tlv_server_path()
         self.msg_proc_type = msg_proc_type
+        self.load_set = rotor_set_file_name
 
 
 ## \brief A class that abstracts the background process that is started when key sheets for a whole year
@@ -361,8 +365,7 @@ class KeyGenWindow(Gtk.Window):
             
         self._proc_combo.set_active(0)
         
-        grid.attach(self._proc_combo, 1, 5, 1, 1)
-        
+        grid.attach(self._proc_combo, 1, 5, 1, 1)        
 
         # Output format row
         html_label = Gtk.Label('Output format:')
@@ -403,6 +406,27 @@ class KeyGenWindow(Gtk.Window):
         hbox.pack_start(self._file_button, False, True, 0)
         
         grid.attach(hbox, 1, 8, 1, 1)
+
+        # Rotor set to load row
+        load_set_label = Gtk.Label('Rotor set to load:')
+        grid.attach(load_set_label, 0, 9, 1, 1)
+        
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                                
+        self._load_set_entry = Gtk.Entry()
+        self._load_set_entry.set_text('')
+        self._load_set_entry.set_hexpand(True)                
+        hbox.pack_start(self._load_set_entry, True, True, 0)
+        
+        data_getter = lambda: self._load_set_entry.get_text()
+        data_setter = lambda x: self._load_set_entry.set_text(x)
+        load_set_callback = lambda x: self.select_input_file(x, data_getter, data_setter, "Select rotor set file")
+        
+        self._load_set_button = Gtk.Button("...")
+        self._load_set_button.connect("clicked", load_set_callback)
+        hbox.pack_start(self._load_set_button, False, True, 0)
+        
+        grid.attach(hbox, 1, 9, 1, 1)
         
         # Generate button        
         self._main_button = Gtk.Button("Generate")
@@ -470,9 +494,10 @@ class KeyGenWindow(Gtk.Window):
         dialog.run()       
         dialog.destroy()
 
-    ## \brief This method serves as a callback for the show file dialog ("...") button.
+    ## \brief This method serves as a callback for the "..." button next of the "Output directory" which is intended to
+    #         select an output directory for the keysheets and (optionally) state files.
     #
-    #  \param [widget] Is an object of type Gtk.Widget.
+    #  \param [widget] Is an object of type Gtk.Widget. This is a required part of a callback's signature.
     #
     #  \returns Nothing.
     #        
@@ -492,6 +517,37 @@ class KeyGenWindow(Gtk.Window):
 
         dialog.destroy()
 
+    ## \brief This method serves as a callback for for selecting an input file.
+    #
+    #  \param [widget] Is an object of type Gtk.Widget. This is a required part of a callback's signature.
+    #
+    #  \param [var_getter] Is a callable object that takes no argument and returns a string. It is used to retrieve the
+    #         the default value for file to select.
+    #
+    #  \param [var_setter] Is a callable object that takes a string and returns nothing. It is used to set a variable
+    #         to the file name selected by the user.    
+    #
+    #  \param [user_info_text] Is a string. Contains the information text displayed to the user in order to explain what type
+    #         of file is to be selected.
+    #    
+    #  \returns Nothing.
+    #        
+    def select_input_file(self, widget, var_getter, var_setter, user_info_text):
+        dialog = Gtk.FileChooserDialog(user_info_text, self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+        dialog.set_create_folders(False)
+
+        # Set file_name initially displayed by the dialog
+        if var_getter() != '':
+            dialog.set_filename(var_getter())
+
+        response = dialog.run()
+        
+        # Use data if user clicked on OK 
+        if response == Gtk.ResponseType.OK:
+            var_setter(dialog.get_filename())
+
+        dialog.destroy()
+
     ## \brief This method serves as a callback for the "Generate" button.
     #
     #  \param [button] Is an object of type Gtk.Button.
@@ -502,7 +558,8 @@ class KeyGenWindow(Gtk.Window):
         if self._outdir_entry.get_text() != '':
             # Get sheet generation parameters from GUI  
             args = SheetGenArgs(keysheetgen.MACHINE_NAMES[self._machine_combo.get_active()], int(self._year_entry.get_value()), self._month_combo.get_active(),\
-                                self._classifciation_entry.get_text(), self._net_name_entry.get_text(), keysheetgen.PROC_TYPES[self._proc_combo.get_active()])
+                                self._classifciation_entry.get_text(), self._net_name_entry.get_text(), self._load_set_entry.get_text(), \
+                                keysheetgen.PROC_TYPES[self._proc_combo.get_active()])
             
             args.out = self._outdir_entry.get_text()
             args.html = self._html_button.get_active()

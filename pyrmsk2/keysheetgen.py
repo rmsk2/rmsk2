@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import pyrmsk2.rotorrandom as rotorrandom
 
 
 MACHINE_NAMES = ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', \
-                 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
+                 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY2695', 'NemaWar', 'NemaTraining', 'CSP889', 'CSP2900', 'KL7', 'SG39']
                  
 ## \brief List that contains the allowed keywords for specifying the message procedure
 PROC_TYPES = ['grundstellung', 'post1940', 'pre1940', 'sigaba']                 
@@ -1180,10 +1180,13 @@ class RenderController:
     #
     #  \param [msg_proc] Is a string. It specifies the message procedure in use with the sheet.    
     #
+    #  \param [rotor_set_file] Is a string. It specifies the name of the rotor set file to load before generating
+    #         the sheets. Has to be '' if no sheet ist to be loaded.
+    #
     #  \param [formatter] Is a callable object which allows to generate the file name of state files. Signature
     #         has to be formatter(dir_name, net_name, year, month, day). The formatter has to return a string.
     #    
-    def __init__(self, serv, machine_type, net_name, classification, msg_proc, formatter):
+    def __init__(self, serv, machine_type, net_name, classification, msg_proc, rotor_set_file, formatter):
         self._server = serv
         self._machine_type = machine_type
         self._net_name = net_name
@@ -1191,6 +1194,7 @@ class RenderController:
         self._renderer = TextKeysheetRenderer()
         self._formatter = formatter
         self._msg_proc = msg_proc
+        self._rotor_set_file_name = rotor_set_file
 
     ## \brief This property returns the renderer object which is used to generate the key sheet.
     #
@@ -1227,6 +1231,9 @@ class RenderController:
 
         if state_and_param['state'] != None:
             try:
+                # Load custom rotor set before generating sheets
+                self.modify_rotor_set(state_and_param['state'], state_and_param['rotorsetname'], self._rotor_set_file_name)
+                
                 self._renderer.render_start(out_file)                
                 
                 # Fill main sheet
@@ -1255,6 +1262,31 @@ class RenderController:
             raise KeysheetException('Unknown machine name: {}'.format(self._machine_type))
     
 
+    ## \brief This method loads a custom rotor set if this was requested by the user.
+    #
+    #  \param [machine_state] Is a byte array. It has to contain a machine state usable by RotorMachine.set_state()
+    #
+    #  \param [rotor_set_name] Is a string. It has to contain the name of the rotor set to modify. This value has to
+    #         appear in the list of rotor set names returned by the RotorMachine.get_rotor_set_names() method for
+    #         the machine reconstructed from the state given in parameter machine_state.
+    #
+    #  \param [rotor_set_file_name] Is a string. Has to contain the name of the file that contains the rotor set
+    #         data to load. If this parameter equals '' this method does nothing.
+    #
+    #  \returns Nothing
+    #                        
+    def modify_rotor_set(self, machine_state, rotor_set_name, rotor_set_file_name):
+        try:
+            if rotor_set_file_name != '':
+                with open(rotor_set_file_name, 'rb') as f:
+                    rotor_set_data = f.read()
+                    f.close()            
+                
+                with rotorsim.RotorMachine.from_machine_spec(machine_state, self._server.address) as machine:
+                    machine.set_rotor_set_state(rotor_set_name, rotor_set_data)
+        except:
+            raise KeysheetException('Unable to load rotor set {}'.format(rotor_set_file_name))
+
     ## \brief This method uses the machine name and other parameters specified on the command line to generate
     #         an appropriately configured Keysheet object.
     #
@@ -1277,10 +1309,11 @@ class RenderController:
     #                    the given machine type.
     #           'randparam': Maps to a string object that serves as a randomizer parameter in Keysheet.fill().
     #           'isgerman': Maps to a boolean that is True if the language on the sheet is German.
-    #           'sheets': Maps to a vector of Keysheet objects. The first object is the "main sheet". 
+    #           'sheets': Maps to a vector of Keysheet objects. The first object is the "main sheet".
+    #           'rotorsetname': Specifies the name of the rotor set that is to be used as a string. 
     #                        
     def configure_key_sheet(self, tlv_server, machine_name, year, month, net_name, classification, msg_proc_type = ''):
-        result = {'state':None, 'randparm':'', 'isgerman':True, 'sheets':[]}
+        result = {'state':None, 'randparm':'', 'isgerman':True, 'sheets':[], 'rotorsetname':'defaultset'}
         keysheet = Keysheet(tlv_server, self._formatter)
         
         keysheet.year = year
@@ -1397,7 +1430,7 @@ class RenderController:
             result['state'] = rotorsim.UnsteckeredEnigmaState.get_default_config(machine_name + 'Enigma')
             result['randparm'] = 'egal'
             
-        elif (machine_name == 'Typex') or (machine_name == 'TypexY269')  or (machine_name == 'TypexPlugsY269'): # Typex
+        elif (machine_name == 'Typex') or (machine_name == 'TypexY269')  or (machine_name == 'TypexPlugsY2695'): # Typex
             # Set up column mapping            
             keysheet.column_mapping = {'Wheel settings':PlugsColumn(14, 'rotors'), 'Rings':Column(5, 'rings'), \
                                        'Reflector':Column(26, 'reflector'), 'Plugboard':Column(26, 'plugs'), \
@@ -1410,7 +1443,7 @@ class RenderController:
             # Columns to include
             keysheet.columns = ['Wheel settings', 'Rings', 'Reflector']
             
-            if machine_name == 'TypexPlugsY269':
+            if machine_name == 'TypexPlugsY2695':
                 keysheet.columns.append('Plugboard')
                 keysheet.column_mapping['Plugboard'].uppercase = False
             
@@ -1428,10 +1461,12 @@ class RenderController:
             
             if machine_name == 'Typex':            
                 result['randparm'] = 'sp02390'
-            else:
-                if machine_name == 'TypexPlugsY269':
-                    result['randparm'] = 'plugsy269'
+            else:                
+                if machine_name == 'TypexPlugsY2695':
+                    result['rotorsetname'] = 'Y2695'
+                    result['randparm'] = 'plugsy2695'
                 else:
+                    result['rotorsetname'] = 'Y269'
                     result['randparm'] = 'y269'
                                
         elif (machine_name == 'NemaWar') or ((machine_name == 'NemaTraining')): # Nema war and training models
@@ -1650,10 +1685,10 @@ class KeysheetGeneratorMain:
             if machine_name not in MACHINE_NAMES:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")
         elif msg_proc_type == 'post1940':
-            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269']:
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY2695']:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
         elif msg_proc_type == 'pre1940':
-            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY269']:
+            if machine_name not in ['M3', 'Services', 'M3D', 'ServicesD', 'ServicesUhr', 'M4', 'Railway', 'Abwehr', 'KD', 'Tirpitz', 'Typex', 'TypexY269', 'TypexPlugsY2695']:
                 raise KeysheetException("Cannot use " + machine_name + " with " + msg_proc_type + " message procedure")       
         elif msg_proc_type == 'sigaba':
             if machine_name not in ['CSP889', 'CSP2900']:
@@ -1674,6 +1709,7 @@ class KeysheetGeneratorMain:
     #         html           A boolean. True if HTML output is to be generated.
     #         tlv_server     A string. Full path of the tlv_server binary.
     #         msg_proc_type  A string. Specifies the message procedure for which this sheet is intended. 
+    #         load_set       A string. Specifies the name of the rotor set to load. Use '' to not load a rotor set.
     #
     #  \param [reporter] An object with the same interface as ReporterBase.
     #
@@ -1704,7 +1740,7 @@ class KeysheetGeneratorMain:
                                                 
             with rotorsim.tlvobject.TlvServer(binary = args.tlv_server) as serv:
                 
-                ctrl = RenderController(serv, args.type, args.net, args.classification, args.msg_proc_type, KeysheetGeneratorMain.format_state_name)
+                ctrl = RenderController(serv, args.type, args.net, args.classification, args.msg_proc_type, args.load_set, KeysheetGeneratorMain.format_state_name)
                 ctrl.renderer = renderer
 
                 try:                                

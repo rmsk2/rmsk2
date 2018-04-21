@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ def execute():
     parser.add_argument("--html", help="Generate HTML not text output", action='store_true')
     parser.add_argument("--tlv-server", help="Path to TLV server binary", default=rotorsim.tlvobject.get_tlv_server_path())
     parser.add_argument("-t", "--msg-proc-type", help="Type of message procedure", default='', choices=PROC_TYPES)
+    parser.add_argument("--load-set", help="File name of rotor set to load. Optional.", default='')
     
     # Calls sys.exit() when command line can not be parsed or when --help is requested
     args = parser.parse_args()        
