@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@
 #define RED 0.5, 0.0, 0.0
 #define DARK_GREY 0.2, 0.2, 0.2
 #define LIGHT_GREY 0.7, 0.7, 0.7
+#define LIGHTER_GREY 0.9, 0.9, 0.9
 #define YELLOW 0.9, 1.0, 0.0
 #define BACKGROUND_GREY 0.35, 0.35, 0.35
 
@@ -46,6 +47,9 @@ const double KEY_SIZE = 23.0;
  *         default size of the Enigma simulators.  
  */
 const int SIZE_X_DEFAULT = 610;
+
+/*! \brief Height of symbolized Enimga plgboard. */
+const int PLUGBOARD_HEIGHT = 25;
 
 /*! \brief 630 pixels is the default x-size of all simulators that use a triangular keyboard layout.*/
 const int SIZE_X_BIG_KEYBOARD = 630;
@@ -569,11 +573,54 @@ protected:
     int height;
 };
 
+/*! \brief A GUI class that serves as a base class of something that handles a clickable box. If a click on the box is
+ *         registered a signal is emitted.
+ *
+ *  A clickable box is a rectangular shape. When a clickable_box is cklicked a signal is emitted.
+ */
+class clickable_box : public element {
+public:
+    /*! \brief Constructor. The parameters pos_x and pos_y have to specify the position where the clickable_box is to be drawn and 
+     *         wdth and hght determine its width and height.
+     *
+     *  (pos_x, pos_y) defines the upper left corner of the clickable_box.
+     */
+    clickable_box(int pos_x, int pos_y, int wdth, int hght);
+    
+    /*! \brief Checks whether the position specified in pos_x and pos_y is whithin the box and if yes emits the signal
+     *         button::pressed. Additionally the contents of the box is drawn into the Cairo context specified by the parameter cr.
+     */            
+    virtual void on_mouse_button_down(Cairo::RefPtr<Cairo::Context> cr, int pos_x, int pos_y);
+
+    /*! \brief Returns true if the position given by the parameters pos_x and pos_y is within the box.
+     */        
+    virtual bool test(int pos_x, int pos_y);
+
+    /*! \brief Returns a reference to the signal that is emitted when the box is clicked. This can be used by clients of this
+     *         class to register corresponding callbacks.
+     */            
+    virtual sigc::signal<void>& signal_pressed() { return pressed; }
+
+    /*! \brief Destructor.
+     */                        
+    virtual ~clickable_box() { ; }
+    
+protected:
+    /*! \brief Holds the box's width. */                    
+    int width;
+    
+    /*! \brief Holds the box's height. */                        
+    int height;        
+        
+    /*! \brief Holds the signal to which clients can subscribe. */                                
+    sigc::signal<void> pressed;
+};
+
 /*! \brief A GUI class that knows how to draw a button into a Cairo drawing context.
  *
- *  A button is a rectangular shape that contains a textual label. When a button is cklicked a signal is emitted.
+ *  A button is a clickable_box that contains a textual label. When a button is cklicked a signal is emitted.
  */
-class button : public element {
+class button : public clickable_box {
 public:
     /*! \brief Constructor. The parameters pos_x and pos_y have to specify the position where the button is to be drawn and 
      *         wdth and hght determine its width and height. The parameter text has to give the label that is shown inside
@@ -587,36 +634,42 @@ public:
      */        
     virtual void draw(Cairo::RefPtr<Cairo::Context> cr);
     
-    /*! \brief Checks whether the position specified in pos_x and pos_y is whithin the button and if yes emits the signal
-     *         button::pressed. Additionally the button is drawn into the Cairo context specified by the parameter cr.
-     */            
-    virtual void on_mouse_button_down(Cairo::RefPtr<Cairo::Context> cr, int pos_x, int pos_y);
-
-    /*! \brief Returns true if the position given by the parameters pos_x and pos_y is within the box that makes up the button.
-     */        
-    virtual bool test(int pos_x, int pos_y);
-
-    /*! \brief Returns a reference to the signal that is emitted when the button is clicked. This can be used by clients of this
-     *         class to register corresponding callbacks.
-     */            
-    virtual sigc::signal<void>& signal_pressed() { return pressed; }
-
     /*! \brief Destructor.
      */                        
     virtual ~button() { ; }
     
 protected:
-    /*! \brief Holds the button's width. */                    
-    int width;
-    
-    /*! \brief Holds the button's height. */                        
-    int height;        
-    
-    /*! \brief Holds the counter's label. */                            
+    /*! \brief Holds the buttons's label. */                            
     string label;
+};
+
+/*! \brief A GUI class that knows how to draw a symbolized Enigma plugboard as viewed from above.
+ *
+ *  If the symbolized plugboard is cklicked a signal is emitted.
+ */
+class enigma_plugboard : public clickable_box {
+public:
+    /*! \brief Constructor. The parameters pos_x and pos_y have to specify the position where the plugboard is to be drawn and 
+     *         wdth and hght determine its width and height. 
+     *
+     *  (pos_x, pos_y) defines the upper left corner of the plugboard.
+     */
+    enigma_plugboard(int pos_x, int pos_y, int wdth, int hght) : clickable_box(pos_x, pos_y, wdth, hght) { separator_line_width = 4; }
+
+    /*! \brief Draws the button into the drawing context specified by parameter cr.
+     */        
+    virtual void draw(Cairo::RefPtr<Cairo::Context> cr);
     
-    /*! \brief Holds the signal to which clients can subscribe. */                                
-    sigc::signal<void> pressed;   
+    /*! \brief Destructor.
+     */                        
+    virtual ~enigma_plugboard() { ; }
+
+protected:
+    /*! \brief Draws a symbolized plugboard connection.
+     */                        
+    void draw_connection(Cairo::RefPtr<Cairo::Context> cr, int x_offset, int w, int h); 
+    
+    int separator_line_width;   
 };
 
 /*! \brief A struct that captures several parameters that are needed to determine the positions of the keys on a rotor machine's

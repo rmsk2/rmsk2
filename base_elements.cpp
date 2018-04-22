@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -502,11 +502,33 @@ void counter::on_mouse_button_down(Cairo::RefPtr<Cairo::Context> cr, int pos_x, 
 
 /* ----------------------------------------------------------- */
 
-button::button(int pos_x, int pos_y, string text, int wdth, int hght)
+clickable_box::clickable_box(int pos_x, int pos_y, int wdth, int hght)
     : element(pos_x, pos_y)
 {
     width = wdth;
     height = hght;
+}
+
+void clickable_box::on_mouse_button_down(Cairo::RefPtr<Cairo::Context> cr, int pos_x, int pos_y)
+{
+    if (test(pos_x, pos_y))
+    {
+        pressed.emit();
+        draw(cr);
+    }    
+}
+
+bool clickable_box::test(int pos_x, int pos_y)
+{
+    return ((pos_x >= x) && (pos_x <= (x + width)) && (pos_y >= y) && (pos_y <= (y + height))) && is_active;    
+}
+
+
+/* ----------------------------------------------------------- */
+
+button::button(int pos_x, int pos_y, string text, int wdth, int hght)
+    : clickable_box(pos_x, pos_y, wdth, hght)
+{
     label = text;    
 }
 
@@ -540,21 +562,55 @@ void button::draw(Cairo::RefPtr<Cairo::Context> cr)
         cr->stroke();                    
         
     cr->restore();
-
 }
 
-void button::on_mouse_button_down(Cairo::RefPtr<Cairo::Context> cr, int pos_x, int pos_y)
+/* ----------------------------------------------------------- */
+
+void enigma_plugboard::draw_connection(Cairo::RefPtr<Cairo::Context> cr, int x_offset, int w, int h)
 {
-    if (test(pos_x, pos_y))
-    {
-        pressed.emit();
-        draw(cr);
-    }    
+    int connection_width = 4;
+    
+    cr->save();
+    
+        cr->set_source_rgb(BACKGROUND_GREY);
+        cr->set_line_width(connection_width);
+        
+        cr->move_to(x + x_offset, y + (separator_line_width / 2));
+        cr->line_to(x + x_offset, y + (separator_line_width / 2) + h);
+        cr->line_to(x + x_offset + w, y + (separator_line_width / 2) + h);
+        cr->line_to(x + x_offset + w, y + (separator_line_width / 2));
+        cr->stroke();            
+    
+    cr->restore();
 }
 
-bool button::test(int pos_x, int pos_y)
-{
-    return ((pos_x >= x) && (pos_x <= (x + width)) && (pos_y >= y) && (pos_y <= (y + height))) && is_active;    
+void enigma_plugboard::draw(Cairo::RefPtr<Cairo::Context> cr)
+{    
+    cr->save();
+    
+        // Draw background
+        cr->set_source_rgb(DARK_GREY);
+        cr->rectangle(x, y, width, height);
+        cr->fill();
+        cr->stroke();
+        
+        // Draw separator between machine and plugboard
+        //cr->set_source_rgb(DARK_GREY);
+        //cr->set_line_width(separator_line_width);
+        //cr->move_to(x, y);
+        //cr->line_to(x + width, y);                
+        //cr->stroke(); 
+                
+        // Draw connections        
+        draw_connection(cr, 50, 100, 10);        
+        draw_connection(cr, 200, 100, 10);
+        draw_connection(cr, 500, 100, 10);
+        draw_connection(cr, 350, 125, 10);
+        draw_connection(cr, 100, 225, 20);
+        draw_connection(cr, 400, 150, 20);
+        draw_connection(cr, 10, 75, 20);
+        
+    cr->restore();
 }
 
 /* ----------------------------------------------------------- */

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,6 +132,10 @@ public:
      */            
     virtual sigc::signal<void>& signal_mode_changed() { return mode_setting_changed; }    
 
+    /*! \brief A signal that is emitted when the plugboard of an Enigma has been clicked.
+     */            
+    virtual sigc::signal<void>& signal_plugboard_clicked();
+
     /*! \brief Callback for mouse click events.
      */                    
     bool on_clicked(GdkEvent *event);
@@ -186,6 +190,10 @@ protected:
      *         the counter is to be drawn.
      */                        
     void add_counter(int x_pos, int y_pos); 
+
+    /*! \brief Causes a symbolized plugboard to be added to the GUI.
+     */                        
+    void add_plugboard(); 
     
     /*! \brief Configures the keyboard object (specified by the paramter keys) in such a way that the keys are shown in a triangular
      *         layout (first row 10, second row 9 and third row 7 keys) as opposed to the Enigma standard of (1st row 9, 2nd row 8, 3rd row 9).
@@ -292,6 +300,11 @@ protected:
      */
     boost::shared_ptr<button> blank_button; 
 
+    /*! \brief This shared_ptr holds a pointer to a ::enigma_plugboard ::element. Clicking on the plugboard emits a signal. When it is not initialized 
+     *         the member variable rotor_draw::use_plugboard has to be false.
+     */
+    boost::shared_ptr<enigma_plugboard> plugboard; 
+
     /*! \brief Holds the underlying rotor_machine object that actually implements the cryptographic functionality.
      */                            
     rotor_machine *the_machine;
@@ -304,6 +317,10 @@ protected:
      *         the simulator's state.
      */                            
     sigc::signal<void> mode_setting_changed;
+
+    /*! \brief A signal that is returned by signal_plugboard_clicked() when there is no Enigma plugboard.
+     */                            
+    sigc::signal<void> plugboard_dummy;
 
     /*! \brief This member holds all ::element objects that need to be drawn. It is therefore used by the on_draw method to iterate over
      *         all objects that make up the simulators GUI. 
@@ -335,6 +352,10 @@ protected:
      */  
     bool use_schreibmax;
 
+    /*! \brief Helps the rotor_draw::fill_data_structures method to fill rotor_draw::clickable_elements. When True rotor_draw::plugboard    
+     *         has to point to a suitable ::element.
+     */  
+    bool use_plugboard;
     
     /*! \brief Connection resulting from subscribing to the signal of the simulated rotor machine's keyboard that tells us what the last input
      *         and output keycodes were.

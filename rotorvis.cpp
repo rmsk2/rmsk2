@@ -783,7 +783,8 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     // Setup object to manage rotor set randomization menu events    
     rand_rotor_set_helper.set_parent_window(win);
     
-    simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed)); 
+    simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &rotor_visual::on_mode_changed));
+    simulator_gui->signal_plugboard_clicked().connect(sigc::mem_fun(*this, &rotor_visual::on_configure_machine)); 
     win->signal_delete_event().connect(sigc::mem_fun(*this, &rotor_visual::on_my_delete_event));              
     on_mode_changed();
     sync_log_grouping();

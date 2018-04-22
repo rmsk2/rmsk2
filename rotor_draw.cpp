@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ rotor_draw::rotor_draw(vector<string>& r_names, bool numeric_wheels, string mach
     use_figure_lamp = false;   
     // Default: No Schreibmax used
     use_schreibmax = false;      
+    // Default: No plgboard used
+    use_plugboard = false;      
     
     // Initialize internal data structures according to machine type
     if ((machine_to_visualize == "M3") || (machine_to_visualize == "M4") || (machine_to_visualize == "Services") || (machine_to_visualize == "Tirpitz") ||
@@ -213,6 +215,16 @@ void rotor_draw::add_schreibmax()
     blank_button->signal_pressed().connect(sigc::bind(sigc::mem_fun(*this, &rotor_draw::print_char), ' ')); 
 }
 
+void rotor_draw::add_plugboard()
+{
+    use_plugboard = true;
+    int current_width, current_height;
+    
+    get_size_request(current_width, current_height);
+    plugboard = boost::shared_ptr<enigma_plugboard>(new enigma_plugboard(0, current_height, current_width, PLUGBOARD_HEIGHT));    
+    set_size_request(current_width, current_height + PLUGBOARD_HEIGHT);
+}
+
 /*! \param r_names [in] Specifies the symbolic names of the rotor slots that are to be used with the simulated Enigma variant.
  *  \param numeric_wheels [in] True if the markings on the rotors circumfences should be numbers. False when characters are desired.The
  *                             only historically correct machine to use numeric markings is the Services Enigma (Wehrmachtsenigma).
@@ -241,6 +253,13 @@ void rotor_draw::build_enigma(vector<string>& r_names, bool numeric_wheels, stri
     {
         add_counter(510, COUNTER_ROW_Y);
     }
+
+#ifndef ENIGMA_NO_PLUGBOARD
+    if ((machine_to_visualize == "M3") || (machine_to_visualize == "M4") || (machine_to_visualize == "Services"))
+    {
+        add_plugboard();
+    }
+#endif
 }
 
 void rotor_draw::add_lampboard()
@@ -358,6 +377,18 @@ void rotor_draw::add_ltr_fig_gui()
     figure_lamp->set_radius(15.0);         
     figure_lamp->set_char_size(20);
     figure_lamp->is_illuminated = false;
+}
+
+sigc::signal<void>& rotor_draw::signal_plugboard_clicked()
+{
+    if (use_plugboard)
+    {
+        return plugboard->signal_pressed();
+    }
+    else
+    {
+        return plugboard_dummy;
+    }
 }
 
 void rotor_draw::key_up_callback()
@@ -662,7 +693,12 @@ void rotor_draw::fill_data_structures()
     {
         clickable_elements.push_back(plus_button.get());    
         clickable_elements.push_back(blank_button.get());            
-    }    
+    }
+    
+    if (use_plugboard)
+    {
+        clickable_elements.push_back(plugboard.get());
+    }        
 }
 
 void rotor_draw::set_key_board(boost::shared_ptr<keyboard_base> new_key_board) 

@@ -150,6 +150,7 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     log_style_menuitem->change_state(simulator_gui->get_enc_flag());
 
     simulator_gui->signal_mode_changed().connect(sigc::mem_fun(*this, &enigma_app_window::on_mode_changed));     
+    simulator_gui->signal_plugboard_clicked().connect(sigc::mem_fun(*this, &enigma_app_window::on_plugboard_activate));
     signal_delete_event().connect(sigc::mem_fun(*this, &enigma_app_window::on_my_delete_event));
     
     window_title = conf.get_machine_type() + window_title;    

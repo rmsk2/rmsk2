@@ -34,6 +34,9 @@ rmsk_defines = {}
 # Build Typex with a dual printer
 rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
 
+# Build all Enigma simulators without visualized plugboard
+#rmsk_defines['ENIGMA_NO_PLUGBOARD'] = 'noplugboard'
+
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
