@@ -147,7 +147,8 @@ prepared using a KD Enigma, so this machine has to be considered unverified.
         <title><code>Plugboard ...</code></title>
         <p>Opens a <link type="topic" xref="plugboard">dialog</link> which allows the user to choose the plugs on the Enigma plugboard. Only the military Enigma variants (Services, M3, M4)
         had a plugboard. A corresponding message dialog is shown when selecting this menu entry for a variant without a plugboard. Variants which were compatible with the
-        <link href="http://www.cryptomuseum.com/crypto/enigma/uhr/index.htm">Enigma Uhr</link> can be configured to use the Uhr through this dialog.
+        <link href="http://www.cryptomuseum.com/crypto/enigma/uhr/index.htm">Enigma Uhr</link> can be configured to use the Uhr through this dialog. It can also be opened by clicking
+        on the visualized plugboard at the bottom of the simulator's main window.
         </p>
     </item>
     <item>

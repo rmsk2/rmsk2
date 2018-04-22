@@ -57,5 +57,19 @@ The lamp that lights up (i.e. its letter is shown in yellow instead of grey) sho
 </p>
 </section>
 
+<section>
+<title>The plugboard</title>
+<p>
+Some Enigma variants had a plugboard. This is visualized as follows:
+</p>
+<p>
+<media type="image" src="plugboard_visualized.png"/>
+</p>
+<p>
+If you click on the visualized plugboard the plugboard configuration dialog will open.
+</p>
+</section>
+
+
 </page>
 
