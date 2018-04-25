@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,27 @@ from pyrmsk2.tlvobject import get_socket_name
 
 ## \brief Default for the documentation path
 DEFAULT_DOC_PATH = './doc'
+
+## \brief Major version
+RMSK2_VERSION_MAJOR = 3
+## \brief Minor version
+RMSK2_VERSION_MINOR = 6
+## \brief Revision
+RMSK2_VERSION_REVISION = 1
+
+## \brief This function returns the version string describing the version of rmsk2
+#
+#  \returns A string.
+#
+def get_version_string():
+    result = ''
+    
+    if RMSK2_VERSION_REVISION == 0:
+        result = '{}.{}'.format(RMSK2_VERSION_MAJOR, RMSK2_VERSION_MINOR)
+    else:
+        result = '{}.{}.{}'.format(RMSK2_VERSION_MAJOR, RMSK2_VERSION_MINOR, RMSK2_VERSION_REVISION)
+    
+    return result
 
 ## \brief This function determines the directory in which the mallard style documentation for
 #         for the python3 programs is stored.

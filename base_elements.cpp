@@ -593,14 +593,7 @@ void enigma_plugboard::draw(Cairo::RefPtr<Cairo::Context> cr)
         cr->rectangle(x, y, width, height);
         cr->fill();
         cr->stroke();
-        
-        // Draw separator between machine and plugboard
-        //cr->set_source_rgb(DARK_GREY);
-        //cr->set_line_width(separator_line_width);
-        //cr->move_to(x, y);
-        //cr->line_to(x + width, y);                
-        //cr->stroke(); 
-                
+                        
         // Draw connections        
         draw_connection(cr, 50, 100, 10);        
         draw_connection(cr, 200, 100, 10);

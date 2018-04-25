@@ -23,6 +23,7 @@
 
 #include<glibmm.h>
 #include<alphabet.h>
+#include<rmsk_version.h>
 
 class rotor_machine;
 
@@ -313,6 +314,10 @@ public:
     /*! \brief Should be called at the end of all programs that use rmsk. Deletes the created singletons.
      */        
     static void clean_up();
+    
+    /*! \brief Returns a string that describes the current version of rmsk2
+     */
+    static string get_version_string();
     
     /*! \brief Returns the path where the help files can be found.
      */            

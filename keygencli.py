@@ -20,6 +20,7 @@
 # \brief This file imlements a command line keysheet generator for all rotor machines provided by rmsk2 and rotorsim.
 
 import argparse
+import pyrmsk2
 from pyrmsk2.keysheetgen import *
 
 ## \brief This is the main method.
@@ -28,7 +29,7 @@ from pyrmsk2.keysheetgen import *
 #    
 def execute():
     # Set up command line parser        
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='keygencli.py ' + pyrmsk2.get_version_string() +'. A key sheet generator for rotor machines.')
     parser.add_argument("type", choices=MACHINE_NAMES, help="Type of machine to generate a keysheet for")
     parser.add_argument("-y", "--year", type=KeysheetGeneratorMain.check_year, required=True, help="Year to appear on sheet")
     parser.add_argument("-m", "--month",  type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], \
@@ -44,8 +45,8 @@ def execute():
     parser.add_argument("--load-set", help="File name of rotor set to load. Optional.", default='')
     
     # Calls sys.exit() when command line can not be parsed or when --help is requested
-    args = parser.parse_args()        
-
+    args = parser.parse_args()
+    
     KeysheetGeneratorMain.generate_sheets(args, ReporterBase())
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 
 import sys
 import pyrmsk2.tlvsrvapp as tlvsrvapp
+import pyrmsk2
 import argparse
 import re
 from pyrmsk2.keysheetgen import PROC_TYPES
@@ -57,7 +58,8 @@ class EngimaProc(tlvsrvapp.TlvServerApp):
     def parse_args(self, argv):
         # Set up command line parser        
         indicator_help = "System indicator to use. In case the system indicator is a Kenngruppe it has to contain several (four) three letter strings seperated by blanks."        
-        parser = argparse.ArgumentParser(description='A program that allows to en- and decrypt messages using rotor machines and one of serveral message procedures.',
+        parser = argparse.ArgumentParser(description='enigproc.py ' + pyrmsk2.get_version_string() +
+                                         '. A program that allows to en- and decrypt messages using rotor machines and one of serveral message procedures.',
                                          epilog='Example: enigproc.py encrypt -f state.ini -i input.txt -s "dff gtr lki vfd" -t post1940')
         parser.add_argument("command", choices=COMMANDS, help="Action to take. Encrypt or decrypt.")
         parser.add_argument("-i", "--in-file", required=False, default='', help="Input file containing plaintext or ciphertext. If missing data is read from stdin.")

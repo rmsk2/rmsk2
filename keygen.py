@@ -655,7 +655,7 @@ class KeyGenWindow(Gtk.Window):
         about_dialog.set_transient_for(self)
         about_dialog.set_program_name('Key Sheet Generator for rmsk2')
         about_dialog.set_copyright('Copyright 2018 Martin Grap')
-        about_dialog.set_version("1.0") 
+        about_dialog.set_version(pyrmsk2.get_version_string()) 
         about_dialog.set_website("https://github.com/rmsk2/rmsk2/wiki/Key-sheet-generator") 
         about_dialog.set_website_label("GitHub Wiki for rmsk2") 
         about_dialog.set_authors(["Martin Grap"]) 

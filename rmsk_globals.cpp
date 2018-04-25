@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
  */     
 
 #include<unistd.h>
+#include<sstream>
 #include<rmsk_globals.h>
 #include<glade_data.h>
 #include<enigma_sim.h>
@@ -490,6 +491,22 @@ string rmsk::get_doc_path()
     
     return doc_path;
 #endif 
+}
+
+string rmsk::get_version_string()
+{
+    ostringstream result;
+    
+    if (RMSK2_VERSION_REVISION == 0)
+    {
+        result << RMSK2_VERSION_MAJOR << "." << RMSK2_VERSION_MINOR;
+    }
+    else
+    {
+        result << RMSK2_VERSION_MAJOR << "." << RMSK2_VERSION_MINOR << "." << RMSK2_VERSION_REVISION;
+    }
+    
+    return result.str();
 }
 
 string rmsk::get_glade_data()

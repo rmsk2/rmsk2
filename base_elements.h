@@ -573,10 +573,10 @@ protected:
     int height;
 };
 
-/*! \brief A GUI class that serves as a base class of something that handles a clickable box. If a click on the box is
- *         registered a signal is emitted.
+/*! \brief A GUI class that serves as a base class for something that handles a clickable box. If a click on the box is
+ *         detected a signal is emitted.
  *
- *  A clickable box is a rectangular shape. When a clickable_box is cklicked a signal is emitted.
+ *  A clickable box is a rectangular shape. When a clickable_box is cklicked the signal_pressed() is emitted.
  */
 class clickable_box : public element {
 public:
@@ -643,7 +643,7 @@ protected:
     string label;
 };
 
-/*! \brief A GUI class that knows how to draw a symbolized Enigma plugboard as viewed from above.
+/*! \brief A GUI class that knows how to draw a symbolized Enigma plugboard.
  *
  *  If the symbolized plugboard is cklicked a signal is emitted.
  */

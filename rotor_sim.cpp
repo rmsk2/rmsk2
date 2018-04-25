@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,7 +168,8 @@ rotor_sim::rotor_sim()
         ("command,c", po::value<string>(&command), "Command to execute. Can be used without -c or --command. Allowed commands: encrypt, decrypt, step, perm, getpos, getconfig, sigabasetup.")
         ("save-state,s", po::value<string>(&state_file), "Save state of machine in specified file after processing. Optional.")        
         ("grouping,g", po::value<int>(&grouping_width)->default_value(0), "Grouping to use for output. Optional. No grouping if missing.")
-        ("num-iterations,n", po::value<int>(&num_iterations)->default_value(1), "Number of iterations to execute perm or step commands.")            
+        ("num-iterations,n", po::value<int>(&num_iterations)->default_value(1), "Number of iterations to execute perm or step commands.")
+        ("version,v", "Get version information.")            
     ;
     
     state_progression = false;
@@ -500,6 +501,7 @@ int rotor_sim::process_stream(istream *in, ostream *out, int output_grouping, si
 
 void rotor_sim::print_help_message(po::options_description *desc)
 {
+    cout << "rotorsim version " << rmsk::get_version_string() << endl << endl;
     cout << (*desc) << endl;
     cout << "Examples:" << endl;
     cout << "    rotorsim encrypt -f machine_config.ini -i in_file.txt -o out_file.txt -g 5 -p vjna" << endl;
@@ -526,6 +528,14 @@ int rotor_sim::parse(int argc, char **argv)
         if (vm.count("help")) 
         {
             print_help_message(&desc);
+            
+            return ERR_WRONG_COMMAND_LINE;
+        }
+
+        // Check if --version was specified
+        if (vm.count("version")) 
+        {
+            cout << rmsk::get_version_string() << endl;
             
             return ERR_WRONG_COMMAND_LINE;
         }

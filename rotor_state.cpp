@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,8 @@ rotor_state::rotor_state()
         ("output-file,o", po::value<string>(&output_file), "Save generated state in this output file. Optional. stdout used if missing.") 
         ("rand-set", po::value<string>(&rand_set_name), "Create a random rotor set, use it to generate a machine state and store the rotor set in a file named as specified by parameter. Optional.") 
         ("load-set", po::value<string>(&rand_set_name), "Load a custom random rotor set from a file named as specified by parameter and use it to generate a machine state. Optional.")
-        ("no-delimiter", "Omit delimiter OxFF byte when writing to stdout. Only has an effect if --output-file is not used or --stdout is specified."); 
+        ("no-delimiter", "Omit delimiter OxFF byte when writing to stdout. Only has an effect if --output-file is not used or --stdout is specified.")
+        ("version,v", "Get version information."); 
         
     allowed_machine_names.insert("M4");
     allowed_machine_names.insert("M3");
@@ -155,6 +156,7 @@ void rotor_state::print_help_message(po::options_description *desc, string appen
         allowed_names += *iter + " ";
     }    
     
+    cout << "rotorstate version " << rmsk::get_version_string() << endl << endl;
     cout << "First parameter has to be machine type. Valid values are:" << endl << endl;
     cout << allowed_names << endl << endl;
     cout << (*desc) << endl;
@@ -363,7 +365,7 @@ int rotor_state::parse(int argc, char **argv)
     try
     {
         do
-        {
+        {        
             if (argc < 2)
             {
                 print_help_message(&desc);                
@@ -371,8 +373,16 @@ int rotor_state::parse(int argc, char **argv)
                 return_code = ERR_WRONG_COMMAND_LINE;
                 break;
             }
-        
+                    
             machine_type = string(argv[1]);
+            
+            // Check if --version was specified and if yes show version string
+            if ((machine_type == "-v") || (machine_type == "--version")) 
+            {
+                cout << rmsk::get_version_string() << endl;
+                return_code = ERR_WRONG_COMMAND_LINE;
+                break;
+            }            
             
             // Check if first parameter is a valid machine name
             if (allowed_machine_names.count(machine_type) == 0)
