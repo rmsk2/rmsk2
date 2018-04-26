@@ -674,38 +674,50 @@ rotor_machine *rmsk::restore_from_ini(Glib::KeyFile& machine_state)
 {
     rotor_machine *result = NULL;    
     string machine_name = "";
-        
-    if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_NAME))
-    {
-        // load machine name from ini file
-        machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
-        
-        if (machine_name == MNAME_ENIGMA_I)
+    
+    try
+    {    
+        if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_NAME))
         {
-            if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_TYPE))
+            // load machine name from ini file
+            machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_NAME);
+            
+            if (machine_name == MNAME_ENIGMA_I)
             {
-                machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_TYPE);
+                if (machine_state.has_key(MACHINE_SECTION, KEY_MACHINE_TYPE))
+                {
+                    machine_name = machine_state.get_string(MACHINE_SECTION, KEY_MACHINE_TYPE);
+                }
+                else
+                {
+                    machine_name = "";
+                }
             }
-            else
+            
+            // construct a dummy machine which is then used to load the settings file designated
+            // by the parameter file_name        
+            result = make_default_machine(machine_name);
+            
+            if (result != NULL)
             {
-                machine_name = "";
+                // Use dummy rotor machine object to restore the state given in the ini file
+                if (result->load_ini(machine_state))
+                {
+                    // Loading failed. Clean up.
+                    delete result;
+                    result = NULL;
+                }
             }
         }
-        
-        // construct a dummy machine which is then used to load the settings file designated
-        // by the parameter file_name        
-        result = make_default_machine(machine_name);
-        
+    }
+    catch(...)
+    {   
         if (result != NULL)
         {
-            // Use dummy rotor machine object to restore the state given in the ini file
-            if (result->load_ini(machine_state))
-            {
-                // Loading failed. Clean up.
-                delete result;
-                result = NULL;
-            }
+            delete result;
         }
+        
+        result = NULL;
     }
     
     return result;
