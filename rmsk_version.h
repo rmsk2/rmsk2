@@ -19,6 +19,6 @@
 
 const unsigned int RMSK2_VERSION_MAJOR = 3;
 const unsigned int RMSK2_VERSION_MINOR = 6;
-const unsigned int RMSK2_VERSION_REVISION = 2;
+const unsigned int RMSK2_VERSION_REVISION = 3;
 
 #endif /* __rmsk_version_h__ */

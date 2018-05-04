@@ -27,7 +27,7 @@ RMSK2_VERSION_MAJOR = 3
 ## \brief Minor version
 RMSK2_VERSION_MINOR = 6
 ## \brief Revision
-RMSK2_VERSION_REVISION = 2
+RMSK2_VERSION_REVISION = 3
 
 ## \brief This function returns the version string describing the version of rmsk2
 #
