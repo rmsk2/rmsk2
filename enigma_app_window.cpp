@@ -256,11 +256,17 @@ void enigma_app_window::setup_menus()
     "      <item>"
     "        <attribute name='label' translatable='no'>Rotor _settings ...</attribute>"
     "        <attribute name='action'>enigma.rotorsettings</attribute>"
-    "      </item>"
-    "      <item>"
-    "        <attribute name='label' translatable='no'>_Plugboard ...</attribute>"
-    "        <attribute name='action'>enigma.plugboard</attribute>"
-    "      </item>"
+    "      </item>";
+    
+    if (conf.get_has_plugboard())
+    {
+        ui_info_second += "      <item>";
+        ui_info_second += "        <attribute name='label' translatable='no'>_Plugboard ...</attribute>";
+        ui_info_second += "        <attribute name='action'>enigma.plugboard</attribute>";
+        ui_info_second += "      </item>";
+    }    
+    
+    Glib::ustring ui_info_third = 
     "      <item>"
     "        <attribute name='label' translatable='no'>_Reset</attribute>"
     "        <attribute name='action'>enigma.reset</attribute>"
@@ -307,7 +313,7 @@ void enigma_app_window::setup_menus()
     "  </menu>"
     "</interface>";
 
-    Glib::ustring ui_info = ui_info_first + ui_info_second;
+    Glib::ustring ui_info = ui_info_first + ui_info_second + ui_info_third;
     
     ref_xml->add_from_string(ui_info);
 

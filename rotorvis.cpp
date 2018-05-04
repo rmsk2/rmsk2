@@ -645,6 +645,40 @@ rotor_machine *rotor_visual::machine_factory(string name, vector<string>& rotor_
         }
 
         // Construct Enigma Services machine with default settings        
+        if ((name == "Abwehr") || (name == "Tirpitz") || (name == "Railway"))
+        {
+            // Walzenlage UKW  I II III                                            
+            machine_conf[KW_ENIG_ROTOR_SELECTION] = "123";
+            machine_conf[KW_ENIG_RINGSTELLUNG] = "abcd";
+            
+            result = c->make_machine(machine_conf);
+            
+            rotor_identifiers.push_back(FAST);
+            rotor_identifiers.push_back(MIDDLE);
+            rotor_identifiers.push_back(SLOW);
+            rotor_identifiers.push_back(UMKEHRWALZE);
+            
+            break;
+        }
+
+        if (name == "KD")
+        {
+            // Walzenlage UKW D I II III                                            
+            machine_conf[KW_ENIG_ROTOR_SELECTION] = "123";
+            machine_conf[KW_ENIG_RINGSTELLUNG] = "abc";
+            machine_conf[KW_UKW_D_PERM] = "azbpcxdqetfogshvirknlmuw";
+            
+            result = c->make_machine(machine_conf);
+            
+            rotor_identifiers.push_back(FAST);
+            rotor_identifiers.push_back(MIDDLE);
+            rotor_identifiers.push_back(SLOW);
+            
+            break;
+        }
+
+
+        // Construct Enigma Services machine with default settings        
         if (name == "Services")
         {
             // Walzenlage UKW B I II III                                            
@@ -1004,6 +1038,10 @@ int main(int argc, char *argv[])
     allowed_names.insert("M3"); 
     allowed_names.insert("Services");
     allowed_names.insert("M4");
+    allowed_names.insert("KD");
+    allowed_names.insert("Tirpitz");
+    allowed_names.insert("Railway");
+    allowed_names.insert("Abwehr");
 #endif
         
     rotorvis_simulator_app rotorvis_sim(allowed_names);  

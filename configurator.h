@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -270,7 +270,8 @@ public:
     /*! \brief Returns a ::configurator object for the machine type specified by parameter machine_name. NULL is returned
      *         if the machine type is unknown.
      *
-     *  Currently the following machine names are valid: SIGABA, SG39, Typex, KL7 and Nema.
+     *  Currently the following machine names are valid: SIGABA, SG39, Typex, KL7, Nema, M3, Services, Abwehr, Tirpitz, 
+     *  Railway, KD and M4. All other values return a configurator for an Enigma M4.
      */   
     static configurator *get_configurator(string& machine_name);
 
