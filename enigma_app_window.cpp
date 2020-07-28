@@ -33,7 +33,7 @@ enigma_app_window::enigma_app_window(machine_config& c, Glib::ustring& l_dir)
     
     // Setup object to manage help menu events
     help_menu_manager.set_parent_window(this);
-    help_menu_manager.set_text("/enigma/index.page", "An accurate simulator for several Enigma variants.\nWritten in 2008-2018", rmsk::get_version_string().c_str(), "Martin Grap");
+    help_menu_manager.set_text("/enigma/index.page", "An accurate simulator for several Enigma variants.\nWritten in 2008-2020", rmsk::get_version_string().c_str(), "Martin Grap");
     
     // Setup object to manage file handling menu events    
     file_helper.set_parent_window(this);

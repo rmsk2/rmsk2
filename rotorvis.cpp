@@ -751,7 +751,7 @@ rotor_visual::rotor_visual(Gtk::Window *main_win, string machine_to_visualize)
     
     // Setup object to handle help menu events
     help_menu_manager.set_parent_window(win);
-    help_menu_manager.set_text("/rotorvis/index.page", "An accurate simulator for the SIGABA, KL7, Nema, Typex and Schlüsselgerät 39 rotor machines.\nWritten in 2008-2018", 
+    help_menu_manager.set_text("/rotorvis/index.page", "An accurate simulator for the SIGABA, KL7, Nema, Typex and Schlüsselgerät 39 rotor machines.\nWritten in 2008-2020", 
                                rmsk::get_version_string().c_str(), "Martin Grap");
 
     // Setup object to manage file handling menu events    
