@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2017 Martin Grap
+ * Copyright 2018 Martin Grap
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public:
     
     /*! \brief Assignment operator.
      */                     
-    virtual rotor_stack& operator=(const rotor_stack& s) { copy(s); return *this; }    
+    rotor_stack& operator=(const rotor_stack& s) { copy(s); return *this; }    
     
     /*! \brief Destructor. The rotors of this stack are not deleted by the destructor.
      */                     
@@ -481,7 +481,7 @@ public:
 
     /*! \brief Assignment operator.
      */            
-    virtual stepping_gear& operator=(const stepping_gear& s) { copy(s); return *this; }        
+    stepping_gear& operator=(const stepping_gear& s) { copy(s); return *this; }        
 
     /*! \brief Destructor.
      */            

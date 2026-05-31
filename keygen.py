@@ -290,7 +290,7 @@ class KeyGenWindow(Gtk.Window):
         vbox.pack_start(grid, True, True, 0)
 
         # Machine row        
-        machine_label = Gtk.Label('Machine:')
+        machine_label = Gtk.Label(label='Machine:')
         grid.attach(machine_label, 0, 0, 1, 1)
         grid.set_row_spacing(6)
         
@@ -306,7 +306,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._machine_combo, 1, 0, 1, 1)
                 
         # Month row        
-        month_label = Gtk.Label('Month:')
+        month_label = Gtk.Label(label='Month:')
         grid.attach(month_label, 0, 1, 1, 1)
         
         self._month_combo = Gtk.ComboBoxText()
@@ -321,10 +321,10 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._month_combo, 1, 1, 1, 1)
 
         # Year row
-        year_label = Gtk.Label('Year:')
+        year_label = Gtk.Label(label='Year:')
         grid.attach(year_label, 0, 2, 1, 1)
         
-        year_adjustment = Gtk.Adjustment(1942, 1900, 2100, 1, 10, 0)
+        year_adjustment = Gtk.Adjustment(value=1942, lower=1900, upper=2100, step_increment=1, page_increment=10, page_size=0)
         self._year_entry = Gtk.SpinButton()
         self._year_entry.set_adjustment(year_adjustment)
         self._year_entry.set_numeric(True)
@@ -333,7 +333,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._year_entry, 1, 2, 1, 1)
 
         # Classification row
-        classification_label = Gtk.Label('Classification:')
+        classification_label = Gtk.Label(label='Classification:')
         grid.attach(classification_label, 0, 3, 1, 1)
                                 
         self._classifciation_entry = Gtk.Entry()
@@ -342,7 +342,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._classifciation_entry, 1, 3, 1, 1)
 
         # Crypto net/key name row
-        net_name_label = Gtk.Label('Crypto net/key name:')
+        net_name_label = Gtk.Label(label='Crypto net/key name:')
         grid.attach(net_name_label, 0, 4, 1, 1)
                                 
         self._net_name_entry = Gtk.Entry()
@@ -353,7 +353,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._net_name_entry, 1, 4, 1, 1)
         
         # Message procedure row        
-        proc_label = Gtk.Label('Message Procedure:')
+        proc_label = Gtk.Label(label='Message Procedure:')
         grid.attach(proc_label, 0, 5, 1, 1)
         
         self._proc_combo = Gtk.ComboBoxText()
@@ -368,10 +368,10 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._proc_combo, 1, 5, 1, 1)        
 
         # Output format row
-        html_label = Gtk.Label('Output format:')
+        html_label = Gtk.Label(label='Output format:')
         grid.attach(html_label, 0, 6, 1, 1)
                                 
-        self._html_button = Gtk.RadioButton('HTML')
+        self._html_button = Gtk.RadioButton(label='HTML')
         self._html_button.set_hexpand(True)
         self._text_button = Gtk.RadioButton(label='TXT', group=self._html_button)
         self._text_button.set_hexpand(True)
@@ -382,7 +382,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(radio_hbox, 1, 6, 1, 1)
 
         # Save state files row
-        save_state_label = Gtk.Label('Save state files:')
+        save_state_label = Gtk.Label(label='Save state files:')
         grid.attach(save_state_label, 0, 7, 1, 1)
                                 
         self._save_state_button = Gtk.CheckButton()
@@ -391,7 +391,7 @@ class KeyGenWindow(Gtk.Window):
         grid.attach(self._save_state_button, 1, 7, 1, 1)
 
         # Output directory row
-        outdir_label = Gtk.Label('Output directory:')
+        outdir_label = Gtk.Label(label='Output directory:')
         grid.attach(outdir_label, 0, 8, 1, 1)
         
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -401,14 +401,14 @@ class KeyGenWindow(Gtk.Window):
         self._outdir_entry.set_hexpand(True)                
         hbox.pack_start(self._outdir_entry, True, True, 0)
         
-        self._file_button = Gtk.Button("...")
+        self._file_button = Gtk.Button(label="...")
         self._file_button.connect("clicked", self.select_directory)
         hbox.pack_start(self._file_button, False, True, 0)
         
         grid.attach(hbox, 1, 8, 1, 1)
 
         # Rotor set to load row
-        load_set_label = Gtk.Label('Rotor set to load:')
+        load_set_label = Gtk.Label(label='Rotor set to load:')
         grid.attach(load_set_label, 0, 9, 1, 1)
         
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -422,14 +422,14 @@ class KeyGenWindow(Gtk.Window):
         data_setter = lambda x: self._load_set_entry.set_text(x)
         load_set_callback = lambda x: self.select_input_file(x, data_getter, data_setter, "Select rotor set file")
         
-        self._load_set_button = Gtk.Button("...")
+        self._load_set_button = Gtk.Button(label="...")
         self._load_set_button.connect("clicked", load_set_callback)
         hbox.pack_start(self._load_set_button, False, True, 0)
         
         grid.attach(hbox, 1, 9, 1, 1)
         
         # Generate button        
-        self._main_button = Gtk.Button("Generate")
+        self._main_button = Gtk.Button(label="Generate")
         self._main_button.connect("clicked", self.generate_sheet)
         vbox.pack_start(self._main_button, True, True, 0)        
         

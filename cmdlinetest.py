@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class Processor:
         self.__rotorsim_binary = binary_name
         self.__state = state
         self.__do_state_progression = progress_state
-        exp = '^.+\((.+)\): (.+)$'
+        exp = '^.+\\((.+)\\): (.+)$'
         self._exp_c = re.compile(exp)
         
     

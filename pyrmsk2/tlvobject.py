@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2017 Martin Grap
+# Copyright 2018 Martin Grap
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -656,7 +656,7 @@ class TlvServer:
     #                
     def start(self):
         stop = False
-        MAX_TRIES = 500
+        MAX_TRIES = 1500
         if not self.is_running:
             
             if os.path.exists(self.address):
