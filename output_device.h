@@ -24,6 +24,7 @@
 #include<memory>
 #include<sigc++/functors/slot.h>
 #include<boost/asio.hpp>
+#include<boost/shared_ptr.hpp>
 #include<base_elements.h>
 
 /*! \brief Default value of the y-position of the first row of lamps in a lampboard. */        
@@ -251,8 +252,8 @@ protected:
     /*! \brief Holds a specification of the serial port to use, i.e. something like "/dev/ttyUSB0". */
     string serial_port;    
     
-    /* From the boost docs: The io_service represents your program's link to the operating system's I/O services. */
-    boost::asio::io_service io;
+    /* From the boost docs: The io_context represents your program's link to the operating system's I/O services. */
+    boost::asio::io_context io;
     
     /*! \brief Boost object that abstracts the serial port to use. */    
     unique_ptr<boost::asio::serial_port> serial;    

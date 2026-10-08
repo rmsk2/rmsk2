@@ -49,7 +49,11 @@ protected:
 
     /*! \brief This method prints a message that describes how to use rotorsim.
      */
-    virtual void print_help_message(po::options_description *desc, string appendix = "");
+    virtual void print_help_message(po::options_description *desc, string appendix);
+
+    /*! \brief This method prints a message that describes how to use rotorsim without an appendix.
+     */
+    virtual void print_help_message(po::options_description *desc) { print_help_message(desc, ""); }
 
     /*! \brief This method modifies the parameter description stored in this.desc to
      *         include the machine specific configuration options. The parameter type

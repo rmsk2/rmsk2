@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 #ifndef __ukwd_wiring_dialog_h__
-#define __ukw_dwiring_dialog_h__
+#define __ukwd_wiring_dialog_h__
 
 /*! \file ukwd_wiring_dialog.h
  *  \brief Header file for the application class that is used to implement a dialog that lets the user select a UKW D wiring.

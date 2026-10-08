@@ -40,7 +40,7 @@ rmsk_defines['TYPEX_DUAL_PRINTER'] = 'typexdual'
 # ---- Build configuration variables ----
 
 rmsk_lib_path =  ['./'] 
-rmsk_libs = rmsk['LIBS'] + ['tlv_lib', 'specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'cmdline_base', 'boost_system', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
+rmsk_libs = rmsk['LIBS'] + ['tlv_lib', 'specmachines', 'application_base', 'rmsk_base', 'base_visual', 'specmachines', 'cmdline_base', 'boost_program_options', 'boost_regex', 'libgdkmm-3.0.so', 'libpangomm-1.4.so', 'libcairomm-1.0.so', 'libglib-2.0.so', 'libglibmm-2.4.so', 'libatkmm-1.6.so', 'libsigc-2.0.so', 'libgiomm-2.4.so']
 enigma_includes = rmsk['CPPPATH']
 
 base_files = ['permutation.cpp', 'rand_gen.cpp', 'rotor.cpp', 'simple_mod_int.cpp', 'stepping.cpp']
